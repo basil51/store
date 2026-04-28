@@ -1,0 +1,32 @@
+{
+  "name": "store",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev:medusa": "pnpm --filter medusa dev",
+    "dev:storefront": "pnpm --filter medusa-next dev",
+    "build:medusa": "pnpm --filter medusa build",
+    "build:storefront": "pnpm --filter medusa-next build",
+    "test:storefront:unit": "pnpm --filter medusa-next run test:unit",
+    "db:migrate": "pnpm --filter medusa exec medusa db:migrate",
+    "seed:locales": "pnpm --filter medusa run seed:locales",
+    "provision:tenant": "pnpm --filter medusa exec medusa exec ./src/scripts/provision-store-tenant.ts",
+    "delete:tenant": "pnpm --filter medusa exec medusa exec ./src/scripts/delete-store-tenant.ts",
+    "describe:tenants": "pnpm --filter medusa exec medusa exec ./src/scripts/describe-store-topology.ts",
+    "preset:analytics": "pnpm --filter medusa run preset:analytics",
+    "upsert:product-translation": "pnpm --filter medusa exec medusa exec ./src/scripts/upsert-product-translation.ts",
+    "upsert:category-translation": "pnpm --filter medusa exec medusa exec ./src/scripts/upsert-category-translation.ts",
+    "audit:translations": "pnpm --filter medusa exec medusa exec ./src/scripts/audit-translation-coverage.ts",
+    "smoke:test-uploads": "pnpm --filter medusa exec medusa exec ./src/scripts/smoke-test-uploads.ts",
+    "verify:category-translations": "pnpm --filter medusa exec medusa exec ./src/scripts/verify-category-translations.ts",
+    "verify:translations": "pnpm --filter medusa exec medusa exec ./src/scripts/verify-product-translations.ts",
+    "test:e2e:install-browsers": "pnpm --filter medusa-next exec playwright install chromium",
+    "test:e2e:install-browsers:ci": "pnpm --filter medusa-next exec playwright install --with-deps chromium",
+    "test:e2e:whatsapp": "pnpm --filter medusa-next run test:e2e:whatsapp",
+    "test:e2e:whatsapp-storefront": "pnpm --filter medusa-next run test:e2e:whatsapp-storefront",
+    "test:e2e:whatsapp-admin": "pnpm --filter medusa-next run test:e2e:whatsapp-admin",
+    "test:e2e:checkout": "pnpm --filter medusa-next run test:e2e:checkout",
+    "test:e2e:checkout-matrix": "pnpm --filter medusa-next run test:e2e:checkout-matrix",
+    "test:e2e:checkout-happy-path": "pnpm --filter medusa-next run test:e2e:checkout-happy-path"
+  }
+}

@@ -1,0 +1,155 @@
+name: checkout-e2e
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: checkout-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checkout-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: "true"
+      NODE_ENV: development
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare Medusa env
+        run: |
+          cat > apps/medusa/.env <<'EOF'
+          STORE_CORS=http://127.0.0.1:8000,http://localhost:8000
+          ADMIN_CORS=http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:9000,http://localhost:9000
+          AUTH_CORS=http://127.0.0.1:5173,http://localhost:5173,http://127.0.0.1:9000,http://localhost:9000
+          REDIS_URL=redis://127.0.0.1:6380
+          JWT_SECRET=supersecret
+          COOKIE_SECRET=supersecret
+          DATABASE_URL=postgres://medusa:medusa@127.0.0.1:5433/medusa
+          DB_NAME=medusa
+          EOF
+
+      - name: Prepare storefront env
+        run: |
+          cat > apps/medusa-storefront/.env.local <<'EOF'
+          MEDUSA_BACKEND_URL=http://127.0.0.1:9244
+          NEXT_PUBLIC_BASE_URL=http://127.0.0.1:8000
+          NEXT_PUBLIC_DEFAULT_REGION=il
+          NEXT_PUBLIC_DEFAULT_LOCALE=en
+          EOF
+
+      - name: Start infrastructure services
+        run: |
+          docker network create traefik || true
+          docker compose up -d postgres redis minio minio-init
+
+      - name: Wait for Postgres
+        run: |
+          for i in $(seq 1 60); do
+            if docker compose exec -T postgres pg_isready -U medusa -d medusa >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose ps
+          exit 1
+
+      - name: Run database setup and seed
+        run: |
+          pnpm db:migrate
+          pnpm --filter medusa run seed
+          pnpm seed:locales
+          pnpm provision:tenant -- "CI Store" ci localhost en,ar,he usd*,eur track_visible
+
+      - name: Install Playwright browser
+        run: pnpm test:e2e:install-browsers:ci
+
+      - name: Start Medusa backend
+        run: |
+          pnpm dev:medusa > /tmp/medusa.log 2>&1 &
+          echo $! > /tmp/medusa.pid
+
+      - name: Wait for Medusa
+        run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:9244/health >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/medusa.log
+          exit 1
+
+      - name: Start storefront
+        run: |
+          pnpm dev:storefront > /tmp/storefront.log 2>&1 &
+          echo $! > /tmp/storefront.pid
+
+      - name: Wait for storefront
+        run: |
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8000 >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/storefront.log
+          exit 1
+
+      - name: Run checkout Playwright suite
+        env:
+          PLAYWRIGHT_BASE_URL: http://127.0.0.1:8000
+          CHECKOUT_COUNTRY_CODE: il
+        run: pnpm test:e2e:checkout
+
+      - name: Show service logs on failure
+        if: failure()
+        run: |
+          echo "===== medusa.log ====="
+          cat /tmp/medusa.log || true
+          echo "===== storefront.log ====="
+          cat /tmp/storefront.log || true
+          echo "===== docker compose ps ====="
+          docker compose ps || true
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            apps/medusa-storefront/playwright-report
+            apps/medusa-storefront/test-results
+          if-no-files-found: ignore
+
+      - name: Stop background services
+        if: always()
+        run: |
+          if [[ -f /tmp/medusa.pid ]]; then
+            kill "$(cat /tmp/medusa.pid)" || true
+          fi
+          if [[ -f /tmp/storefront.pid ]]; then
+            kill "$(cat /tmp/storefront.pid)" || true
+          fi
+          docker compose down -v

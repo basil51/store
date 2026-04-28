@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NEXMART — Global Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:        #0c0e14;
+  --surface:   #13161f;
+  --surface2:  #1a1e2b;
+  --border:    rgba(255,255,255,0.07);
+  --teal:      #00e5c8;
+  --teal-dim:  #00b89e;
+  --coral:     #ff5e62;
+  --coral-dim: #d94649;
+  --amber:     #ffcb47;
+  --text:      #f0f2f8;
+  --text-muted:#8892a4;
+  --text-dim:  #4e566a;
+  --glow-teal: 0 0 24px rgba(0,229,200,0.3);
+  --glow-coral:0 0 24px rgba(255,94,98,0.35);
+  --radius:    14px;
+  --radius-sm: 8px;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;cursor:default}
+
+/* ─ TICKER ─ */
+.ticker{background:linear-gradient(90deg,var(--coral),var(--teal),var(--coral));background-size:200%;animation:tickerGrad 4s linear infinite;padding:7px 0;overflow:hidden}
+@keyframes tickerGrad{0%{background-position:0%}100%{background-position:200%}}
+.ticker-inner{display:flex;animation:tickerMove 28s linear infinite;white-space:nowrap;gap:60px}
+@keyframes tickerMove{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.ticker span{font-size:11px;font-weight:600;color:#000;letter-spacing:.8px;text-transform:uppercase;opacity:.9}
+.ticker-dot{display:inline-block;width:5px;height:5px;background:#000;border-radius:50%;margin:0 10px;opacity:.4;vertical-align:middle}
+
+/* ─ HEADER ─ */
+header{
+  background:rgba(13,15,21,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+}
+.header-inner{max-width:1320px;margin:auto;padding:0 24px;height:68px;display:flex;align-items:center;gap:20px}
+
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:2px;text-decoration:none;color:var(--text);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.logo-accent{color:var(--teal)}
+.logo-dot{width:7px;height:7px;background:var(--coral);border-radius:50%;margin-left:2px;animation:logoPulse 2s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.7}}
+
+.search-wrap{flex:1;max-width:560px;position:relative}
+.search-wrap input{
+  width:100%;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);
+  border-radius:50px;padding:11px 50px 11px 20px;font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;transition:all .25s;
+}
+.search-wrap input::placeholder{color:var(--text-dim)}
+.search-wrap input:focus{border-color:var(--teal);box-shadow:var(--glow-teal)}
+.search-btn{
+  position:absolute;right:5px;top:50%;transform:translateY(-50%);
+  background:linear-gradient(135deg,var(--teal),var(--teal-dim));
+  border:none;border-radius:50px;width:36px;height:36px;cursor:pointer;
+  font-size:15px;display:flex;align-items:center;justify-content:center;
+  transition:transform .2s,box-shadow .2s;
+}
+.search-btn:hover{transform:translateY(-50%) scale(1.1);box-shadow:var(--glow-teal)}
+
+.h-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.h-btn{
+  background:var(--surface2);border:1px solid var(--border);color:var(--text);
+  border-radius:50px;padding:8px 16px;cursor:pointer;font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:500;display:flex;align-items:center;gap:7px;
+  transition:all .2s;white-space:nowrap;
+}
+.h-btn:hover{border-color:var(--teal);color:var(--teal);box-shadow:var(--glow-teal)}
+.cart-pill{
+  background:linear-gradient(135deg,var(--coral),var(--coral-dim));
+  border:none;color:#fff;
+}
+.cart-pill:hover{transform:scale(1.04);box-shadow:var(--glow-coral);border:none}
+.c-badge{
+  background:rgba(0,0,0,0.3);border-radius:50px;padding:1px 7px;
+  font-size:11px;font-weight:700;
+}
+
+/* ─ NAV ─ */
+nav{background:var(--surface);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1320px;margin:auto;padding:0 24px;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-item{
+  color:var(--text-muted);font-size:13px;font-weight:500;padding:12px 16px;
+  white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;
+  position:relative;
+}
+.nav-item:hover{color:var(--teal)}
+.nav-item.active{color:var(--teal);border-bottom-color:var(--teal)}
+.nav-item .hot-tag{
+  background:var(--coral);color:#fff;font-size:9px;font-weight:700;
+  padding:1px 5px;border-radius:20px;margin-left:4px;vertical-align:middle;letter-spacing:.5px;
+}
+
+/* ─ LAYOUT ─ */
+main{max-width:1320px;margin:28px auto;padding:0 24px;display:grid;grid-template-columns:210px 1fr;gap:24px}
+
+/* ─ SIDEBAR ─ */
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.side-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.side-title{
+  padding:13px 16px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;
+}
+.side-title::before{content:'';width:3px;height:12px;background:var(--teal);border-radius:2px;display:inline-block}
+.side-link{
+  display:flex;align-items:center;justify-content:space-between;padding:10px 16px;
+  font-size:13px;color:var(--text-muted);cursor:pointer;border-bottom:1px solid var(--border);
+  transition:all .2s;
+}
+.side-link:last-child{border:none}
+.side-link:hover{background:rgba(0,229,200,.05);color:var(--teal);padding-left:22px}
+.side-link .arr{font-size:10px;opacity:.4}
+.side-link:hover .arr{opacity:1;color:var(--teal)}
+
+/* ─ HERO ─ */
+.hero{
+  border-radius:20px;padding:50px 48px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#090d1a 0%,#0f1628 50%,#091620 100%);
+  margin-bottom:24px;min-height:240px;display:flex;align-items:center;gap:40px;
+  border:1px solid rgba(0,229,200,.12);
+}
+.hero-orb{
+  position:absolute;border-radius:50%;filter:blur(60px);pointer-events:none;
+}
+.orb1{width:320px;height:320px;background:radial-gradient(circle,rgba(0,229,200,.18),transparent);top:-80px;right:-80px;animation:orbFloat 7s ease-in-out infinite}
+.orb2{width:200px;height:200px;background:radial-gradient(circle,rgba(255,94,98,.14),transparent);bottom:-60px;right:200px;animation:orbFloat 9s ease-in-out infinite reverse}
+.orb3{width:150px;height:150px;background:radial-gradient(circle,rgba(255,203,71,.1),transparent);top:20px;left:300px;animation:orbFloat 6s ease-in-out infinite 2s}
+@keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(10px,-15px) scale(1.05)}}
+
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,229,200,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,200,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+}
+.hero-content{z-index:2;flex:1}
+.hero-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(0,229,200,.1);border:1px solid rgba(0,229,200,.25);
+  color:var(--teal);font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:5px 14px;border-radius:50px;margin-bottom:18px;
+}
+.hero-chip::before{content:'';width:6px;height:6px;background:var(--teal);border-radius:50%;animation:logoPulse 1.5s infinite}
+.hero h1{
+  font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1.02;
+  margin-bottom:14px;letter-spacing:-1px;
+}
+.hero h1 .teal{color:var(--teal)}
+.hero h1 .coral{color:var(--coral)}
+.hero-sub{color:var(--text-muted);font-size:15px;line-height:1.6;margin-bottom:24px;max-width:400px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{
+  background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000;
+  border:none;border-radius:50px;padding:13px 28px;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,229,200,.35)}
+.btn-secondary{
+  background:transparent;color:var(--text);border:1.5px solid var(--border);
+  border-radius:50px;padding:13px 28px;font-family:'DM Sans',sans-serif;
+  font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;
+}
+.btn-secondary:hover{border-color:var(--coral);color:var(--coral)}
+.hero-stat-row{display:flex;gap:28px;margin-top:28px}
+.hero-stat .val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--teal)}
+.hero-stat .lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.8px}
+.hero-visual{z-index:2;font-size:110px;animation:heroFloat 4s ease-in-out infinite;line-height:1}
+@keyframes heroFloat{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+
+/* ─ FLASH STRIP ─ */
+.flash-strip{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 22px;display:flex;align-items:center;gap:16px;margin-bottom:24px;
+  position:relative;overflow:hidden;
+}
+.flash-strip::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(var(--coral),var(--amber))}
+.flash-badge{
+  background:linear-gradient(135deg,var(--coral),#ff8c4a);color:#fff;
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  padding:8px 16px;border-radius:50px;white-space:nowrap;letter-spacing:.5px;
+  box-shadow:0 4px 16px rgba(255,94,98,.3);
+}
+.cd-wrap{display:flex;align-items:center;gap:6px}
+.cd-block{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--teal);
+  box-shadow:inset 0 0 0 1px rgba(0,229,200,.15),var(--glow-teal);
+  transition:all .3s;
+}
+.cd-lbl{font-size:8px;color:var(--text-dim);letter-spacing:.5px;font-weight:500;line-height:1;margin-top:1px}
+.cd-sep{color:var(--coral);font-weight:900;font-size:20px;margin-bottom:8px}
+.flash-sub{margin-left:auto;font-size:12px;color:var(--text-muted)}
+.flash-sub strong{color:var(--amber)}
+
+/* ─ CATEGORY PILLS ─ */
+.cat-row{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:28px}
+.cat-pill{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px 8px 12px;text-align:center;cursor:pointer;transition:all .25s;
+  position:relative;overflow:hidden;
+}
+.cat-pill::after{
+  content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,229,200,.08),transparent);
+  opacity:0;transition:opacity .25s;
+}
+.cat-pill:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:var(--glow-teal)}
+.cat-pill:hover::after{opacity:1}
+.cat-emoji{font-size:26px;margin-bottom:8px;display:block}
+.cat-name{font-size:11px;font-weight:600;color:var(--text-muted);letter-spacing:.3px}
+.cat-pill:hover .cat-name{color:var(--teal)}
+
+/* ─ SECTION HEAD ─ */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;display:flex;align-items:center;gap:10px}
+.sec-title .icon{font-size:18px}
+.sec-more{
+  font-size:12px;font-weight:600;color:var(--teal);cursor:pointer;
+  display:flex;align-items:center;gap:4px;transition:gap .2s;
+  text-decoration:none;
+}
+.sec-more:hover{gap:8px}
+
+/* ─ PRODUCT GRID ─ */
+.p-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:32px}
+.p-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:all .28s;position:relative;
+}
+.p-card:hover{
+  transform:translateY(-5px) scale(1.01);
+  border-color:rgba(0,229,200,.3);
+  box-shadow:0 12px 40px rgba(0,0,0,.4),var(--glow-teal);
+}
+.p-img-wrap{
+  aspect-ratio:1;overflow:hidden;background:var(--surface2);
+  position:relative;display:flex;align-items:center;justify-content:center;
+}
+.p-emoji{
+  font-size:66px;transition:transform .35s;
+  filter:drop-shadow(0 8px 16px rgba(0,0,0,.3));
+}
+.p-card:hover .p-emoji{transform:scale(1.12) translateY(-4px)}
+.p-badge{
+  position:absolute;top:10px;left:10px;
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:3px 8px;border-radius:20px;z-index:3;
+}
+.p-badge.deal{background:var(--coral);color:#fff;box-shadow:0 2px 10px rgba(255,94,98,.4)}
+.p-badge.hot{background:linear-gradient(135deg,#ff8c4a,var(--coral));color:#fff}
+.p-badge.new{background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000}
+.p-badge.top{background:var(--amber);color:#000}
+.p-heart{
+  position:absolute;top:10px;right:10px;
+  background:rgba(13,15,21,.7);backdrop-filter:blur(4px);
+  border:1px solid var(--border);border-radius:50%;
+  width:30px;height:30px;font-size:13px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:all .2s;z-index:3;
+}
+.p-card:hover .p-heart{opacity:1}
+.p-heart:hover{background:var(--coral);border-color:var(--coral);transform:scale(1.15)}
+.p-img-glow{
+  position:absolute;bottom:0;left:0;right:0;height:50%;
+  background:linear-gradient(transparent,rgba(0,229,200,.05));
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+.p-card:hover .p-img-glow{opacity:1}
+
+.p-info{padding:12px 14px 14px}
+.p-name{
+  font-size:12.5px;font-weight:500;color:var(--text);line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-bottom:8px;
+}
+.p-price-row{display:flex;align-items:baseline;gap:7px}
+.p-price{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--teal)}
+.p-was{font-size:11px;color:var(--text-dim);text-decoration:line-through}
+.p-disc{font-size:10px;font-weight:700;color:var(--coral)}
+.p-meta{display:flex;align-items:center;justify-content:space-between;margin-top:7px}
+.p-stars{font-size:11px;color:var(--amber);letter-spacing:-1px}
+.p-sold{font-size:11px;color:var(--text-dim)}
+.p-add{
+  width:100%;margin-top:10px;padding:9px 0;border:none;border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;
+  background:linear-gradient(135deg,rgba(0,229,200,.12),rgba(0,229,200,.06));
+  border:1px solid rgba(0,229,200,.2);color:var(--teal);
+  transition:all .2s;
+}
+.p-add:hover{background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:#000;box-shadow:var(--glow-teal);border-color:transparent}
+
+/* ─ PROMO BANNERS ─ */
+.promo-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+.promo{border-radius:var(--radius);padding:28px 32px;position:relative;overflow:hidden;cursor:pointer;transition:transform .25s;min-height:140px;display:flex;flex-direction:column;justify-content:center;border:1px solid var(--border)}
+.promo:hover{transform:scale(1.025)}
+.promo.p1{background:linear-gradient(135deg,#051e2a,#082a3a)}
+.promo.p2{background:linear-gradient(135deg,#1e0a1a,#2a0e22)}
+.promo-orb1{position:absolute;right:-30px;top:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(0,229,200,.2),transparent);border-radius:50%;pointer-events:none}
+.promo-orb2{position:absolute;right:-30px;top:-30px;width:160px;height:160px;background:radial-gradient(circle,rgba(255,94,98,.2),transparent);border-radius:50%;pointer-events:none}
+.promo-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.p1 .promo-tag{color:var(--teal)}
+.p2 .promo-tag{color:var(--coral)}
+.promo-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1.05;margin-bottom:12px;color:var(--text)}
+.promo-btn{
+  display:inline-block;font-size:12px;font-weight:700;padding:8px 20px;
+  border-radius:50px;border:none;cursor:pointer;transition:all .2s;
+}
+.p1 .promo-btn{background:var(--teal);color:#000}
+.p1 .promo-btn:hover{box-shadow:var(--glow-teal)}
+.p2 .promo-btn{background:var(--coral);color:#fff}
+.p2 .promo-btn:hover{box-shadow:var(--glow-coral)}
+.promo-emoji{position:absolute;right:28px;bottom:16px;font-size:58px;opacity:.9;animation:heroFloat 5s ease-in-out infinite}
+
+/* ─ BRAND STRIP ─ */
+.brand-strip{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px 28px;display:flex;align-items:center;gap:32px;margin-bottom:32px;
+  overflow:hidden;
+}
+.brand-label{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);white-space:nowrap}
+.brands{display:flex;gap:24px;align-items:center;flex:1;justify-content:space-around}
+.brand-tag{
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text-dim);
+  letter-spacing:1px;cursor:pointer;transition:color .2s;
+}
+.brand-tag:hover{color:var(--teal)}
+
+/* ─ TOAST ─ */
+#toast{
+  position:fixed;bottom:28px;right:28px;z-index:999;
+  background:var(--surface2);border:1px solid rgba(0,229,200,.3);
+  color:var(--text);padding:14px 22px;border-radius:12px;font-size:13px;font-weight:600;
+  box-shadow:var(--glow-teal),0 8px 32px rgba(0,0,0,.4);
+  display:flex;align-items:center;gap:10px;
+  transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);
+}
+#toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:18px}
+
+/* ─ FOOTER ─ */
+footer{background:var(--surface);border-top:1px solid var(--border);padding:48px 24px 24px;margin-top:20px}
+.foot-grid{max-width:1320px;margin:0 auto 36px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:36px}
+.foot-brand .logo{font-size:18px;margin-bottom:14px;display:block}
+.foot-brand p{font-size:13px;color:var(--text-muted);line-height:1.75;max-width:240px}
+.foot-socials{display:flex;gap:8px;margin-top:16px}
+.soc{
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
+  width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;transition:all .2s;
+}
+.soc:hover{border-color:var(--teal);box-shadow:var(--glow-teal);transform:translateY(-2px)}
+.foot-col h4{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:16px}
+.foot-col a{display:block;font-size:13px;color:var(--text-dim);text-decoration:none;margin-bottom:10px;transition:all .2s;cursor:pointer}
+.foot-col a:hover{color:var(--teal);padding-left:4px}
+.foot-bottom{max-width:1320px;margin:auto;border-top:1px solid var(--border);padding-top:20px;display:flex;align-items:center;justify-content:space-between}
+.foot-copy{font-size:12px;color:var(--text-dim)}
+.pay-row{display:flex;gap:8px}
+.pay{
+  background:var(--surface2);border:1px solid var(--border);border-radius:5px;
+  padding:4px 10px;font-size:10px;font-weight:700;color:var(--text-muted);letter-spacing:.5px;
+}
+
+/* ─ RESPONSIVE ─ */
+@media(max-width:1100px){main{grid-template-columns:1fr}.sidebar{display:none}.p-grid{grid-template-columns:repeat(4,1fr)}.cat-row{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:680px){.p-grid{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:32px}.hero-visual{display:none}.promo-row{grid-template-columns:1fr}.foot-grid{grid-template-columns:1fr 1fr}.foot-brand{grid-column:span 2}.hero{padding:30px 24px}.header-inner{gap:12px}.h-btn:not(.cart-pill){display:none}}
+
+/* ─ FADE IN ─ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero{animation:fadeUp .7s ease both}
+.flash-strip{animation:fadeUp .7s .1s ease both}
+.cat-row{animation:fadeUp .7s .2s ease both}
+</style>
+</head>
+<body>
+
+<!-- Ticker -->
+<div class="ticker">
+  <div class="ticker-inner" id="ticker"></div>
+</div>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#">NEX<span class="logo-accent">MART</span><span class="logo-dot"></span></a>
+    <div class="search-wrap">
+      <input type="text" placeholder="Search millions of products…" id="search-input"/>
+      <button class="search-btn">🔍</button>
+    </div>
+    <div class="h-actions">
+      <button class="h-btn">👤 Sign In</button>
+      <button class="h-btn">❤️ Saved</button>
+      <button class="h-btn cart-pill" id="cart-btn">
+        🛒 Cart <span class="c-badge" id="cart-count">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-item active">All</div>
+    <div class="nav-item">Electronics</div>
+    <div class="nav-item">Fashion</div>
+    <div class="nav-item">Home & Living</div>
+    <div class="nav-item">Beauty</div>
+    <div class="nav-item">Sports</div>
+    <div class="nav-item">Toys</div>
+    <div class="nav-item">Automotive</div>
+    <div class="nav-item">Jewelry</div>
+    <div class="nav-item">Tools</div>
+    <div class="nav-item">Flash Deals <span class="hot-tag">HOT</span></div>
+  </div>
+</nav>
+
+<!-- Main -->
+<main>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="side-card">
+      <div class="side-title">Categories</div>
+      <div class="side-link">📱 Electronics<span class="arr">›</span></div>
+      <div class="side-link">👗 Women's Fashion<span class="arr">›</span></div>
+      <div class="side-link">👔 Men's Fashion<span class="arr">›</span></div>
+      <div class="side-link">🏡 Home Décor<span class="arr">›</span></div>
+      <div class="side-link">💄 Beauty & Health<span class="arr">›</span></div>
+      <div class="side-link">🏋️ Sports & Outdoor<span class="arr">›</span></div>
+      <div class="side-link">🧸 Toys & Games<span class="arr">›</span></div>
+      <div class="side-link">🔧 Tools & DIY<span class="arr">›</span></div>
+      <div class="side-link">🚗 Automotive<span class="arr">›</span></div>
+      <div class="side-link">💍 Jewelry<span class="arr">›</span></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Top Brands</div>
+      <div class="side-link">Xiaomi<span class="arr">›</span></div>
+      <div class="side-link">Anker<span class="arr">›</span></div>
+      <div class="side-link">Baseus<span class="arr">›</span></div>
+      <div class="side-link">UGREEN<span class="arr">›</span></div>
+      <div class="side-link">Samsung<span class="arr">›</span></div>
+      <div class="side-link">Hoco<span class="arr">›</span></div>
+    </div>
+    <div class="side-card">
+      <div class="side-title">Price Range</div>
+      <div class="side-link">Under $5<span class="arr">›</span></div>
+      <div class="side-link">$5 – $15<span class="arr">›</span></div>
+      <div class="side-link">$15 – $50<span class="arr">›</span></div>
+      <div class="side-link">$50+<span class="arr">›</span></div>
+      <div class="side-link">⭐ 4+ Stars<span class="arr">›</span></div>
+    </div>
+  </aside>
+
+  <!-- Content -->
+  <div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-orb orb1"></div>
+      <div class="hero-orb orb2"></div>
+      <div class="hero-orb orb3"></div>
+      <div class="hero-grid"></div>
+      <div class="hero-content">
+        <div class="hero-chip">🌍 Global Marketplace — 200M+ Products</div>
+        <h1>Shop<br><span class="teal">Smarter.</span><br><span class="coral">Save More.</span></h1>
+        <p class="hero-sub">Discover millions of products from verified sellers worldwide. Unbeatable prices, buyer protection guaranteed.</p>
+        <div class="hero-btns">
+          <button class="btn-primary">Explore Deals →</button>
+          <button class="btn-secondary">Flash Sale ⚡</button>
+        </div>
+        <div class="hero-stat-row">
+          <div class="hero-stat"><div class="val">200M+</div><div class="lbl">Products</div></div>
+          <div class="hero-stat"><div class="val">190+</div><div class="lbl">Countries</div></div>
+          <div class="hero-stat"><div class="val">50M+</div><div class="lbl">Buyers</div></div>
+        </div>
+      </div>
+      <div class="hero-visual">🛍️</div>
+    </div>
+
+    <!-- Flash Strip -->
+    <div class="flash-strip">
+      <div class="flash-badge">⚡ FLASH SALE</div>
+      <div class="cd-wrap">
+        <div class="cd-block"><span id="h">05</span><span class="cd-lbl">HRS</span></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><span id="m">42</span><span class="cd-lbl">MIN</span></div>
+        <div class="cd-sep">:</div>
+        <div class="cd-block"><span id="s">00</span><span class="cd-lbl">SEC</span></div>
+      </div>
+      <div class="flash-sub">⏰ Deals ending soon — <strong>1,247 items</strong> on sale now</div>
+    </div>
+
+    <!-- Categories -->
+    <div class="cat-row">
+      <div class="cat-pill"><span class="cat-emoji">📱</span><div class="cat-name">Phones</div></div>
+      <div class="cat-pill"><span class="cat-emoji">💻</span><div class="cat-name">Laptops</div></div>
+      <div class="cat-pill"><span class="cat-emoji">👗</span><div class="cat-name">Fashion</div></div>
+      <div class="cat-pill"><span class="cat-emoji">🏠</span><div class="cat-name">Home</div></div>
+      <div class="cat-pill"><span class="cat-emoji">💄</span><div class="cat-name">Beauty</div></div>
+      <div class="cat-pill"><span class="cat-emoji">🧸</span><div class="cat-name">Toys</div></div>
+      <div class="cat-pill"><span class="cat-emoji">🚴</span><div class="cat-name">Sports</div></div>
+      <div class="cat-pill"><span class="cat-emoji">💍</span><div class="cat-name">Jewelry</div></div>
+    </div>
+
+    <!-- Flash Deals -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="icon">⚡</span> Flash Deals</div>
+      <a class="sec-more">View All →</a>
+    </div>
+    <div class="p-grid" id="flash-grid"></div>
+
+    <!-- Promo Banners -->
+    <div class="promo-row">
+      <div class="promo p1">
+        <div class="promo-orb1"></div>
+        <div class="promo-tag">New Arrivals 2025</div>
+        <div class="promo-title">Next-Gen<br>Tech Gadgets</div>
+        <button class="promo-btn">Explore Now</button>
+        <div class="promo-emoji">⌚</div>
+      </div>
+      <div class="promo p2">
+        <div class="promo-orb2"></div>
+        <div class="promo-tag">Summer Collection</div>
+        <div class="promo-title">Fashion<br>Up to 70% Off</div>
+        <button class="promo-btn">Shop Fashion</button>
+        <div class="promo-emoji">👜</div>
+      </div>
+    </div>
+
+    <!-- Brand Strip -->
+    <div class="brand-strip">
+      <div class="brand-label">Featured Brands</div>
+      <div class="brands">
+        <div class="brand-tag">XIAOMI</div>
+        <div class="brand-tag">ANKER</div>
+        <div class="brand-tag">BASEUS</div>
+        <div class="brand-tag">UGREEN</div>
+        <div class="brand-tag">HOCO</div>
+        <div class="brand-tag">SAMSUNG</div>
+      </div>
+    </div>
+
+    <!-- Best Sellers -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="icon">🏆</span> Best Sellers</div>
+      <a class="sec-more">See More →</a>
+    </div>
+    <div class="p-grid" id="best-grid"></div>
+
+    <!-- Recommended -->
+    <div class="sec-head">
+      <div class="sec-title"><span class="icon">✨</span> Recommended For You</div>
+      <a class="sec-more">Refresh →</a>
+    </div>
+    <div class="p-grid" id="rec-grid"></div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="foot-grid">
+    <div class="foot-brand">
+      <a class="logo" href="#">NEX<span class="logo-accent">MART</span><span class="logo-dot"></span></a>
+      <p>Your global marketplace for millions of products at unbeatable prices. Shop with confidence.</p>
+      <div class="foot-socials">
+        <div class="soc">📘</div><div class="soc">📸</div><div class="soc">🐦</div><div class="soc">▶️</div><div class="soc">🎵</div>
+      </div>
+    </div>
+    <div class="foot-col">
+      <h4>Support</h4>
+      <a>Help Center</a><a>Live Chat</a><a>Track Order</a><a>Returns</a><a>Report Issue</a>
+    </div>
+    <div class="foot-col">
+      <h4>Company</h4>
+      <a>About Us</a><a>Press Room</a><a>Careers</a><a>Blog</a>
+    </div>
+    <div class="foot-col">
+      <h4>Sell</h4>
+      <a>Become a Seller</a><a>Affiliate Program</a><a>Bulk Orders</a><a>Dropshipping</a>
+    </div>
+    <div class="foot-col">
+      <h4>Legal</h4>
+      <a>Privacy Policy</a><a>Terms of Service</a><a>Cookie Policy</a><a>Accessibility</a>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <span class="foot-copy">© 2025 NEXMART. All rights reserved.</span>
+    <div class="pay-row">
+      <span class="pay">VISA</span><span class="pay">MC</span><span class="pay">PAYPAL</span><span class="pay">AMEX</span><span class="pay">APPLE PAY</span><span class="pay">CRYPTO</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div id="toast"><span class="toast-icon">✅</span> Added to cart!</div>
+
+<script>
+/* ── Ticker ── */
+const msgs = ['🔥 Flash Sale — Up to 80% Off','🌍 Free Shipping on Orders Over $10','🔒 100% Buyer Protection Guaranteed','📦 Track Orders in Real-Time','💎 New Arrivals Every Day','⭐ 50 Million Happy Customers','🚀 Same-Day Dispatch on Select Items'];
+const track = document.getElementById('ticker');
+const content = [...msgs,...msgs].map(m=>`<span>${m}</span><span class="ticker-dot"></span>`).join('');
+track.innerHTML = content + content;
+
+/* ── Products ── */
+const flash = [
+  {e:'📱',n:'Xiaomi Redmi A3 Smartphone 128GB 5G Dual SIM Unlocked',p:'$69',w:'$149',d:'-53%',b:'deal',stars:'★★★★☆',s:'12.4k sold'},
+  {e:'🎧',n:'Baseus ANC Wireless Earbuds Bluetooth 5.3 30hr Battery',p:'$14',w:'$35',d:'-60%',b:'deal',stars:'★★★★★',s:'8.2k sold'},
+  {e:'⌚',n:'Smart Fitness Watch Heart Rate Blood Oxygen GPS Tracker',p:'$19',w:'$50',d:'-62%',b:'hot',stars:'★★★★☆',s:'15.7k sold'},
+  {e:'💡',n:'RGBW Smart LED Bulb E27 WiFi App Voice Control 16M Colors',p:'$4',w:'$13',d:'-69%',b:'deal',stars:'★★★★☆',s:'22.1k sold'},
+  {e:'🖱️',n:'Wireless Silent Ergonomic Mouse 2400DPI USB Nano Receiver',p:'$8',w:'$20',d:'-60%',b:'hot',stars:'★★★★☆',s:'9.3k sold'},
+];
+const best = [
+  {e:'🧳',n:'Waterproof Hiking Backpack 40L USB Port Laptop Compartment',p:'$28',w:'$52',d:'-46%',b:'top',stars:'★★★★★',s:'31k sold'},
+  {e:'👟',n:'Men Mesh Running Shoes Breathable Lightweight Non-Slip',p:'$23',w:'$45',d:'-49%',b:'hot',stars:'★★★★☆',s:'18.5k sold'},
+  {e:'🪥',n:'Electric Sonic Toothbrush Rechargeable 5 Modes Whitening',p:'$16',w:'$35',d:'-54%',b:'top',stars:'★★★★★',s:'41k sold'},
+  {e:'🏋️',n:'Resistance Bands 11pcs Latex Home Gym Exercise Set',p:'$12',w:'$24',d:'-50%',b:'new',stars:'★★★★☆',s:'7.8k sold'},
+  {e:'☕',n:'Portable Travel Electric Kettle 0.5L Stainless Steel',p:'$11',w:'$22',d:'-50%',b:'hot',stars:'★★★★☆',s:'5.4k sold'},
+];
+const rec = [
+  {e:'🕶️',n:'Polarized UV400 Sunglasses Driving Outdoor Unisex',p:'$7',w:'$18',d:'-61%',b:null,stars:'★★★★☆',s:'4.2k sold'},
+  {e:'🧴',n:'Hyaluronic Acid Face Serum 100ml Anti-Aging Hydrating',p:'$5',w:'$15',d:'-67%',b:null,stars:'★★★★★',s:'9.7k sold'},
+  {e:'🎮',n:'Wireless Gamepad Controller Bluetooth PC Android iOS',p:'$18',w:'$40',d:'-55%',b:'new',stars:'★★★★☆',s:'6.1k sold'},
+  {e:'🔌',n:'65W GaN USB-C 4-Port Fast Charger Travel Wall Adapter',p:'$22',w:'$44',d:'-50%',b:null,stars:'★★★★★',s:'13.2k sold'},
+  {e:'🧳',n:'6-Piece Packing Cubes Set Travel Organizer Zipper Bags',p:'$9',w:'$19',d:'-53%',b:null,stars:'★★★★☆',s:'8.0k sold'},
+];
+
+function render(data, id) {
+  document.getElementById(id).innerHTML = data.map(p=>`
+    <div class="p-card">
+      <div class="p-img-wrap">
+        <div class="p-emoji">${p.e}</div>
+        ${p.b?`<span class="p-badge ${p.b}">${p.b==='deal'?p.d:p.b==='top'?'TOP':p.b==='hot'?'HOT':'NEW'}</span>`:''}
+        <button class="p-heart">♡</button>
+        <div class="p-img-glow"></div>
+      </div>
+      <div class="p-info">
+        <div class="p-name">${p.n}</div>
+        <div class="p-price-row">
+          <span class="p-price">${p.p}</span>
+          <span class="p-was">${p.w}</span>
+          <span class="p-disc">${p.d}</span>
+        </div>
+        <div class="p-meta">
+          <span class="p-stars">${p.stars}</span>
+          <span class="p-sold">${p.s}</span>
+        </div>
+        <button class="p-add" onclick="addCart(event)">+ Add to Cart</button>
+      </div>
+    </div>`).join('');
+}
+render(flash,'flash-grid');
+render(best,'best-grid');
+render(rec,'rec-grid');
+
+/* ── Cart ── */
+let n=0;
+function addCart(e){
+  e.stopPropagation();
+  n++;
+  document.getElementById('cart-count').textContent=n;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+/* ── Countdown ── */
+let secs=5*3600+42*60;
+setInterval(()=>{
+  secs--;if(secs<0)secs=86399;
+  document.getElementById('h').textContent=String(Math.floor(secs/3600)).padStart(2,'0');
+  document.getElementById('m').textContent=String(Math.floor(secs%3600/60)).padStart(2,'0');
+  document.getElementById('s').textContent=String(secs%60).padStart(2,'0');
+},1000);
+
+/* ── Nav ── */
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+  });
+});
+
+/* ── Heart toggle ── */
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('p-heart')){
+    e.target.textContent=e.target.textContent==='♡'?'❤️':'♡';
+  }
+});
+</script>
+</body>
+</html>

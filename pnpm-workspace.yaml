@@ -1,0 +1,5 @@
+packages:
+  - "apps/*"
+
+# Local dev: allow dependency install scripts (e.g. @swc/core, sharp). Tighten later with onlyBuiltDependencies.
+dangerouslyAllowAllBuilds: true

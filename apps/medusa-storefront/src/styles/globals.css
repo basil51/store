@@ -1,0 +1,306 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* ═══════════════════════════════════════════════════════════════
+   NEXMART Design System
+   Default: dark. Light mode: [data-theme="light"] on <html>.
+   ═══════════════════════════════════════════════════════════════ */
+
+@layer base {
+  /* ── Dark (default) ── */
+  :root,
+  [data-theme="dark"] {
+    --bg:          #0c0e14;
+    --surface:     #13161f;
+    --surface2:    #1a1e2b;
+    --border:      rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.13);
+    --teal:        #00e5c8;
+    --teal-dim:    #00b89e;
+    --coral:       #ff5e62;
+    --coral-dim:   #d94649;
+    --amber:       #ffcb47;
+    --text:        #f0f2f8;
+    --text-muted:  #8892a4;
+    --text-dim:    #4e566a;
+    --radius:      14px;
+    --radius-sm:   8px;
+    --glow-teal:   0 0 24px rgba(0, 229, 200, 0.30);
+    --glow-coral:  0 0 24px rgba(255, 94, 98, 0.35);
+    --nav-bg:      rgba(12, 14, 20, 0.92);
+    --glow-amber:  0 0 16px rgba(255, 203, 71, 0.25);
+
+    /* Legacy / compat aliases */
+    --bg-compat: var(--bg);
+    --surface-compat: var(--surface);
+    --ink: var(--text);
+    --ink-secondary: var(--text-muted);
+    --ink-muted: var(--text-dim);
+    --line: var(--border);
+    --line-strong: var(--border-strong);
+    --brand: var(--teal);
+    --brand-hover: var(--teal-dim);
+    --brand-soft: rgba(0, 229, 200, 0.1);
+    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 18px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.55);
+  }
+
+  /* ── Light override ── */
+  [data-theme="light"] {
+    --bg:          #f4f6fb;
+    --surface:     #ffffff;
+    --surface2:    #edf0f7;
+    --border:      rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.15);
+    --teal:        #00a896;
+    --teal-dim:    #008a7c;
+    --coral:       #e04f52;
+    --coral-dim:   #c23b3e;
+    --amber:       #d4960a;
+    --text:        #0c0e14;
+    --text-muted:  #4e566a;
+    --text-dim:    #8892a4;
+    --glow-teal:   0 0 20px rgba(0, 168, 150, 0.20);
+    --glow-coral:  0 0 20px rgba(224, 79, 82, 0.20);
+    --glow-amber:  none;
+    --nav-bg:      rgba(244, 246, 251, 0.92);
+
+    --ink: var(--text);
+    --ink-secondary: var(--text-muted);
+    --ink-muted: var(--text-dim);
+    --line: var(--border);
+    --line-strong: var(--border-strong);
+    --brand: var(--teal);
+    --brand-hover: var(--teal-dim);
+    --brand-soft: rgba(0, 168, 150, 0.08);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.09);
+    --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-dm-sans), "DM Sans", -apple-system,
+      BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  }
+
+  ::selection {
+    background: rgba(0, 229, 200, 0.22);
+    color: var(--text);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar::-webkit-scrollbar-track { background-color: transparent; }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .font-syne {
+    font-family: var(--font-syne), "Syne", sans-serif;
+  }
+
+  input:focus ~ label,
+  input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-2 text-xsmall-regular;
+  }
+  input:focus ~ label { @apply left-0; }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    border: 1px solid var(--border-strong);
+    -webkit-text-fill-color: var(--text);
+    -webkit-box-shadow: 0 0 0px 1000px var(--surface) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+@layer components {
+  /* ── Layout ─────────────────────────────────────────────────── */
+  .content-container {
+    @apply max-w-[1320px] w-full mx-auto px-6;
+  }
+
+  /* ── Surface cards ───────────────────────────────────────────── */
+  .nx-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .nx-card-2 {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  /* Legacy aliases */
+  .card        { @apply nx-card; box-shadow: var(--shadow-sm); }
+  .card-lifted { @apply nx-card; box-shadow: var(--shadow-md); }
+  .card-dark   { @apply nx-card-2; box-shadow: var(--shadow-lg); }
+  .tech-panel          { @apply nx-card; }
+  .tech-panel-strong   { @apply nx-card; box-shadow: var(--shadow-md); }
+  .tech-dark-panel     { @apply nx-card-2; }
+
+  /* ── Subtle dot-grid overlay ─────────────────────────────────── */
+  .nx-grid-overlay {
+    background-image:
+      linear-gradient(rgba(0, 229, 200, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 229, 200, 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .tech-grid { @apply nx-grid-overlay; }
+
+  /* ── Buttons ─────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full px-7 py-3 text-sm font-bold cursor-pointer transition-all duration-200;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+    color: #000000;
+    border: none;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--glow-teal);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full px-7 py-3 text-sm font-semibold cursor-pointer transition-all duration-200;
+    background: transparent;
+    color: var(--text);
+    border: 1.5px solid var(--border-strong);
+  }
+  .btn-secondary:hover {
+    border-color: var(--coral);
+    color: var(--coral);
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-200;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+    box-shadow: var(--glow-teal);
+  }
+
+  /* Legacy tech buttons → new system */
+  .tech-button-primary  { @apply btn-primary; }
+  .tech-button-secondary { @apply btn-secondary; }
+  .contrast-btn {
+    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+  }
+
+  /* ── Badges ──────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide;
+  }
+  .badge-deal  { background: var(--coral);  color: #fff; box-shadow: 0 2px 10px rgba(255,94,98,.4); }
+  .badge-hot   { background: linear-gradient(135deg, #ff8c4a, var(--coral)); color: #fff; }
+  .badge-new   { background: linear-gradient(135deg, var(--teal), var(--teal-dim)); color: #000; }
+  .badge-top   { background: var(--amber); color: #000; }
+
+  /* Legacy */
+  .tech-pill {
+    @apply inline-flex items-center rounded-full px-3 py-1 text-xs font-medium;
+    background: var(--surface2);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .tech-kicker {
+    @apply text-xs font-bold uppercase tracking-widest;
+    color: var(--teal);
+    font-family: var(--font-syne), "Syne", sans-serif;
+  }
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  .nx-heading {
+    font-family: var(--font-syne), "Syne", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .tech-title {
+    @apply nx-heading text-[clamp(2.2rem,4.5vw,5rem)] leading-[0.95];
+  }
+  .tech-subtitle {
+    @apply text-base leading-7;
+    color: var(--text-muted);
+  }
+
+  /* ── Glow helpers ────────────────────────────────────────────── */
+  .glow-teal  { box-shadow: var(--glow-teal); }
+  .glow-coral { box-shadow: var(--glow-coral); }
+  .hover\:shadow-teal:hover { box-shadow: var(--glow-teal); }
+
+  /* ── Medusa UI text size helpers (used widely) ───────────────── */
+  .text-xsmall-regular  { @apply text-[10px] leading-4 font-normal; }
+  .text-small-regular   { @apply text-xs leading-5 font-normal; }
+  .text-small-semi      { @apply text-xs leading-5 font-semibold; }
+  .text-base-regular    { @apply text-sm leading-6 font-normal; }
+  .text-base-semi       { @apply text-sm leading-6 font-semibold; }
+  .text-large-regular   { @apply text-base leading-6 font-normal; }
+  .text-large-semi      { @apply text-base leading-6 font-semibold; }
+  .text-xl-regular      { @apply text-2xl leading-[36px] font-normal; }
+  .text-xl-semi         { @apply text-2xl leading-[36px] font-semibold; }
+  .text-2xl-regular     { @apply text-[30px] leading-[48px] font-normal; }
+  .text-2xl-semi        { @apply text-[30px] leading-[48px] font-semibold; }
+  .text-3xl-regular     { @apply text-[32px] leading-[44px] font-normal; }
+  .text-3xl-semi        { @apply text-[32px] leading-[44px] font-semibold; }
+}
+
+/* ── Keyframe animations ─────────────────────────────────────── */
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-22px) scale(1.04); }
+}
+
+@keyframes logoPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes tickerScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  animation: tickerScroll 40s linear infinite;
+}
+.ticker-bar:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
