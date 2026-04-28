@@ -8,12 +8,14 @@ import {
   groupLineItemsByPreset,
   shouldDisplayPresetGrouping,
 } from "@lib/util/cart-grouping"
+import type { ProductStockMode } from "@lib/util/stock-mode"
 
 type ItemsTemplateProps = {
   cart?: HttpTypes.StoreCart
+  defaultStockMode?: ProductStockMode
 }
 
-const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
+const ItemsTemplate = ({ cart, defaultStockMode }: ItemsTemplateProps) => {
   const items = cart?.items
   const displayGrouping = shouldDisplayPresetGrouping(items)
   const groupedItems = displayGrouping && items ? groupLineItemsByPreset(items) : null
@@ -70,6 +72,7 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
                     key={group.presetKey}
                     group={group}
                     currencyCode={cart?.currency_code}
+                    defaultStockMode={defaultStockMode}
                   />
                 ))
               : items
@@ -81,6 +84,7 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
                       key={item.id}
                       item={item}
                       currencyCode={cart?.currency_code}
+                      defaultStockMode={defaultStockMode}
                     />
                   ))
             : repeat(5).map((i) => <SkeletonLineItem key={i} />)}
@@ -93,9 +97,10 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
 type GroupProps = {
   group: ReturnType<typeof groupLineItemsByPreset>[0]
   currencyCode?: string
+  defaultStockMode?: ProductStockMode
 }
 
-const Group = ({ group, currencyCode }: GroupProps) => {
+const Group = ({ group, currencyCode, defaultStockMode }: GroupProps) => {
   const sortedItems = group.items.sort((a, b) =>
     (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
   )
@@ -136,6 +141,7 @@ const Group = ({ group, currencyCode }: GroupProps) => {
           key={item.id}
           item={item}
           currencyCode={currencyCode}
+          defaultStockMode={defaultStockMode}
         />
       ))}
     </>

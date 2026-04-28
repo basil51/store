@@ -12,11 +12,13 @@ process.env.__MEDUSA_DB_CONNECTION_RETRY_DELAY ??= "100"
 const TEST_DB_URL = `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_TEMP_NAME}`
 
 const { medusaIntegrationTestRunner } = require("@medusajs/test-utils")
+const { Modules } = require("@medusajs/framework/utils")
 const {
   createApiKeysWorkflow,
   createProductCategoriesWorkflow,
   createSalesChannelsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
+  updateStoresWorkflow,
 } = require("@medusajs/medusa/core-flows")
 
 jest.setTimeout(180 * 1000)
@@ -151,6 +153,128 @@ medusaIntegrationTestRunner({
         expect(
           payload.product_categories[0].category_children[0].category_children
         ).toHaveLength(1)
+      })
+    })
+
+    describe("Store currency config", () => {
+      it("returns store default_stock_mode when metadata contains a valid value", async () => {
+        const container = getContainer()
+        const storeModule = container.resolve(Modules.STORE)
+        const [store] = await storeModule.listStores({})
+        const suffix = Date.now().toString()
+
+        const {
+          result: [salesChannel],
+        } = await createSalesChannelsWorkflow(container).run({
+          input: {
+            salesChannelsData: [{ name: `Config SC ${suffix}` }],
+          },
+        })
+
+        const {
+          result: [publishableApiKeyResult],
+        } = await createApiKeysWorkflow(container).run({
+          input: {
+            api_keys: [
+              {
+                title: `Config Key ${suffix}`,
+                type: "publishable",
+                created_by: "integration-test",
+              },
+            ],
+          },
+        })
+
+        await linkSalesChannelsToApiKeyWorkflow(container).run({
+          input: {
+            id: publishableApiKeyResult.id,
+            add: [salesChannel.id],
+          },
+        })
+
+        await updateStoresWorkflow(container).run({
+          input: {
+            selector: { id: store.id },
+            update: {
+              metadata: {
+                ...(store.metadata ?? {}),
+                default_stock_mode: "track_hidden",
+              },
+            },
+          },
+        })
+
+        await utils.waitWorkflowExecutions()
+
+        const response = await api.get("/store/store-currency-config", {
+          headers: {
+            "x-publishable-api-key": publishableApiKeyResult.token,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toEqual(200)
+        expect(response.data.default_stock_mode).toEqual("track_hidden")
+      })
+
+      it("falls back to track_visible when default_stock_mode is invalid", async () => {
+        const container = getContainer()
+        const storeModule = container.resolve(Modules.STORE)
+        const [store] = await storeModule.listStores({})
+        const suffix = `${Date.now()}-fallback`
+
+        const {
+          result: [salesChannel],
+        } = await createSalesChannelsWorkflow(container).run({
+          input: {
+            salesChannelsData: [{ name: `Config SC ${suffix}` }],
+          },
+        })
+
+        const {
+          result: [publishableApiKeyResult],
+        } = await createApiKeysWorkflow(container).run({
+          input: {
+            api_keys: [
+              {
+                title: `Config Key ${suffix}`,
+                type: "publishable",
+                created_by: "integration-test",
+              },
+            ],
+          },
+        })
+
+        await linkSalesChannelsToApiKeyWorkflow(container).run({
+          input: {
+            id: publishableApiKeyResult.id,
+            add: [salesChannel.id],
+          },
+        })
+
+        await updateStoresWorkflow(container).run({
+          input: {
+            selector: { id: store.id },
+            update: {
+              metadata: {
+                ...(store.metadata ?? {}),
+                default_stock_mode: "invalid_mode",
+              },
+            },
+          },
+        })
+
+        await utils.waitWorkflowExecutions()
+
+        const response = await api.get("/store/store-currency-config", {
+          headers: {
+            "x-publishable-api-key": publishableApiKeyResult.token,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toEqual(200)
+        expect(response.data.default_stock_mode).toEqual("track_visible")
       })
     })
   },

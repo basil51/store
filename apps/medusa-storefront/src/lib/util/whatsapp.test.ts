@@ -18,6 +18,18 @@ describe("whatsapp", () => {
     ).toBe("Hello {{customer_name}}")
   })
 
+  it("fills store_name when templates reference it", () => {
+    expect(
+      applyWhatsAppTemplate({
+        template: "Store: {{store_name}}\n{{items}}",
+        replacements: {
+          store_name: "NEXMART",
+          items: "1x Desk Hub",
+        },
+      })
+    ).toBe("Store: NEXMART\n1x Desk Hub")
+  })
+
   it("trims trailing whitespace after optional replacements", () => {
     expect(
       applyWhatsAppTemplate({

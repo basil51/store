@@ -6,6 +6,10 @@ const EN_UI_COPY = {
   commonOutOfStock: "Out of stock",
   commonAddToCart: "Add to cart",
   commonWhatsApp: "WhatsApp",
+  stockAvailableOnRequest: "Available on request",
+  stockInStock: "In stock",
+  stockBackorderAvailable: "Backorder available",
+  stockCountInStock: "{quantity} in stock",
 
   heroCatalogBadge: "Premium Tech Catalog - 2026",
   heroHeadlineShopSmarter: "Shop Smarter.",
@@ -199,6 +203,10 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     commonOutOfStock: "غير متوفر",
     commonAddToCart: "أضف إلى السلة",
     commonWhatsApp: "واتساب",
+    stockAvailableOnRequest: "متوفر عند الطلب",
+    stockInStock: "متوفر في المخزون",
+    stockBackorderAvailable: "متاح للطلب المسبق",
+    stockCountInStock: "{quantity} متوفر في المخزون",
 
     heroCatalogBadge: "كتالوج تقني مميز - 2026",
     heroHeadlineShopSmarter: "تسوق بذكاء.",
@@ -381,6 +389,10 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     commonOutOfStock: "אזל מהמלאי",
     commonAddToCart: "הוסף לעגלה",
     commonWhatsApp: "וואטסאפ",
+    stockAvailableOnRequest: "זמין לפי בקשה",
+    stockInStock: "במלאי",
+    stockBackorderAvailable: "זמין להזמנה מוקדמת",
+    stockCountInStock: "{quantity} במלאי",
 
     heroCatalogBadge: "קטלוג טכנולוגיה מובחר - 2026",
     heroHeadlineShopSmarter: "קנו חכם יותר.",

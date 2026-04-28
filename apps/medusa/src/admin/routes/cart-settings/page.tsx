@@ -17,6 +17,8 @@ type CurrencyEntry = {
   enabled: boolean
 }
 
+type StockMode = "track_visible" | "track_hidden" | "no_stock"
+
 const DEFAULT_CURRENCIES: CurrencyEntry[] = [
   { code: "ILS", label: "Israeli New Shekel", symbol: "₪", rate: 1,    enabled: true },
   { code: "USD", label: "US Dollar",          symbol: "$", rate: 0.27,  enabled: true },
@@ -43,6 +45,28 @@ const DEFAULT_WHATSAPP_TEMPLATES: LocalizedWhatsAppTemplates = {
   ar: "مرحباً! أود طلب:\n{{items}}\nالإجمالي: {{total}}\n{{customer_note}}",
   he: "שלום! אני רוצה להזמין:\n{{items}}\nסה״כ: {{total}}\n{{customer_note}}",
 }
+
+const STOCK_MODE_OPTIONS: Array<{
+  value: StockMode
+  label: string
+  description: string
+}> = [
+  {
+    value: "track_visible",
+    label: "Track inventory + show quantity",
+    description: "Customers see numeric stock counts when inventory is tracked.",
+  },
+  {
+    value: "track_hidden",
+    label: "Track inventory + hide quantity",
+    description: "Customers see stock status without exact inventory numbers.",
+  },
+  {
+    value: "no_stock",
+    label: "On-demand (no stock limits)",
+    description: "Products remain purchasable even without tracked inventory.",
+  },
+]
 
 type WhatsAppPreviewMode = "pdp" | "cart"
 type WhatsAppTemplateValue = string | number | null | undefined
@@ -667,6 +691,7 @@ function CartSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeId, setStoreId] = useState("")
+  const [storeName, setStoreName] = useState("")
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null)
 
   // Settings
@@ -678,6 +703,8 @@ function CartSettingsPage() {
   const [activeTemplateLocale, setActiveTemplateLocale] =
     useState<WhatsAppTemplateLocale>("en")
   const [cartMode, setCartMode] = useState<"standard" | "whatsapp" | "both">("both")
+  const [defaultStockMode, setDefaultStockMode] =
+    useState<StockMode>("track_visible")
   const [previewMode, setPreviewMode] = useState<WhatsAppPreviewMode>("pdp")
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("")
   const [previewProductsLoading, setPreviewProductsLoading] = useState(false)
@@ -726,6 +753,7 @@ function CartSettingsPage() {
       const store = Array.isArray(data.stores) ? data.stores[0] : data.store
       if (store) {
         setStoreId(store.id)
+        setStoreName(typeof store.name === "string" ? store.name : "")
         const m = (store.metadata ?? {}) as Record<string, unknown>
         if (m.cart_base_currency) setBaseCurrency(m.cart_base_currency as string)
         if (Array.isArray(m.cart_currencies) && m.cart_currencies.length) {
@@ -739,6 +767,13 @@ function CartSettingsPage() {
           )
         )
         if (m.cart_mode) setCartMode(m.cart_mode as "standard" | "whatsapp" | "both")
+        if (
+          m.default_stock_mode === "track_visible" ||
+          m.default_stock_mode === "track_hidden" ||
+          m.default_stock_mode === "no_stock"
+        ) {
+          setDefaultStockMode(m.default_stock_mode)
+        }
         if (m.free_shipping_threshold) setFreeShippingThreshold(String(m.free_shipping_threshold))
       }
 
@@ -983,6 +1018,7 @@ function CartSettingsPage() {
             whatsapp_template: normalizedWhatsAppTemplates.en,
             whatsapp_templates: normalizedWhatsAppTemplates,
             cart_mode: cartMode,
+            default_stock_mode: defaultStockMode,
             free_shipping_threshold: freeShippingThreshold ? Number(freeShippingThreshold) : null,
           },
         }),
@@ -1121,6 +1157,7 @@ function CartSettingsPage() {
           items: `${previewQuantityNumber}x ${itemLine}`,
           total: lineTotal,
           currency: baseCurrency,
+          store_name: storeName,
           quantity: previewQuantityNumber,
           product_name: productTitle,
           product_specs: productSpecs,
@@ -1142,6 +1179,7 @@ function CartSettingsPage() {
         }`,
         total: lineTotal,
         currency: baseCurrency,
+        store_name: storeName,
         quantity: previewQuantityNumber,
         product_name: "",
         product_specs: "",
@@ -1178,6 +1216,7 @@ function CartSettingsPage() {
             items: `${previewContent.en.pdpItems} - ${money(799)}`,
             total: money(1598),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 2,
             product_name: previewContent.en.productName,
             product_specs: previewContent.en.productSpecs,
@@ -1198,6 +1237,7 @@ function CartSettingsPage() {
             items: previewContent.en.cartItems,
             total: money(1097),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 3,
             product_name: "",
             product_specs: "",
@@ -1220,6 +1260,7 @@ function CartSettingsPage() {
             items: `${previewContent.ar.pdpItems} - ${money(799)}`,
             total: money(1598),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 2,
             product_name: previewContent.ar.productName,
             product_specs: previewContent.ar.productSpecs,
@@ -1240,6 +1281,7 @@ function CartSettingsPage() {
             items: previewContent.ar.cartItems,
             total: money(1097),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 3,
             product_name: "",
             product_specs: "",
@@ -1262,6 +1304,7 @@ function CartSettingsPage() {
             items: `${previewContent.he.pdpItems} - ${money(799)}`,
             total: money(1598),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 2,
             product_name: previewContent.he.productName,
             product_specs: previewContent.he.productSpecs,
@@ -1282,6 +1325,7 @@ function CartSettingsPage() {
             items: previewContent.he.cartItems,
             total: money(1097),
             currency: baseCurrency,
+            store_name: storeName,
             quantity: 3,
             product_name: "",
             product_specs: "",
@@ -1296,7 +1340,7 @@ function CartSettingsPage() {
         },
       },
     }
-  }, [baseCurrency, baseCurrencySymbol, previewCustomerNotes])
+  }, [baseCurrency, baseCurrencySymbol, previewCustomerNotes, storeName])
 
   const activeWhatsAppPreview =
     liveWhatsAppPreview ?? whatsappPreviewSamples[activeTemplateLocale][previewMode]
@@ -1561,6 +1605,57 @@ function CartSettingsPage() {
         ))}
       </div>
 
+      {/* ── Section 4: Default stock mode ── */}
+      <div style={card}>
+        <div style={sectionTitle}>Default Stock Mode</div>
+        <div style={sectionSubtitle}>
+          Fallback stock behavior when a product does not define
+          <code style={{ marginInlineStart: 4 }}>metadata.stock_mode</code>.
+        </div>
+
+        {STOCK_MODE_OPTIONS.map((option) => (
+          <label
+            key={option.value}
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+              padding: "12px 14px",
+              borderRadius: 8,
+              border: `1.5px solid ${
+                defaultStockMode === option.value
+                  ? "var(--ui-border-interactive)"
+                  : "var(--ui-border-base)"
+              }`,
+              background:
+                defaultStockMode === option.value
+                  ? "var(--ui-bg-highlight)"
+                  : "transparent",
+              marginBottom: 8,
+              cursor: "pointer",
+            }}
+          >
+            <input
+              type="radio"
+              name="default_stock_mode"
+              value={option.value}
+              checked={defaultStockMode === option.value}
+              onChange={() => setDefaultStockMode(option.value)}
+              data-testid={`default-stock-mode-${option.value}`}
+              style={{ marginTop: 2 }}
+            />
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--ui-fg-base)" }}>
+                {option.label}
+              </div>
+              <div style={{ fontSize: 12, color: "var(--ui-fg-subtle)", marginTop: 2 }}>
+                {option.description}
+              </div>
+            </div>
+          </label>
+        ))}
+      </div>
+
       {/* ── Section 4: WhatsApp ── */}
       {(cartMode === "whatsapp" || cartMode === "both") && (
         <div style={card}>
@@ -1633,7 +1728,7 @@ function CartSettingsPage() {
             }}
           />
           <p style={{ fontSize: 12, color: "var(--ui-fg-muted)", marginTop: 6 }}>
-            Available placeholders: <code>{"{{items}}"}</code> (item list), <code>{"{{total}}"}</code> (order total), <code>{"{{currency}}"}</code>, <code>{"{{quantity}}"}</code>, <code>{"{{product_name}}"}</code>, <code>{"{{product_specs}}"}</code>, <code>{"{{unit_price}}"}</code>, <code>{"{{line_total}}"}</code>, <code>{"{{preset_title}}"}</code>, <code>{"{{customer_note}}"}</code> (optional shopper note from PDP/cart)
+            Available placeholders: <code>{"{{items}}"}</code> (item list), <code>{"{{total}}"}</code> (order total), <code>{"{{currency}}"}</code>, <code>{"{{store_name}}"}</code> (store display name), <code>{"{{quantity}}"}</code>, <code>{"{{product_name}}"}</code>, <code>{"{{product_specs}}"}</code>, <code>{"{{unit_price}}"}</code>, <code>{"{{line_total}}"}</code>, <code>{"{{preset_title}}"}</code>, <code>{"{{customer_note}}"}</code> (optional shopper note from PDP/cart)
             <br />
             Each locale has its own template. You are currently editing <strong>{WHATSAPP_TEMPLATE_LOCALE_LABELS[activeTemplateLocale]}</strong>. PDP click-to-order fills the product-specific placeholders. Cart-level WhatsApp orders keep filling the generic cart placeholders and leave product-specific values blank. If you omit <code>{"{{customer_note}}"}</code>, the shopper note is appended at the end for backwards compatibility.
           </p>

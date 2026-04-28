@@ -10,13 +10,19 @@ import {
   groupLineItemsByPreset,
   shouldDisplayPresetGrouping,
 } from "@lib/util/cart-grouping"
+import type { ProductStockMode } from "@lib/util/stock-mode"
 
 type ItemsTemplateProps = {
   cart: HttpTypes.StoreCart
   grouped?: boolean
+  defaultStockMode?: ProductStockMode
 }
 
-const ItemsPreviewTemplate = ({ cart, grouped = false }: ItemsTemplateProps) => {
+const ItemsPreviewTemplate = ({
+  cart,
+  grouped = false,
+  defaultStockMode,
+}: ItemsTemplateProps) => {
   const items = cart.items
   const hasOverflow = items && items.length > 4
   const displayGrouping = grouped && shouldDisplayPresetGrouping(items)
@@ -39,6 +45,7 @@ const ItemsPreviewTemplate = ({ cart, grouped = false }: ItemsTemplateProps) => 
                     key={group.presetKey}
                     group={group}
                     currencyCode={cart.currency_code}
+                    defaultStockMode={defaultStockMode}
                   />
                 ))
               : items
@@ -52,6 +59,7 @@ const ItemsPreviewTemplate = ({ cart, grouped = false }: ItemsTemplateProps) => 
                         item={item}
                         type="preview"
                         currencyCode={cart.currency_code}
+                        defaultStockMode={defaultStockMode}
                       />
                     )
                   })
@@ -67,9 +75,14 @@ const ItemsPreviewTemplate = ({ cart, grouped = false }: ItemsTemplateProps) => 
 type PreviewGroupProps = {
   group: ReturnType<typeof groupLineItemsByPreset>[0]
   currencyCode?: string
+  defaultStockMode?: ProductStockMode
 }
 
-const PreviewGroup = ({ group, currencyCode }: PreviewGroupProps) => {
+const PreviewGroup = ({
+  group,
+  currencyCode,
+  defaultStockMode,
+}: PreviewGroupProps) => {
   const sortedItems = group.items.sort((a, b) =>
     (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
   )
@@ -115,6 +128,7 @@ const PreviewGroup = ({ group, currencyCode }: PreviewGroupProps) => {
           item={item}
           type="preview"
           currencyCode={currencyCode}
+          defaultStockMode={defaultStockMode}
         />
       ))}
     </>

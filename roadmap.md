@@ -11,7 +11,8 @@
 | **Phase 4 — Frontend** | **Completed for current redesign scope** — NEXMART storefront plan tracked in **`frontend.md`** is finished. |
 | **Phase 5 — Cart & Checkout** | **Stopped at current local milestone** — completed checkout/cart improvements and local Stripe groundwork stay in place, but the remaining local Phase 5 follow-ups are intentionally skipped for now because the last local steps are looping. Revisit only later if a server-hosted HTTPS environment makes those deferred items worth reopening. |
 | **Phase 6 — WhatsApp Integration** | **Started** — existing WhatsApp/cart-settings work is reconciled; PDP quantity now drives add-to-cart and click-to-order, templates support richer placeholders, cart/PDP WhatsApp lines include more ordering context, localized EN/AR/HE WhatsApp templates now drive generated message copy, the generated message body now pulls current-locale option/spec labels when catalog metadata provides them, Admin → Cart Settings now offers locale-aware editing plus live preview for PDP vs cart flows using localized store-API product reads, shoppers can now add an optional WhatsApp note from PDP/cart with backward-compatible `{{customer_note}}` template support, Admin → WhatsApp Analytics now includes daily trend charting plus richer date/source/locale/event filtering, Playwright coverage now exercises both storefront and admin WhatsApp regressions, and a dedicated GitHub Actions workflow now runs the WhatsApp suite separately from checkout coverage. |
-| Phases 7+ | Pending — continue after the Phase 6 track. |
+| **Phase 7 — Inventory Models** | **7.1 complete for current scope** — stock-mode behavior is aligned across PDP, cart, and browse with store-level fallback + tests. |
+| Phases 8+ | Pending — continue after the Phase 7 track. |
 
 *Details: see root `status.md`.*
 
@@ -255,6 +256,13 @@ Current note:
 ---
 
 # 🏪 PHASE 7 — Inventory Models (IMPORTANT)
+
+Current note:
+- The first follow-up slice is now in: product `metadata.stock_mode` continues to drive PDP stock messaging, cart quantity selection now uses the same shared storefront stock-mode rules as PDP quantity limits, and browse cards can now surface stock-mode pills when their product payload includes tracked inventory data. Those shopper-facing stock labels now use the shared EN / AR / HE UI-copy layer, and store-level `default_stock_mode` now acts as the fallback wherever a product does not define its own stock mode.
+- Store-level fallback management is now available in Admin → **Cart Settings** via a dedicated **Default Stock Mode** selector, so teams can switch the default tracked/hidden/on-demand behavior without editing metadata manually.
+- Regression safety for this fallback is now covered in storefront unit tests (`src/lib/data/currency.test.ts`) so valid/invalid `default_stock_mode` API values stay predictable.
+- Backend API normalization coverage is now added in Medusa HTTP integration tests for `/store/store-currency-config`, ensuring invalid `default_stock_mode` values fall back to `track_visible`.
+- **7.1 closeout status:** implementation and storefront-side guardrails are complete (shared logic + PDP + listing + cart + admin control + component/unit coverage). Medusa HTTP integration assertions are implemented and pass when the local integration Postgres target is reachable.
 
 ## 7.1 Stock Modes
 - Mode 1: Track stock (numbers visible)

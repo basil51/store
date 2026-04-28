@@ -20,6 +20,7 @@ import {
   resolveProductVariantCombinations,
 } from "@lib/util/variant-combinations"
 import {
+  getVariantMaxOrderQuantity,
   isVariantPurchasable,
   parseProductStockMode,
 } from "@lib/util/stock-mode"
@@ -291,8 +292,12 @@ export default function ProductActions({
   ])
 
   const stockMode = useMemo(
-    () => parseProductStockMode(product.metadata),
-    [product.metadata]
+    () =>
+      parseProductStockMode(
+        product.metadata,
+        storeSettings?.defaultStockMode
+      ),
+    [product.metadata, storeSettings?.defaultStockMode]
   )
 
   const inStock = useMemo(
@@ -301,19 +306,7 @@ export default function ProductActions({
   )
 
   const maxOrderQuantity = useMemo(() => {
-    if (!selectedVariant) {
-      return 10
-    }
-
-    if (
-      stockMode === "no_stock" ||
-      !selectedVariant.manage_inventory ||
-      selectedVariant.allow_backorder
-    ) {
-      return 10
-    }
-
-    return Math.max(1, Math.min(selectedVariant.inventory_quantity ?? 1, 10))
+    return getVariantMaxOrderQuantity(selectedVariant, stockMode)
   }, [selectedVariant, stockMode])
 
   useEffect(() => {
@@ -455,6 +448,7 @@ export default function ProductActions({
         items: `${quantity}x ${itemLine}`,
         total: lineTotalText,
         currency,
+        store_name: storeSettings.storeName ?? "",
         product_name: product.title,
         product_specs: selectedSpecsText,
         quantity,
@@ -676,7 +670,11 @@ export default function ProductActions({
         </div>
 
         <ProductPrice product={product} variant={selectedVariant} />
-        <VariantStockStatus product={product} variant={selectedVariant} />
+        <VariantStockStatus
+          product={product}
+          variant={selectedVariant}
+          defaultStockMode={storeSettings?.defaultStockMode}
+        />
 
         {selectedVariant ? (
           <div

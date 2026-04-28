@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { PRODUCT_PREVIEW_FIELDS } from "@lib/data/product-fields"
 import { sortProducts } from "@lib/util/sort-products"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -62,8 +63,7 @@ export const listProducts = async ({
           limit,
           offset,
           region_id: region?.id,
-          fields:
-            "*variants.calculated_price,+variants.inventory_quantity,*variants.images,+images,+thumbnail,+metadata,+tags,",
+          fields: PRODUCT_PREVIEW_FIELDS,
           ...queryParams,
         },
         headers,

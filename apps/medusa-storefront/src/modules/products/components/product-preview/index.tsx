@@ -1,11 +1,39 @@
 import { getProductPrice } from "@lib/util/get-product-price"
 import { getLocale } from "@lib/data/locale-actions"
 import { getUiCopy } from "@lib/ui-copy"
+import {
+  getProductStockSummary,
+  type ProductStockMode,
+  parseProductStockMode,
+} from "@lib/util/stock-mode"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 import WishlistButton from "./wishlist-button"
+
+const STOCK_STATE_STYLES = {
+  available_on_request: {
+    background: "rgba(20, 184, 166, 0.12)",
+    color: "var(--teal)",
+    border: "1px solid rgba(20, 184, 166, 0.22)",
+  },
+  in_stock: {
+    background: "rgba(20, 184, 166, 0.12)",
+    color: "var(--teal)",
+    border: "1px solid rgba(20, 184, 166, 0.22)",
+  },
+  backorder_available: {
+    background: "rgba(251, 191, 36, 0.14)",
+    color: "#b45309",
+    border: "1px solid rgba(245, 158, 11, 0.22)",
+  },
+  out_of_stock: {
+    background: "rgba(248, 113, 113, 0.12)",
+    color: "#b91c1c",
+    border: "1px solid rgba(248, 113, 113, 0.2)",
+  },
+} as const
 
 // Derive a badge label from product metadata or sale status
 function getBadge(
@@ -33,15 +61,26 @@ export default async function ProductPreview({
   isFeatured,
   imageLoading = "lazy",
   region,
+  defaultStockMode,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
   imageLoading?: "lazy" | "eager"
   region: HttpTypes.StoreRegion
+  defaultStockMode?: ProductStockMode
 }) {
   const locale = (await getLocale()) ?? "en"
   const { cheapestPrice } = getProductPrice({ product })
   const badge = getBadge(product, locale, cheapestPrice?.percentage_diff)
+  const stockMode = parseProductStockMode(product.metadata, defaultStockMode)
+  const stockSummary = getProductStockSummary(product, stockMode, {
+    availableOnRequest: getUiCopy(locale, "stockAvailableOnRequest"),
+    inStock: getUiCopy(locale, "stockInStock"),
+    backorderAvailable: getUiCopy(locale, "stockBackorderAvailable"),
+    outOfStock: getUiCopy(locale, "commonOutOfStock"),
+    countInStock: (quantity) =>
+      getUiCopy(locale, "stockCountInStock", { quantity }),
+  })
 
   return (
     <LocalizedClientLink
@@ -108,6 +147,20 @@ export default async function ProductPreview({
               {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
             </div>
           </div>
+
+          {stockSummary && (
+            <div className="mt-3">
+              <span
+                className="inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em]"
+                style={STOCK_STATE_STYLES[stockSummary.state]}
+                data-testid="product-preview-stock-status"
+                data-stock-mode={stockMode}
+                data-stock-state={stockSummary.state}
+              >
+                {stockSummary.label}
+              </span>
+            </div>
+          )}
 
           {/* Add to Cart */}
           <div

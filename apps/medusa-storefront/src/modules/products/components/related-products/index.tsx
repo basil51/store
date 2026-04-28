@@ -1,4 +1,5 @@
 import { listProducts } from "@lib/data/products"
+import { getStorefrontSettings } from "@lib/data/currency"
 import { getRegion } from "@lib/data/regions"
 import { getLocale } from "@lib/data/locale-actions"
 import { getUiCopy } from "@lib/ui-copy"
@@ -17,6 +18,7 @@ export default async function RelatedProducts({
   const locale = (await getLocale()) ?? "en"
   const t = (key: Parameters<typeof getUiCopy>[1], params?: Record<string, string | number>) =>
     getUiCopy(locale, key, params)
+  const storeSettings = await getStorefrontSettings()
 
   const region = await getRegion(countryCode)
 
@@ -66,7 +68,11 @@ export default async function RelatedProducts({
       <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8">
         {products.map((product) => (
           <li key={product.id}>
-            <Product region={region} product={product} />
+            <Product
+              region={region}
+              product={product}
+              defaultStockMode={storeSettings.defaultStockMode}
+            />
           </li>
         ))}
       </ul>

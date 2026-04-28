@@ -12,6 +12,7 @@ type VariantCombinationEntry = {
 type VariantCombinationDefaultsByType = Record<string, VariantCombinationEntry[]>
 type WhatsAppTemplateLocale = "en" | "ar" | "he"
 type LocalizedWhatsAppTemplates = Record<WhatsAppTemplateLocale, string>
+type StockMode = "track_visible" | "track_hidden" | "no_stock"
 
 const DEFAULT_CURRENCIES = [
   { code: "ILS", label: "₪ ILS", symbol: "₪", rate: 1,    enabled: true },
@@ -25,6 +26,14 @@ const DEFAULT_WHATSAPP_TEMPLATES: LocalizedWhatsAppTemplates = {
   en: "Hello! I'd like to order:\n{{items}}\nTotal: {{total}}",
   ar: "مرحباً! أود طلب:\n{{items}}\nالإجمالي: {{total}}",
   he: "שלום! אני רוצה להזמין:\n{{items}}\nסה״כ: {{total}}",
+}
+
+const STOCK_MODES: StockMode[] = ["track_visible", "track_hidden", "no_stock"]
+
+const normalizeStockMode = (value: unknown): StockMode => {
+  return typeof value === "string" && STOCK_MODES.includes(value as StockMode)
+    ? (value as StockMode)
+    : "track_visible"
 }
 
 const cleanWhatsAppTemplate = (value: unknown) => {
@@ -176,8 +185,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       normalizeVariantCombinationDefaultsByType(
         meta.variant_combination_defaults_by_type
       )
+    const default_stock_mode = normalizeStockMode(meta.default_stock_mode)
+    const store_name = typeof store?.name === "string" ? store.name : ""
 
     res.json({
+      store_name,
       base_currency,
       currencies,
       cart_mode,
@@ -185,10 +197,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       whatsapp_template,
       whatsapp_templates,
       free_shipping_threshold,
+      default_stock_mode,
       variant_combination_defaults_by_type,
     })
   } catch {
     res.json({
+      store_name: "",
       base_currency: "ILS",
       currencies: DEFAULT_CURRENCIES,
       cart_mode: "standard",
@@ -196,6 +210,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       whatsapp_template: DEFAULT_WHATSAPP_TEMPLATES.en,
       whatsapp_templates: DEFAULT_WHATSAPP_TEMPLATES,
       free_shipping_threshold: null,
+      default_stock_mode: "track_visible",
       variant_combination_defaults_by_type: {},
     })
   }

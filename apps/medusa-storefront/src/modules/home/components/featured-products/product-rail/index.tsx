@@ -1,6 +1,8 @@
+import { PRODUCT_PREVIEW_FIELDS } from "@lib/data/product-fields"
 import { listProducts } from "@lib/data/products"
 import { getLocale } from "@lib/data/locale-actions"
 import { getUiCopy } from "@lib/ui-copy"
+import type { ProductStockMode } from "@lib/util/stock-mode"
 import { HttpTypes } from "@medusajs/types"
 
 import InteractiveLink from "@modules/common/components/interactive-link"
@@ -10,10 +12,12 @@ export default async function ProductRail({
   collection,
   region,
   index,
+  defaultStockMode,
 }: {
   collection: HttpTypes.StoreCollection
   region: HttpTypes.StoreRegion
   index: number
+  defaultStockMode?: ProductStockMode
 }) {
   const locale = (await getLocale()) ?? "en"
   const t = (key: Parameters<typeof getUiCopy>[1], params?: Record<string, string | number>) =>
@@ -25,7 +29,7 @@ export default async function ProductRail({
     regionId: region.id,
     queryParams: {
       collection_id: collection.id,
-      fields: "*variants.calculated_price",
+      fields: PRODUCT_PREVIEW_FIELDS,
     },
   })
 
@@ -71,6 +75,7 @@ export default async function ProductRail({
                   product={product}
                   region={region}
                   isFeatured
+                  defaultStockMode={defaultStockMode}
                   imageLoading={index < 4 ? "eager" : "lazy"}
                 />
               </li>

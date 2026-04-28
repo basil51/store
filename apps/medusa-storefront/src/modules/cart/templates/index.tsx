@@ -25,7 +25,10 @@ const CartTemplate = ({
               style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
               {!customer && <SignInPrompt />}
-              <ItemsTemplate cart={cart} />
+              <ItemsTemplate
+                cart={cart}
+                defaultStockMode={storeSettings.defaultStockMode}
+              />
             </div>
 
             {/* Summary */}

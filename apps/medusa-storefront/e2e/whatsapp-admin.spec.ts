@@ -167,6 +167,25 @@ const seedAnalyticsProbeData = async (
 }
 
 test.describe("WhatsApp admin regression", () => {
+  test("renders store_name placeholder in Cart Settings template preview", async ({
+    page,
+  }) => {
+    await loginToAdmin(page)
+    await page.goto(`${getAdminAppBaseUrl()}/cart-settings`, {
+      waitUntil: "domcontentloaded",
+    })
+
+    await expect(page.getByRole("heading", { name: "Cart Settings" })).toBeVisible()
+    await page.getByTestId("whatsapp-template-locale-en").click()
+    await page.locator("textarea").first().fill("Store: {{store_name}}\n{{items}}")
+
+    const previewText =
+      (await page.getByTestId("cart-settings-preview-message").textContent()) ?? ""
+
+    expect(previewText).toContain("Store:")
+    expect(previewText).not.toContain("{{store_name}}")
+  })
+
   test("keeps Cart Settings locale preview aligned with shopper note output", async ({
     page,
   }) => {
@@ -195,6 +214,22 @@ test.describe("WhatsApp admin regression", () => {
         `${localeCase.noteLabel}: ${localeCase.note}`
       )
     }
+  })
+
+  test("persists default stock mode from Cart Settings", async ({ page }) => {
+    await loginToAdmin(page)
+    await page.goto(`${getAdminAppBaseUrl()}/cart-settings`, {
+      waitUntil: "domcontentloaded",
+    })
+
+    await expect(page.getByRole("heading", { name: "Cart Settings" })).toBeVisible()
+
+    await page.getByTestId("default-stock-mode-track_hidden").check()
+    await page.getByRole("button", { name: "Save Settings" }).click()
+    await expect(page.getByText("Cart settings saved")).toBeVisible()
+
+    await page.reload({ waitUntil: "domcontentloaded" })
+    await expect(page.getByTestId("default-stock-mode-track_hidden")).toBeChecked()
   })
 
   test("filters WhatsApp analytics with seeded locale and event data", async ({

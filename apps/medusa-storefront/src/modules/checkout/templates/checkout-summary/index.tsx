@@ -331,7 +331,11 @@ const CheckoutSummary = ({
         <div style={{ borderTop: "1px solid var(--border)" }} className="pt-4">
           <CartTotals totals={cart} />
         </div>
-        <ItemsPreviewTemplate cart={cart} grouped={true} />
+        <ItemsPreviewTemplate
+          cart={cart}
+          grouped={true}
+          defaultStockMode={storeSettings.defaultStockMode}
+        />
         <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
           <DiscountCode cart={cart} />
         </div>

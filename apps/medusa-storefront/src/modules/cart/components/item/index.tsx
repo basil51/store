@@ -3,6 +3,11 @@
 import { Table, Text, clx } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
+import {
+  getVariantMaxOrderQuantity,
+  type ProductStockMode,
+  parseProductStockMode,
+} from "@lib/util/stock-mode"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import DeleteButton from "@modules/common/components/delete-button"
@@ -19,9 +24,15 @@ type ItemProps = {
   item: HttpTypes.StoreCartLineItem
   type?: "full" | "preview"
   currencyCode: string
+  defaultStockMode?: ProductStockMode
 }
 
-const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
+const Item = ({
+  item,
+  type = "full",
+  currencyCode,
+  defaultStockMode,
+}: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,9 +52,12 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
       })
   }
 
-  // TODO: Update this to grab the actual max inventory
-  const maxQtyFromInventory = 10
-  const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
+  const stockMode = parseProductStockMode(
+    item.variant?.product?.metadata as Record<string, unknown> | null | undefined,
+    defaultStockMode
+  )
+  const maxQuantity = getVariantMaxOrderQuantity(item.variant, stockMode)
+  const selectableQuantityLimit = Math.max(item.quantity, maxQuantity)
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
@@ -88,7 +102,7 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
               {/* TODO: Update this with the v2 way of managing inventory */}
               {Array.from(
                 {
-                  length: Math.min(maxQuantity, 10),
+                  length: selectableQuantityLimit,
                 },
                 (_, i) => (
                   <option value={i + 1} key={i}>
@@ -96,10 +110,6 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
                   </option>
                 )
               )}
-
-              <option value={1} key={1}>
-                1
-              </option>
             </CartItemSelect>
             {updating && <Spinner />}
           </div>

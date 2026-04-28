@@ -1,5 +1,6 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { getStorefrontSettings } from "@lib/data/currency"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import SortBar from "@modules/store/components/sort-bar"
@@ -51,6 +52,7 @@ export default async function PaginatedProducts({
   }
 
   const region = await getRegion(countryCode)
+  const storeSettings = await getStorefrontSettings()
 
   if (!region) {
     return null
@@ -80,6 +82,7 @@ export default async function PaginatedProducts({
               <ProductPreview
                 product={p}
                 region={region}
+                defaultStockMode={storeSettings.defaultStockMode}
                 imageLoading={index < 4 ? "eager" : "lazy"}
               />
             </li>

@@ -126,6 +126,7 @@ const Summary = ({ cart, storeSettings }: SummaryProps) => {
         items,
         total,
         currency,
+        store_name: storeSettings.storeName ?? "",
         product_name: "",
         product_specs: "",
         quantity,

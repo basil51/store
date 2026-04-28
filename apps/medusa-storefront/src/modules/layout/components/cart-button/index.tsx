@@ -6,6 +6,7 @@ import CartDropdown from "../cart-dropdown"
 export default async function CartButton() {
   const cart = await retrieveCart().catch(() => null)
   const storeSettings = await getStorefrontSettings().catch(() => ({
+    storeName: "",
     baseCurrency: "ILS" as const,
     currencies: [],
     cartMode: "standard" as const,
@@ -13,6 +14,7 @@ export default async function CartButton() {
     whatsappTemplate: DEFAULT_WHATSAPP_TEMPLATES.en,
     whatsappTemplates: DEFAULT_WHATSAPP_TEMPLATES,
     freeShippingThreshold: null,
+    defaultStockMode: "track_visible" as const,
     variantCombinationDefaultsByType: {},
   }))
 
