@@ -27,6 +27,7 @@
     "smoke:test-uploads": "medusa exec ./src/scripts/smoke-test-uploads.ts",
     "preset:analytics": "medusa exec ./src/scripts/report-preset-analytics.ts",
     "verify:translations": "medusa exec ./src/scripts/verify-product-translations.ts",
+    "seed:acl-roles": "medusa exec ./src/scripts/seed-acl-role-users.ts",
     "start": "medusa start",
     "dev": "medusa develop -p 9244",
     "test:integration:http": "DB_HOST=localhost DB_PORT=5433 DB_USERNAME=medusa DB_PASSWORD=medusa TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",

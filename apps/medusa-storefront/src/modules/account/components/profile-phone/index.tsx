@@ -7,6 +7,8 @@ import Input from "@modules/common/components/input"
 import AccountInfo from "../account-info"
 import { HttpTypes } from "@medusajs/types"
 import { updateCustomer } from "@lib/data/customer"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
@@ -14,6 +16,8 @@ type MyInformationProps = {
 
 const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   const [successState, setSuccessState] = React.useState(false)
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) => getAccountCopy(locale, key)
 
   const updateCustomerPhone = async (
     _currentState: Record<string, unknown>,
@@ -47,7 +51,7 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
   return (
     <form action={formAction} className="w-full">
       <AccountInfo
-        label="Phone"
+        label={t("phone")}
         currentInfo={`${customer.phone}`}
         isSuccess={successState}
         isError={!!state.error}
@@ -57,7 +61,7 @@ const ProfileEmail: React.FC<MyInformationProps> = ({ customer }) => {
       >
         <div className="grid grid-cols-1 gap-y-2">
           <Input
-            label="Phone"
+            label={t("phone")}
             name="phone"
             type="phone"
             autoComplete="phone"

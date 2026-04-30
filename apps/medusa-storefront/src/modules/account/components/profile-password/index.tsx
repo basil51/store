@@ -5,6 +5,8 @@ import Input from "@modules/common/components/input"
 import AccountInfo from "../account-info"
 import { HttpTypes } from "@medusajs/types"
 import { toast } from "@medusajs/ui"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
@@ -12,10 +14,12 @@ type MyInformationProps = {
 
 const ProfilePassword: React.FC<MyInformationProps> = ({ customer }) => {
   const [successState, setSuccessState] = React.useState(false)
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) => getAccountCopy(locale, key)
 
   // TODO: Add support for password updates
   const updatePassword = async () => {
-    toast.info("Password update is not implemented")
+    toast.info(t("passwordUpdateNotImplemented"))
   }
 
   const clearState = () => {
@@ -29,9 +33,9 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer }) => {
       className="w-full"
     >
       <AccountInfo
-        label="Password"
+        label={t("password")}
         currentInfo={
-          <span>The password is not shown for security reasons</span>
+          <span>{t("passwordNotShown")}</span>
         }
         isSuccess={successState}
         isError={false}
@@ -41,21 +45,21 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer }) => {
       >
         <div className="grid grid-cols-2 gap-4">
           <Input
-            label="Old password"
+            label={t("oldPassword")}
             name="old_password"
             required
             type="password"
             data-testid="old-password-input"
           />
           <Input
-            label="New password"
+            label={t("newPassword")}
             type="password"
             name="new_password"
             required
             data-testid="new-password-input"
           />
           <Input
-            label="Confirm password"
+            label={t("confirmPassword")}
             type="password"
             name="confirm_password"
             required

@@ -10,20 +10,25 @@ import Package from "@modules/common/icons/package"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 import { signout } from "@lib/data/customer"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) => {
   const route = usePathname()
   const { countryCode } = useParams() as { countryCode: string }
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
 
   const handleLogout = async () => {
     await signout(countryCode)
   }
 
   const NAV_ITEMS = [
-    { href: "/account", label: "Overview", icon: <User size={16} />, testId: "overview-link" },
-    { href: "/account/profile", label: "Profile", icon: <User size={16} />, testId: "profile-link" },
-    { href: "/account/addresses", label: "Addresses", icon: <MapPin size={16} />, testId: "addresses-link" },
-    { href: "/account/orders", label: "Orders", icon: <Package size={16} />, testId: "orders-link" },
+    { href: "/account", label: t("overview"), icon: <User size={16} />, testId: "overview-link" },
+    { href: "/account/profile", label: t("profile"), icon: <User size={16} />, testId: "profile-link" },
+    { href: "/account/addresses", label: t("addresses"), icon: <MapPin size={16} />, testId: "addresses-link" },
+    { href: "/account/orders", label: t("orders"), icon: <Package size={16} />, testId: "orders-link" },
   ]
 
   return (
@@ -38,7 +43,7 @@ const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) 
             data-testid="account-main-link"
           >
             <ChevronDown className="rotate-90" />
-            <span>Account</span>
+            <span>{t("account")}</span>
           </LocalizedClientLink>
         ) : (
           <div
@@ -49,7 +54,7 @@ const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) 
               className="font-syne mb-3 text-lg font-bold"
               style={{ color: "var(--text)" }}
             >
-              Hi, {customer?.first_name}
+              {t("helloUser", { name: customer?.first_name ?? "" })}
             </p>
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => (
@@ -74,7 +79,7 @@ const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) 
                   data-testid="logout-button"
                 >
                   <ArrowRightOnRectangle />
-                  Log out
+                  {t("logOut")}
                 </button>
               </li>
             </ul>
@@ -92,7 +97,7 @@ const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) 
           className="font-syne mb-1 text-xs font-black uppercase tracking-widest"
           style={{ color: "var(--teal)" }}
         >
-          My Account
+          {t("myAccount")}
         </p>
         <p
           className="mb-5 text-sm font-medium truncate"
@@ -117,7 +122,7 @@ const AccountNav = ({ customer }: { customer: HttpTypes.StoreCustomer | null }) 
               data-testid="logout-button"
             >
               <ArrowRightOnRectangle />
-              Log out
+              {t("logOut")}
             </button>
           </li>
         </ul>

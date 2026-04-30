@@ -2,13 +2,18 @@ import ChevronDown from "@modules/common/icons/chevron-down"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 type OverviewProps = {
   customer: HttpTypes.StoreCustomer | null
   orders: HttpTypes.StoreOrder[] | null
+  locale: string
 }
 
-const Overview = ({ customer, orders }: OverviewProps) => {
+const Overview = ({ customer, orders, locale }: OverviewProps) => {
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
+
   return (
     <div data-testid="overview-page-wrapper">
       {/* Header */}
@@ -22,10 +27,10 @@ const Overview = ({ customer, orders }: OverviewProps) => {
           data-testid="welcome-message"
           data-value={customer?.first_name}
         >
-          Hello, {customer?.first_name}!
+          {t("helloUser", { name: customer?.first_name ?? "" })}
         </h1>
         <p className="text-sm" style={{ color: "var(--text-dim)" }}>
-          Signed in as:{" "}
+          {t("signedInAs")}{" "}
           <span
             className="font-medium"
             data-testid="customer-email"
@@ -47,7 +52,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
             className="text-xs font-bold uppercase tracking-widest mb-2"
             style={{ color: "var(--text-dim)" }}
           >
-            Profile Completion
+            {t("profileCompletion")}
           </p>
           <div className="flex items-end gap-2">
             <span
@@ -58,7 +63,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
             >
               {getProfileCompletion(customer)}%
             </span>
-            <span className="text-xs pb-1" style={{ color: "var(--text-dim)" }}>completed</span>
+            <span className="text-xs pb-1" style={{ color: "var(--text-dim)" }}>{t("completed")}</span>
           </div>
         </div>
 
@@ -70,7 +75,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
             className="text-xs font-bold uppercase tracking-widest mb-2"
             style={{ color: "var(--text-dim)" }}
           >
-            Saved Addresses
+            {t("savedAddresses")}
           </p>
           <div className="flex items-end gap-2">
             <span
@@ -81,7 +86,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
             >
               {customer?.addresses?.length || 0}
             </span>
-            <span className="text-xs pb-1" style={{ color: "var(--text-dim)" }}>saved</span>
+            <span className="text-xs pb-1" style={{ color: "var(--text-dim)" }}>{t("saved")}</span>
           </div>
         </div>
       </div>
@@ -95,7 +100,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
           className="font-syne text-lg font-bold mb-4"
           style={{ color: "var(--text)" }}
         >
-          Recent Orders
+          {t("recentOrders")}
         </h2>
         <ul className="flex flex-col gap-3" data-testid="orders-wrapper">
           {orders && orders.length > 0 ? (
@@ -113,13 +118,13 @@ const Overview = ({ customer, orders }: OverviewProps) => {
                   >
                     <div className="grid grid-cols-3 gap-x-4 text-sm flex-1">
                       <div>
-                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>Date placed</p>
+                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>{t("datePlaced")}</p>
                         <p style={{ color: "var(--text)" }} data-testid="order-created-date">
                           {new Date(order.created_at).toDateString()}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>Order number</p>
+                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>{t("orderNumber")}</p>
                         <p
                           className="font-mono"
                           style={{ color: "var(--teal)" }}
@@ -130,7 +135,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>Total</p>
+                        <p className="text-xs mb-0.5" style={{ color: "var(--text-dim)" }}>{t("total")}</p>
                         <p className="font-semibold" style={{ color: "var(--text)" }} data-testid="order-amount">
                           {convertToLocale({
                             amount: order.total,
@@ -150,7 +155,7 @@ const Overview = ({ customer, orders }: OverviewProps) => {
               style={{ color: "var(--text-dim)" }}
               data-testid="no-orders-message"
             >
-              No recent orders
+              {t("noRecentOrders")}
             </p>
           )}
         </ul>

@@ -6,9 +6,14 @@ import { Text, Heading, Input, Button, IconButton, Toaster } from "@medusajs/ui"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { CheckCircleMiniSolid, XCircleSolid } from "@medusajs/icons"
 import { useEffect, useState } from "react"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 export default function TransferRequestForm() {
   const [showSuccess, setShowSuccess] = useState(false)
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
 
   const [state, formAction] = useActionState(createTransferRequest, {
     success: false,
@@ -27,11 +32,11 @@ export default function TransferRequestForm() {
       <div className="grid sm:grid-cols-2 items-center gap-x-8 gap-y-4 w-full">
         <div className="flex flex-col gap-y-1">
           <Heading level="h3" className="text-lg text-neutral-950">
-            Order transfers
+            {t("orderTransfers")}
           </Heading>
           <Text className="text-base-regular text-neutral-500">
-            Can&apos;t find the order you are looking for?
-            <br /> Connect an order to your account.
+            {t("transferMissingOrder")}
+            <br /> {t("transferConnectOrder")}
           </Text>
         </div>
         <form
@@ -39,12 +44,12 @@ export default function TransferRequestForm() {
           className="flex flex-col gap-y-1 sm:items-end"
         >
           <div className="flex flex-col gap-y-2 w-full">
-            <Input className="w-full" name="order_id" placeholder="Order ID" />
+            <Input className="w-full" name="order_id" placeholder={t("orderIdPlaceholder")} />
             <SubmitButton
               variant="secondary"
               className="w-fit whitespace-nowrap self-end"
             >
-              Request transfer
+              {t("requestTransfer")}
             </SubmitButton>
           </div>
         </form>
@@ -63,10 +68,10 @@ export default function TransferRequestForm() {
             <CheckCircleMiniSolid className="w-4 h-4 text-emerald-500" />
             <div className="flex flex-col gap-y-1">
               <Text className="text-medim-pl text-neutral-950">
-                Transfer for order {state.order?.id} requested
+                {t("transferRequested", { id: state.order?.id ?? "" })}
               </Text>
               <Text className="text-base-regular text-neutral-600">
-                Transfer request email sent to {state.order?.email}
+                {t("transferEmailSent", { email: state.order?.email ?? "" })}
               </Text>
             </div>
           </div>

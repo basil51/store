@@ -12,7 +12,7 @@ process.env.__MEDUSA_DB_CONNECTION_RETRY_DELAY ??= "100"
 const TEST_DB_URL = `postgres://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_TEMP_NAME}`
 
 const { medusaIntegrationTestRunner } = require("@medusajs/test-utils")
-const { Modules } = require("@medusajs/framework/utils")
+const { Modules, ContainerRegistrationKeys } = require("@medusajs/framework/utils")
 const {
   createApiKeysWorkflow,
   createProductCategoriesWorkflow,
@@ -22,6 +22,11 @@ const {
 } = require("@medusajs/medusa/core-flows")
 
 jest.setTimeout(180 * 1000)
+
+const toJsonString = (value: unknown) => JSON.stringify(value)
+
+const makeId = (prefix: string) =>
+  `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
 
 medusaIntegrationTestRunner({
   dbName: process.env.DB_TEMP_NAME,
@@ -275,6 +280,269 @@ medusaIntegrationTestRunner({
 
         expect(response.status).toEqual(200)
         expect(response.data.default_stock_mode).toEqual("track_visible")
+      })
+    })
+
+    describe("Phase 8 ACL middleware", () => {
+      const createAdminAuthContext = async (input: {
+        role?: "super_admin" | "store_owner" | "manager" | "staff"
+        storeIds?: string[]
+      }) => {
+        const container = getContainer()
+        const db = container.resolve(ContainerRegistrationKeys.PG_CONNECTION)
+        const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+        const email = `acl-${suffix}@example.com`
+        const password = "Password123!"
+
+        const registerResponse = await api.post(
+          "/auth/user/emailpass/register",
+          { email, password },
+          { validateStatus: () => true }
+        )
+
+        expect(registerResponse.status).toBe(200)
+        const authIdentityId = registerResponse.data?.token
+          ? JSON.parse(
+              Buffer.from(registerResponse.data.token.split(".")[1], "base64").toString("utf8")
+            ).auth_identity_id
+          : null
+
+        expect(authIdentityId).toBeTruthy()
+
+        const userId = makeId("user")
+        const metadata = input.role
+          ? {
+              acl_role: input.role,
+              acl_store_ids: input.storeIds ?? [],
+            }
+          : {}
+
+        await db.raw(
+          `insert into "user" (id, email, metadata, created_at, updated_at) values (?, ?, ?::jsonb, now(), now())`,
+          [userId, email, toJsonString(metadata)]
+        )
+        await db.raw(
+          `update "auth_identity" set app_metadata = ?::jsonb, updated_at = now() where id = ?`,
+          [toJsonString({ user_id: userId }), authIdentityId]
+        )
+
+        const loginResponse = await api.post(
+          "/auth/user/emailpass",
+          { email, password },
+          { validateStatus: () => true }
+        )
+
+        expect(loginResponse.status).toBe(200)
+        expect(typeof loginResponse.data?.token).toBe("string")
+
+        return {
+          token: loginResponse.data.token as string,
+          userId,
+        }
+      }
+
+      it("allows users.manage role to access ACL POST checks", async () => {
+        const { token } = await createAdminAuthContext({
+          role: "super_admin",
+        })
+
+        const response = await api.post(
+          "/admin/acl/roles",
+          {
+            permissions: ["users.manage", "analytics.read"],
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+            validateStatus: () => true,
+          }
+        )
+
+        expect(response.status).toBe(200)
+        expect(response.data.role).toBe("super_admin")
+        expect(response.data.allowed).toContain("users.manage")
+      })
+
+      it("denies ACL POST checks for role missing users.manage", async () => {
+        const { token } = await createAdminAuthContext({
+          role: "manager",
+        })
+
+        const response = await api.post(
+          "/admin/acl/roles",
+          {
+            permissions: ["users.manage"],
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+            validateStatus: () => true,
+          }
+        )
+
+        expect(response.status).toBe(403)
+        expect(response.data.message).toContain("users.manage")
+      })
+
+      it("enforces store scope when store_id is requested", async () => {
+        const container = getContainer()
+        const { data } = await container.resolve(ContainerRegistrationKeys.QUERY).graph({
+          entity: "store",
+          fields: ["id"],
+        })
+        const allowedStoreId = data?.[0]?.id
+        expect(allowedStoreId).toBeTruthy()
+
+        const { token } = await createAdminAuthContext({
+          role: "store_owner",
+          storeIds: [allowedStoreId],
+        })
+
+        const deniedResponse = await api.get(
+          "/admin/analytics/preset",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "x-store-id": "store_not_assigned",
+            },
+            validateStatus: () => true,
+          }
+        )
+
+        expect(deniedResponse.status).toBe(403)
+        expect(deniedResponse.data.message).toContain("not assigned to store")
+
+        const allowedResponse = await api.get(
+          "/admin/analytics/preset",
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+              "x-store-id": allowedStoreId,
+            },
+            validateStatus: () => true,
+          }
+        )
+
+        expect(allowedResponse.status).toBe(200)
+      })
+
+      it("guards analytics endpoint by analytics.read permission", async () => {
+        const { token: staffToken } = await createAdminAuthContext({
+          role: "staff",
+        })
+        const { token: managerToken } = await createAdminAuthContext({
+          role: "manager",
+        })
+
+        const denied = await api.get("/admin/analytics/preset", {
+          headers: {
+            authorization: `Bearer ${staffToken}`,
+          },
+          validateStatus: () => true,
+        })
+        expect(denied.status).toBe(403)
+
+        const allowed = await api.get("/admin/analytics/preset", {
+          headers: {
+            authorization: `Bearer ${managerToken}`,
+          },
+          validateStatus: () => true,
+        })
+        expect(allowed.status).toBe(200)
+      })
+
+      it("denies store_owner from creating secret admin API keys", async () => {
+        const { token } = await createAdminAuthContext({
+          role: "store_owner",
+        })
+
+        const response = await api.post(
+          "/admin/api-keys",
+          {
+            title: `ACL secret key test ${Date.now()}`,
+            type: "secret",
+          },
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+            validateStatus: () => true,
+          }
+        )
+
+        expect(response.status).toBe(403)
+        expect(response.data.message).toContain("api_keys.secrets")
+      })
+
+      it("never returns secret API keys to store_owner on list", async () => {
+        const container = getContainer()
+        const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+        await createApiKeysWorkflow(container).run({
+          input: {
+            api_keys: [
+              {
+                title: `ACL list secret ${suffix}`,
+                type: "secret",
+                created_by: "integration-test",
+              },
+            ],
+          },
+        })
+
+        await utils.waitWorkflowExecutions()
+
+        const { token } = await createAdminAuthContext({
+          role: "store_owner",
+        })
+
+        const response = await api.get("/admin/api-keys?limit=100", {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toBe(200)
+        const keys = response.data?.api_keys ?? []
+        expect(Array.isArray(keys)).toBe(true)
+        expect(keys.every((k: { type?: string }) => k.type !== "secret")).toBe(true)
+      })
+
+      it("returns secret API keys to super_admin on list when present", async () => {
+        const container = getContainer()
+        const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+
+        await createApiKeysWorkflow(container).run({
+          input: {
+            api_keys: [
+              {
+                title: `ACL list secret admin ${suffix}`,
+                type: "secret",
+                created_by: "integration-test",
+              },
+            ],
+          },
+        })
+
+        await utils.waitWorkflowExecutions()
+
+        const { token } = await createAdminAuthContext({
+          role: "super_admin",
+        })
+
+        const response = await api.get("/admin/api-keys?limit=200", {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toBe(200)
+        const keys = response.data?.api_keys ?? []
+        expect(keys.some((k: { type?: string }) => k.type === "secret")).toBe(true)
       })
     })
   },

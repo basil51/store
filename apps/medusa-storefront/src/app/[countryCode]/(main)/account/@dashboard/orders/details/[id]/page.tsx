@@ -1,4 +1,6 @@
 import { retrieveOrder } from "@lib/data/orders"
+import { getLocale } from "@lib/data/locale-actions"
+import { getAccountCopy } from "@modules/account/account-copy"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -9,15 +11,18 @@ type Props = {
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
-  const order = await retrieveOrder(params.id).catch(() => null)
+  const [order, locale] = await Promise.all([
+    retrieveOrder(params.id).catch(() => null),
+    getLocale(),
+  ])
 
   if (!order) {
     notFound()
   }
 
   return {
-    title: `Order #${order.display_id}`,
-    description: `View your order`,
+    title: getAccountCopy(locale, "metaOrderTitle", { id: order.display_id }),
+    description: getAccountCopy(locale, "metaOrderDescription"),
   }
 }
 

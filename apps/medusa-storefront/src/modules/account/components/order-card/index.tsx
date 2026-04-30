@@ -5,12 +5,17 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import LineItemSetup from "@modules/common/components/line-item-setup"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 type OrderCardProps = {
   order: HttpTypes.StoreOrder
 }
 
 const OrderCard = ({ order }: OrderCardProps) => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) => getAccountCopy(locale, key)
+
   const numberOfLines = useMemo(() => {
     return (
       order.items?.reduce((acc, item) => {
@@ -50,7 +55,7 @@ const OrderCard = ({ order }: OrderCardProps) => {
           })}
         </span>
         <span style={{ color: "var(--border)" }}>·</span>
-        <span>{`${numberOfLines} ${numberOfLines > 1 ? "items" : "item"}`}</span>
+        <span>{`${numberOfLines} ${numberOfLines > 1 ? t("items") : t("item")}`}</span>
       </div>
       <div className="grid grid-cols-2 small:grid-cols-4 gap-3 mb-4">
         {order.items?.slice(0, 3).map((i) => (
@@ -72,14 +77,14 @@ const OrderCard = ({ order }: OrderCardProps) => {
         {numberOfProducts > 4 && (
           <div className="flex flex-col items-center justify-center text-xs" style={{ color: "var(--text-dim)" }}>
             <span>+{numberOfLines - 4}</span>
-            <span>more</span>
+            <span>{t("more")}</span>
           </div>
         )}
       </div>
       <div className="flex justify-end">
         <LocalizedClientLink href={`/account/orders/details/${order.id}`}>
           <button className="btn-ghost text-sm" data-testid="order-details-link">
-            See details →
+            {t("seeDetails")}
           </button>
         </LocalizedClientLink>
       </div>

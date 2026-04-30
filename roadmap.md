@@ -12,7 +12,8 @@
 | **Phase 5 — Cart & Checkout** | **Stopped at current local milestone** — completed checkout/cart improvements and local Stripe groundwork stay in place, but the remaining local Phase 5 follow-ups are intentionally skipped for now because the last local steps are looping. Revisit only later if a server-hosted HTTPS environment makes those deferred items worth reopening. |
 | **Phase 6 — WhatsApp Integration** | **Started** — existing WhatsApp/cart-settings work is reconciled; PDP quantity now drives add-to-cart and click-to-order, templates support richer placeholders, cart/PDP WhatsApp lines include more ordering context, localized EN/AR/HE WhatsApp templates now drive generated message copy, the generated message body now pulls current-locale option/spec labels when catalog metadata provides them, Admin → Cart Settings now offers locale-aware editing plus live preview for PDP vs cart flows using localized store-API product reads, shoppers can now add an optional WhatsApp note from PDP/cart with backward-compatible `{{customer_note}}` template support, Admin → WhatsApp Analytics now includes daily trend charting plus richer date/source/locale/event filtering, Playwright coverage now exercises both storefront and admin WhatsApp regressions, and a dedicated GitHub Actions workflow now runs the WhatsApp suite separately from checkout coverage. |
 | **Phase 7 — Inventory Models** | **7.1 complete for current scope** — stock-mode behavior is aligned across PDP, cart, and browse with store-level fallback + tests. |
-| Phases 8+ | Pending — continue after the Phase 7 track. |
+| **Phase 8 — Roles and permissions** | **Active (hardened slice)** — ACL resolves role/store scope from authenticated admin users, enforces middleware on broad admin route groups, adds `api_keys.secrets` (super_admin only) for Medusa **secret** admin API keys, forces publishable-only list queries plus response filtering for everyone else, and ships ACL unit tests plus HTTP integration coverage (`health.spec.ts`). |
+| Phases 9+ | Pending — continue after the Phase 8 track. |
 
 *Details: see root `status.md`.*
 
@@ -167,6 +168,8 @@ Current status:
 - First language-copy completion slice is now in for active hotspots using shared dictionary/context wiring (promo banners, product preview CTA/badge fallback, image gallery labels + ARIA, product actions and mobile actions state text, recommended setups labels, free-shipping nudge copy) with EN/AR/HE coverage.
 - Focused desktop + mobile RTL/LTR QA sweep is complete for EN/AR/HE on home and PDP hotspot surfaces, including locale switch validation and `lang`/`dir` checks.
 - Broader non-hotspot language-copy completion is now in for home/layout/PDP-support surfaces (hero, flash-sale strip, brand strip, category pills, featured product rails, nav/footer, category nav/sidebar labels, related products, and product tabs), using the shared EN/AR/HE dictionary.
+- Account/login localization completion is now in: account nav, overview, profile sections/forms, address add/edit modals, order-transfer form, and login/register template/forms now use locale-aware EN/AR/HE copy.
+- Account route metadata localization is now in: account/login/profile/addresses/orders/order-details route `title` and `description` now resolve per locale via `generateMetadata`.
 - A final targeted desktop + mobile QA cycle was completed after this broader copy pass, again validating locale switching and `lang`/`dir` behavior (`en/ltr`, `ar/rtl`, `he/rtl`) on home + PDP.
 - Recommended sequencing: keep Phase 4.5 as a light stabilization/regression track in parallel with Phase 5 for any newly introduced copy or catalog-data translation gaps.
 
@@ -282,11 +285,53 @@ Current note:
 - Manager
 - Staff
 
-## 8.2 Permissions
-- Manage products
-- Manage orders
-- View analytics
-- Manage users
+## 8.2 Permission keys (canonical; `apps/medusa/src/shared/access-control.ts`)
+- `users.manage` — admin users and invites; ACL POST check route.
+- `stores.manage` — reserved for cross-store platform operations (currently only `super_admin` via the full matrix).
+- `catalog.manage` — catalog, media uploads, inventory, and **read-only** GET for regions and sales channels.
+- `orders.manage` — orders and related flows (returns, exchanges, claims, order edits, draft orders).
+- `settings.manage` — store settings, mutating regions and sales channels, custom admin config route, publishable API key operations, and sales-channel links on API keys.
+- `api_keys.secrets` — **super_admin only**: create/list-filter/read/update/revoke/delete **secret** admin API keys; see §8.4.
+- `analytics.read` — preset and WhatsApp analytics admin endpoints.
+
+Role → permission assignment is defined in `ROLE_PERMISSIONS` (same file). `super_admin` receives every key; other roles receive the subset needed for store operations without user administration or secret keys.
+
+## 8.3 Admin route → permission matrix (`apps/medusa/src/api/middlewares.ts` + `acl-http.ts`)
+
+| Permission | Admin path patterns | HTTP methods |
+|------------|---------------------|--------------|
+| `users.manage` | `/admin/users*`, `/admin/invites*` | all guarded verbs |
+| `users.manage` | `/admin/acl/roles` | POST (permission check API) |
+| `analytics.read` | `/admin/analytics/preset`, `/admin/analytics/whatsapp` | GET |
+| `catalog.manage` | `/admin/products*`, `/admin/product-categories*`, `/admin/product-types*`, `/admin/product-tags*`, `/admin/collections*`, `/admin/inventory-items*`, `/admin/stock-locations*`, `/admin/uploads*` | GET, POST, PUT, PATCH, DELETE |
+| `catalog.manage` | `/admin/regions*` | GET only |
+| `catalog.manage` | `/admin/sales-channels*` | GET only |
+| `orders.manage` | `/admin/orders*`, `/admin/returns*`, `/admin/exchanges*`, `/admin/claims*`, `/admin/order-edits*`, `/admin/draft-orders*` | GET, POST, PUT, PATCH, DELETE |
+| `settings.manage` | `/admin/store*`, `/admin/custom` (GET) | as listed |
+| `settings.manage` | `/admin/regions*` | POST, PUT, PATCH, DELETE |
+| `settings.manage` | `/admin/sales-channels*` | POST, PUT, PATCH, DELETE |
+| **Dynamic** | `/admin/api-keys*` | See §8.4 (`requireApiKeyAcl` in `apps/medusa/src/api/middlewares/api-key-acl.ts`) |
+
+Routes **not** listed here still use Medusa’s default admin authentication only; a future pass can map additional modules (campaigns, promotions, notifications, …) to permissions.
+
+## 8.4 Secret admin API keys (`/admin/api-keys*`)
+- Middleware: `requireApiKeyAcl` + shared checks in `apps/medusa/src/api/acl-http.ts`.
+- **Publishable** keys: require `settings.manage` (create/update/delete/revoke, list, GET by id, link sales channels).
+- **Secret** keys: any create with `type: "secret"`, GET list filtered to secrets only (`?type=secret`), or any operation on an existing secret key by id → requires **`api_keys.secrets`** (super_admin only).
+- **List lockdown**: roles **without** `api_keys.secrets` get `type=publishable` forced on `GET /admin/api-keys` and a defensive `res.json` filter so secret rows never appear in list payloads.
+- Dev seeding: `pnpm --filter medusa seed:acl-roles` (`apps/medusa/src/scripts/seed-acl-role-users.ts`).
+
+## 8.5 Role context source (implemented)
+- Request override (for controlled checks): `x-store-role` and `x-store-id` (or query fallback).
+- Authenticated user metadata (default path):
+  - `metadata.acl_role` (or `metadata.role`)
+  - `metadata.acl_store_ids` / `metadata.store_ids` (plus single-store fallback keys)
+- Store-scope enforcement:
+  - when `store_id` is requested, access is limited to assigned stores unless role is `super_admin`.
+
+## 8.6 Tests and verification
+- Unit: `apps/medusa/src/__tests__/shared/access-control.unit.spec.ts` (`pnpm exec jest` from `apps/medusa`).
+- HTTP integration: `apps/medusa/integration-tests/http/health.spec.ts` — includes ACL POST checks, store scope + analytics, secret API key denial, publishable-only list behavior, and super_admin list visibility (`pnpm --filter medusa test:integration:http`; requires Postgres on host port **5433** as in `status.md`).
 
 ---
 

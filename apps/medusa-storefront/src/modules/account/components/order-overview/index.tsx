@@ -3,8 +3,13 @@
 import OrderCard from "../order-card"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 const OrderOverview = ({ orders }: { orders: HttpTypes.StoreOrder[] }) => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) => getAccountCopy(locale, key)
+
   if (orders?.length) {
     return (
       <div className="flex flex-col gap-y-4 w-full">
@@ -31,13 +36,13 @@ const OrderOverview = ({ orders }: { orders: HttpTypes.StoreOrder[] }) => {
           className="font-syne text-xl font-bold mb-1"
           style={{ color: "var(--text)" }}
         >
-          No orders yet
+          {t("noOrdersYet")}
         </h2>
         <p
           className="text-sm"
           style={{ color: "var(--text-dim)" }}
         >
-          You don&apos;t have any orders yet — let&apos;s change that!
+          {t("noOrdersCta")}
         </p>
       </div>
       <LocalizedClientLink href="/store" passHref>
@@ -45,7 +50,7 @@ const OrderOverview = ({ orders }: { orders: HttpTypes.StoreOrder[] }) => {
           className="btn-primary text-sm mt-2"
           data-testid="continue-shopping-button"
         >
-          Start shopping →
+          {t("startShopping")}
         </button>
       </LocalizedClientLink>
     </div>

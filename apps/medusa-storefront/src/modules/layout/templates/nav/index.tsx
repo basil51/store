@@ -21,6 +21,10 @@ export default async function Nav() {
 
   const t = (key: Parameters<typeof getUiCopy>[1], params?: Record<string, string | number>) =>
     getUiCopy(currentLocale, key, params)
+  const customerDisplayName =
+    [customer?.first_name, customer?.last_name].filter(Boolean).join(" ").trim() ||
+    customer?.email?.split("@")[0] ||
+    t("navAccount")
 
   return (
     <div className="sticky top-0 inset-x-0 z-50">
@@ -139,8 +143,8 @@ export default async function Nav() {
                 <circle cx="12" cy="8" r="4" />
                 <path strokeLinecap="round" d="M4 20c0-4 3.58-7 8-7s8 3 8 7" />
               </svg>
-              <span className="max-w-[80px] truncate">
-                {customer?.first_name ?? t("navAccount")}
+              <span className="max-w-[96px] truncate md:max-w-[140px]">
+                {customerDisplayName}
               </span>
             </LocalizedClientLink>
 

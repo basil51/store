@@ -1,23 +1,31 @@
 import { Metadata } from "next"
 
-import ProfilePhone from "@modules/account//components/profile-phone"
+import ProfilePhone from "@modules/account/components/profile-phone"
 import ProfileBillingAddress from "@modules/account/components/profile-billing-address"
 import ProfileEmail from "@modules/account/components/profile-email"
 import ProfileName from "@modules/account/components/profile-name"
-import ProfilePassword from "@modules/account/components/profile-password"
 
 import { notFound } from "next/navigation"
 import { listRegions } from "@lib/data/regions"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getLocale } from "@lib/data/locale-actions"
+import { getAccountCopy } from "@modules/account/account-copy"
 
-export const metadata: Metadata = {
-  title: "Profile",
-  description: "View and edit your Medusa Store profile.",
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+  return {
+    title: getAccountCopy(locale, "metaProfileTitle"),
+    description: getAccountCopy(locale, "metaProfileDescription"),
+  }
 }
 
 export default async function Profile() {
-  const customer = await retrieveCustomer()
-  const regions = await listRegions()
+  const [customer, regions, locale] = await Promise.all([
+    retrieveCustomer(),
+    listRegions(),
+    getLocale(),
+  ])
+  const t = (key: Parameters<typeof getAccountCopy>[1]) => getAccountCopy(locale, key)
 
   if (!customer || !regions) {
     notFound()
@@ -26,11 +34,9 @@ export default async function Profile() {
   return (
     <div className="w-full" data-testid="profile-page-wrapper">
       <div className="mb-8 flex flex-col gap-y-4">
-        <h1 className="text-2xl-semi">Profile</h1>
+        <h1 className="text-2xl-semi">{t("profileTitle")}</h1>
         <p className="text-base-regular">
-          View and update your profile information, including your name, email,
-          and phone number. You can also update your billing address, or change
-          your password.
+          {t("profileDescription")}
         </p>
       </div>
       <div className="flex flex-col gap-y-8 w-full">
@@ -40,8 +46,6 @@ export default async function Profile() {
         <Divider />
         <ProfilePhone customer={customer} />
         <Divider />
-        {/* <ProfilePassword customer={customer} />
-        <Divider /> */}
         <ProfileBillingAddress customer={customer} regions={regions} />
       </div>
     </div>
@@ -51,4 +55,3 @@ export default async function Profile() {
 const Divider = () => {
   return <div className="w-full h-px bg-gray-200" />
 }
-;``
