@@ -12,8 +12,8 @@
 | **Phase 5 — Cart & Checkout** | **Stopped at current local milestone** — completed checkout/cart improvements and local Stripe groundwork stay in place, but the remaining local Phase 5 follow-ups are intentionally skipped for now because the last local steps are looping. Revisit only later if a server-hosted HTTPS environment makes those deferred items worth reopening. |
 | **Phase 6 — WhatsApp Integration** | **Started** — existing WhatsApp/cart-settings work is reconciled; PDP quantity now drives add-to-cart and click-to-order, templates support richer placeholders, cart/PDP WhatsApp lines include more ordering context, localized EN/AR/HE WhatsApp templates now drive generated message copy, the generated message body now pulls current-locale option/spec labels when catalog metadata provides them, Admin → Cart Settings now offers locale-aware editing plus live preview for PDP vs cart flows using localized store-API product reads, shoppers can now add an optional WhatsApp note from PDP/cart with backward-compatible `{{customer_note}}` template support, Admin → WhatsApp Analytics now includes daily trend charting plus richer date/source/locale/event filtering, Playwright coverage now exercises both storefront and admin WhatsApp regressions, and a dedicated GitHub Actions workflow now runs the WhatsApp suite separately from checkout coverage. |
 | **Phase 7 — Inventory Models** | **7.1 complete for current scope** — stock-mode behavior is aligned across PDP, cart, and browse with store-level fallback + tests. |
-| **Phase 8 — Roles and permissions** | **Active (hardened slice)** — ACL resolves role/store scope from authenticated admin users, enforces middleware on broad admin route groups, adds `api_keys.secrets` (super_admin only) for Medusa **secret** admin API keys, forces publishable-only list queries plus response filtering for everyone else, and ships ACL unit tests plus HTTP integration coverage (`health.spec.ts`). |
-| Phases 9+ | Pending — continue after the Phase 8 track. |
+| **Phase 8 — Roles and permissions** | **Done (core scope)** — ACL matrix + store scope from user metadata; middleware on key admin routes; `api_keys.secrets` + publishable-only list lockdown for secret keys; unit + HTTP integration tests; **Admin → ACL Users** UI and `/admin/acl/user-roles` API for `acl_role` / `acl_store_ids`; current-admin context panel on that page. Optional follow-ups: more admin modules behind ACL, audit logs. |
+| **Phase 9 — Admin panel (roadmap track)** | **Next** — start when you open the Phase 9 conversation; foundation admin + custom routes already exist. |
 
 *Details: see root `status.md`.*
 
@@ -301,7 +301,8 @@ Role → permission assignment is defined in `ROLE_PERMISSIONS` (same file). `su
 | Permission | Admin path patterns | HTTP methods |
 |------------|---------------------|--------------|
 | `users.manage` | `/admin/users*`, `/admin/invites*` | all guarded verbs |
-| `users.manage` | `/admin/acl/roles` | POST (permission check API) |
+| `users.manage` | `/admin/acl/roles` | GET (context + matrix), POST (permission check API) |
+| `users.manage` | `/admin/acl/user-roles` | GET (users/stores for UI), POST (save metadata) |
 | `analytics.read` | `/admin/analytics/preset`, `/admin/analytics/whatsapp` | GET |
 | `catalog.manage` | `/admin/products*`, `/admin/product-categories*`, `/admin/product-types*`, `/admin/product-tags*`, `/admin/collections*`, `/admin/inventory-items*`, `/admin/stock-locations*`, `/admin/uploads*` | GET, POST, PUT, PATCH, DELETE |
 | `catalog.manage` | `/admin/regions*` | GET only |
@@ -332,6 +333,10 @@ Routes **not** listed here still use Medusa’s default admin authentication onl
 ## 8.6 Tests and verification
 - Unit: `apps/medusa/src/__tests__/shared/access-control.unit.spec.ts` (`pnpm exec jest` from `apps/medusa`).
 - HTTP integration: `apps/medusa/integration-tests/http/health.spec.ts` — includes ACL POST checks, store scope + analytics, secret API key denial, publishable-only list behavior, and super_admin list visibility (`pnpm --filter medusa test:integration:http`; requires Postgres on host port **5433** as in `status.md`).
+
+## 8.7 Admin UI — ACL Users
+- Sidebar: **ACL Users** (`apps/medusa/src/admin/routes/acl-user-roles/page.tsx`).
+- Lists admin users, edits `metadata.acl_role` and `metadata.acl_store_ids`, shows permission preview for the selected role, and surfaces **current admin context** via `GET /admin/acl/roles` (effective role, user id, store scope).
 
 ---
 

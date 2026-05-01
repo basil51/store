@@ -7,7 +7,7 @@ export default defineMiddlewares({
   routes: [
     {
       matcher: "/admin/acl/roles",
-      method: ["POST"],
+      method: ["GET", "POST"],
       middlewares: [requirePermission("users.manage")],
     },
     {
