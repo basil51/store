@@ -11,6 +11,11 @@ export default defineMiddlewares({
       middlewares: [requirePermission("users.manage")],
     },
     {
+      matcher: "/admin/acl/user-roles",
+      method: ["GET", "POST"],
+      middlewares: [requirePermission("users.manage")],
+    },
+    {
       matcher: "/admin/analytics/preset",
       method: ["GET"],
       middlewares: [requirePermission("analytics.read")],
