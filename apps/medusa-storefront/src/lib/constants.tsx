@@ -31,7 +31,7 @@ export const paymentInfoMap: Record<
     icon: <PayPal />,
   },
   pp_system_default: {
-    title: "Cash / offline payment",
+    title: "Offline payment",
     icon: <CreditCard />,
   },
   // Add more payment providers here

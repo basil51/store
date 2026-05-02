@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from "@playwright/test"
 
 const DEFAULT_COUNTRY_CODE = process.env.CHECKOUT_COUNTRY_CODE ?? "il"
-const MANUAL_PAYMENT_LABEL = "Cash / offline payment"
+const MANUAL_PAYMENT_LABEL = "Offline payment"
 const DEFAULT_FIRST_NAME = "Happy"
 const DEFAULT_LAST_NAME = "Path"
 const DEFAULT_ADDRESS_LINE = "9 Confirmation Street"

@@ -380,7 +380,7 @@ Current note:
 - Treat Phase 10 as **payment completion from the current local milestone**, not as a greenfield payments build.
 - **Stripe** overlaps heavily with deferred Phase 5 work.
 - **PayPal** is now complete for the current local scope: backend provider wiring, storefront checkout support, session verification, and browser coverage are in place. The only PayPal follow-through left is hosted webhook/public-HTTPS verification.
-- **Manual payment** is the next local payment item: clarify whether the current provider should be presented as cash on delivery, offline/manual collection, or a local test-only flow.
+- **Manual payment** is now clarified for the current local scope as **Offline payment**: shoppers can place the order in checkout and arrange payment after confirmation without implying a captured online charge.
 
 ## 10.1 Already covered
 - [x] Stripe backend wiring, readiness verification, local provider sync, and payment-session initialization.
@@ -406,8 +406,8 @@ Current note:
 - [ ] Webhooks / hosted follow-through: set `PAYPAL_WEBHOOK_ID`, expose a public HTTPS callback path, and verify `/hooks/payment/paypal_paypal` end to end.
 
 ### Manual-payment clarification
-- [ ] Decide whether `Manual (cash)` should be presented as cash on delivery, offline/manual collection, or kept explicitly as a local test-only flow.
-- [ ] Align checkout wording and shopper guidance with that manual-payment decision.
+- [x] Decide whether `Manual (cash)` should be presented as cash on delivery, offline/manual collection, or kept explicitly as a local test-only flow.
+- [x] Align checkout wording and shopper guidance with that manual-payment decision.
 
 ## 10.4 Future
 - [ ] Local gateways (Israel / Middle East)

@@ -52,6 +52,11 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
           {paymentInfoMap[paymentProviderId]?.icon}
         </span>
       </div>
+      {isManual(paymentProviderId) && (
+        <p className="text-xs leading-relaxed" style={{ color: "var(--text-dim)" }}>
+          Place your order now and arrange payment offline after confirmation.
+        </p>
+      )}
       {isManual(paymentProviderId) && isDevelopment && (
         <PaymentTest className="small:hidden text-[10px]" />
       )}
