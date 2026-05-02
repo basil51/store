@@ -399,7 +399,7 @@ Current note:
 - [x] Backend: enable PayPal on the active local region(s) so carts can initialize a PayPal payment session alongside the existing providers.
 - [x] Storefront: add a real PayPal checkout path in the payment step and review step, including provider selection, SDK wrapper, approval handoff, and local place-order path.
 - [x] Storefront: extend payment summary, review, and checkout analytics flows so PayPal sessions behave as first-class local checkout states.
-- [ ] Verification: complete and document a local sandbox flow that proves PayPal payment-session creation, approval, return, and order completion.
+- [ ] Verification: complete the local sandbox flow that proves PayPal payment-session creation, approval, return, and order completion. Runbook: `paypal-sandbox.md`.
 - [ ] Verification: add browser or integration coverage for the PayPal happy path once the environment can support it reliably.
 - [ ] Webhooks / hosted follow-through: set `PAYPAL_WEBHOOK_ID`, expose a public HTTPS callback path, and verify `/hooks/payment/paypal_paypal` end to end.
 

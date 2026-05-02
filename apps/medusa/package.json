@@ -21,6 +21,7 @@
     "paypal:sync-provider": "medusa exec ./src/scripts/sync-paypal-payment-provider.ts",
     "stripe:verify": "medusa exec ./src/scripts/verify-stripe-readiness.ts",
     "stripe:verify-order": "medusa exec ./src/scripts/verify-stripe-order-completion.ts",
+    "paypal:verify-session": "medusa exec ./src/scripts/verify-paypal-payment-session.ts",
     "provision:tenant": "medusa exec ./src/scripts/provision-store-tenant.ts",
     "delete:tenant": "medusa exec ./src/scripts/delete-store-tenant.ts",
     "describe:tenants": "medusa exec ./src/scripts/describe-store-topology.ts",
