@@ -1,6 +1,6 @@
 # Project State Report
 
-Date: **2026-05-01**  
+Date: **2026-05-02**  
 Source of truth: `status.md`, `roadmap.md`, and the repo as of this report.
 
 ## Executive Summary
@@ -9,7 +9,7 @@ The platform is in **post–Phase-8** shape for access control: roles and permis
 
 **Phase 8 is treated as complete for the agreed core scope.** **Phase 9 (admin panel track) is complete for the current scope**: **9.1** store overview is done, **9.2** product management is covered by **Catalog hub** plus native Medusa product screens, and **9.3 / 9.4** are satisfied by Medusa Dashboard capabilities unless a custom requirement appears.
 
-Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally, so **Phase 10 should be treated as payment completion from that local milestone rather than as a greenfield payments build**. In practice, **PayPal is the main open provider lane**, while the existing local manual payment flow works today but may still need production-facing clarification. **Phase 4.5** (RTL / locale copy) stays in light stabilization; **Phase 6** WhatsApp is substantial and can receive polish as needed.
+Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally, so **Phase 10 should be treated as payment completion from that local milestone rather than as a greenfield payments build**. PayPal has now moved past initial implementation locally: backend provider wiring, storefront checkout support, and region enablement are in place, while the remaining payment work is end-to-end sandbox proof, webhook verification, and hosted-HTTPS follow-through. The existing local manual payment flow still works today but may need production-facing clarification. **Phase 4.5** (RTL / locale copy) stays in light stabilization; **Phase 6** WhatsApp is substantial and can receive polish as needed.
 
 ## Phase Snapshot
 
@@ -25,7 +25,7 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 | Phase 7.1 | Inventory stock modes | Done for current scope |
 | **Phase 8** | **Roles & permissions** | **Done (core scope)** — matrix, middleware, API keys, tests, **ACL Users** admin UI |
 | **Phase 9** | **Admin panel (roadmap)** | **Completed for current scope** — 9.1 store overview, 9.2 Catalog hub + Medusa product screens, 9.3 categories, and 9.4 orders are all covered |
-| **Phase 10** | **Payments** | **Payment completion lane** — Stripe is mostly covered locally and deferred for hosted HTTPS follow-up, PayPal is still the main open provider lane, and manual payment already works locally but may need production semantics clarification |
+| **Phase 10** | **Payments** | **Payment completion lane** — Stripe is mostly covered locally and deferred for hosted HTTPS follow-up; PayPal local provider/storefront wiring is complete, and the remaining payment work is sandbox verification, webhook/public-HTTPS setup, and any manual-payment semantics clarification |
 | Phases 11+ | Security, i18n at scale, performance, etc. | Pending or partially grounded by earlier work |
 
 ## What landed for Phase 8 (high level)
@@ -48,17 +48,18 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 ## Current risks, deferrals, and caveats
 
 - Local Stripe webhook / card-field behavior remains deferred until a server-hosted HTTPS environment.
+- PayPal webhook validation still needs `PAYPAL_WEBHOOK_ID` plus a public HTTPS callback path before webhook processing can be proven end to end.
 - Older DBs may still need `pnpm --filter medusa shipping:ensure-il` for Israel shipping parity.
 - Medusa HTTP integration tests expect Postgres on host port **5433** (see `status.md`).
 - Development secrets in `.env` are not production-grade.
 
 ## Recommended next steps
 
-1. **Start Phase 10** as payment completion from the current local milestone, not as a greenfield rebuild. Use `roadmap.md` §10.1–10.3 as the backlog anchor: prioritize the still-open **PayPal** backend/storefront/verification checklist and any manual-payment semantics clarification locally, while leaving the deferred Stripe remount/webhook work for a hosted HTTPS environment.
+1. **Continue Phase 10** as payment completion from the current local milestone, not as a greenfield rebuild. Use `roadmap.md` §10.1–10.3 as the backlog anchor: prioritize **PayPal sandbox and webhook verification** next, plus any manual-payment semantics clarification locally, while leaving the deferred Stripe remount/webhook work for a hosted HTTPS environment.
 2. **Optional Phase 8 expansion:** map remaining Medusa admin modules to permissions; add ACL audit logging if compliance needs it.
 3. Keep **Phase 4.5** and **Phase 6** in “maintain / polish” mode unless new gaps appear.
 4. Revisit **Stripe** only when deployment environment supports finishing it cleanly.
 
 ## Bottom line
 
-The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. **Phase 9 is complete for the current scope**, so the next primary roadmap lane is **Phase 10** — with **PayPal** as the main genuinely open provider and deferred Stripe work left intentionally parked until hosted HTTPS is available.
+The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. **Phase 9 is complete for the current scope**, and **Phase 10 is now in verification mode rather than initial implementation mode**: PayPal is wired locally, while webhook/public-HTTPS proof remains the main open payment follow-through alongside deferred Stripe work.
