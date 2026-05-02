@@ -14,6 +14,8 @@
 | **Phase 7 — Inventory Models** | **7.1 complete for current scope** — stock-mode behavior is aligned across PDP, cart, and browse with store-level fallback + tests. |
 | **Phase 8 — Roles and permissions** | **Done (core scope)** — ACL matrix + store scope from user metadata; middleware on key admin routes; `api_keys.secrets` + publishable-only list lockdown for secret keys; unit + HTTP integration tests; **Admin → ACL Users** UI and `/admin/acl/user-roles` API for `acl_role` / `acl_store_ids`; current-admin context panel on that page. Optional follow-ups: more admin modules behind ACL, audit logs. |
 | **Phase 9 — Admin panel (roadmap track)** | **Completed for current scope** — **9.1:** Store overview + overview API + deep links. **9.2:** Catalog hub + Medusa product screens for CRUD, variants, and uploads. **9.3:** Category management is satisfied by Medusa Admin (`/categories`, `/categories/organize`). **9.4:** Order operations are satisfied by Medusa Admin (`/orders`) and native Medusa states. |
+| **Phase 10 — Payments** | **Completed for current local scope** — local PayPal and Offline payment flows are in place; hosted PayPal webhook/public-HTTPS follow-through stays deferred. |
+| **Phase 11 — Security** | **Started** — first backend hardening slice adds rate limiting to public store analytics ingest routes via Medusa middleware, with focused unit coverage. |
 
 *Details: see root `status.md`.*
 
@@ -416,18 +418,23 @@ Current note:
 
 # 🔐 PHASE 11 — Security
 
+Current progress:
+- The first concrete Phase 11 slice is in: Medusa now rate-limits the anonymous `POST /store/analytics/preset` and `POST /store/analytics/whatsapp` ingest endpoints at the middleware layer using per-IP fixed windows, returns `429` plus `Retry-After` when a client exceeds the current bucket, and emits rate-limit headers for observability.
+- Defaults are tuned for the current local/prod-like single-process setup and can be adjusted via `STORE_ANALYTICS_RATE_LIMIT_WINDOW_MS` and `STORE_ANALYTICS_RATE_LIMIT_MAX_REQUESTS`.
+- Recommended next security slice remains auth hardening (JWT / cookie / frontend session boundaries), not reopening deferred Stripe or hosted PayPal webhook work.
+
 ## 11.1 Backend
-- JWT authentication
-- Role-based access control
-- Rate limiting
+- [ ] JWT authentication hardening
+- [x] Role-based access control
+- [x] Rate limiting on public store analytics ingest routes
 
 ## 11.2 Frontend
-- Secure API calls
-- CSRF protection
+- [ ] Secure API calls
+- [ ] CSRF protection
 
 ## 11.3 Infrastructure
-- HTTPS
-- Firewall rules
+- [ ] HTTPS
+- [ ] Firewall rules
 
 ---
 

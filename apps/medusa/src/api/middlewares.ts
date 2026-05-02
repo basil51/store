@@ -2,9 +2,20 @@ import { defineMiddlewares } from "@medusajs/framework/http"
 
 import { requirePermission } from "./acl-http"
 import { requireApiKeyAcl } from "./middlewares/api-key-acl"
+import { analyticsRateLimit } from "./middlewares/rate-limit"
 
 export default defineMiddlewares({
   routes: [
+    {
+      matcher: "/store/analytics/preset",
+      method: ["POST"],
+      middlewares: [analyticsRateLimit],
+    },
+    {
+      matcher: "/store/analytics/whatsapp",
+      method: ["POST"],
+      middlewares: [analyticsRateLimit],
+    },
     {
       matcher: "/admin/acl/roles",
       method: ["GET", "POST"],

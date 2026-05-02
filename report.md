@@ -9,7 +9,7 @@ The platform is in **post–Phase-8** shape for access control: roles and permis
 
 **Phase 8 is treated as complete for the agreed core scope.** **Phase 9 (admin panel track) is complete for the current scope**: **9.1** store overview is done, **9.2** product management is covered by **Catalog hub** plus native Medusa product screens, and **9.3 / 9.4** are satisfied by Medusa Dashboard capabilities unless a custom requirement appears.
 
-Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally, so **Phase 10 should be treated as payment completion from that local milestone rather than as a greenfield payments build**. PayPal is complete for the current local scope, and the former manual provider has now been clarified as **Offline payment** across the storefront checkout/order flow. Hosted webhook/public-HTTPS follow-through remains deferred. **Phase 4.5** (RTL / locale copy) stays in light stabilization; **Phase 6** WhatsApp is substantial and can receive polish as needed.
+Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally, so **Phase 10 should be treated as payment completion from that local milestone rather than as a greenfield payments build**. PayPal is complete for the current local scope, and the former manual provider has now been clarified as **Offline payment** across the storefront checkout/order flow. Hosted webhook/public-HTTPS follow-through remains deferred. **Phase 11 is now started** with backend rate limiting on the anonymous store analytics ingest routes, while **Phase 4.5** (RTL / locale copy) stays in light stabilization and **Phase 6** WhatsApp can receive polish as needed.
 
 ## Phase Snapshot
 
@@ -26,7 +26,8 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 | **Phase 8** | **Roles & permissions** | **Done (core scope)** — matrix, middleware, API keys, tests, **ACL Users** admin UI |
 | **Phase 9** | **Admin panel (roadmap)** | **Completed for current scope** — 9.1 store overview, 9.2 Catalog hub + Medusa product screens, 9.3 categories, and 9.4 orders are all covered |
 | **Phase 10** | **Payments** | **Payment completion lane** — Stripe is mostly covered locally and deferred for hosted HTTPS follow-up; PayPal plus Offline payment semantics are complete for the current local scope, and the remaining payment work is hosted webhook/public-HTTPS follow-through |
-| Phases 11+ | Security, i18n at scale, performance, etc. | Pending or partially grounded by earlier work |
+| Phase 11 | Security | Started — public store analytics ingest routes now have backend rate limiting with focused unit coverage; auth hardening remains next |
+| Phases 12+ | i18n at scale, performance, etc. | Pending or partially grounded by earlier work |
 
 ## What landed for Phase 8 (high level)
 
@@ -43,6 +44,7 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 
 - **Ahead:** Product depth (presets, specs, WhatsApp, tenant runtime, storefront theme) exceeds a one-line “phase” label; much of “later” work is already in production shape locally.
 - **Phase 8:** Documented as **done (core)**; remaining ACL work is **optional** (more admin modules, audit logs), not a blocker for Phase 9.
+- **Phase 11:** No longer purely pending; the first backend slice is in, and the next sensible step is JWT/cookie/frontend auth hardening rather than more payment work.
 - **Phase 5 / Stripe:** Still **paused by decision** in local dev; not a measure of overall platform readiness.
 
 ## Current risks, deferrals, and caveats
@@ -52,14 +54,15 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 - Older DBs may still need `pnpm --filter medusa shipping:ensure-il` for Israel shipping parity.
 - Medusa HTTP integration tests expect Postgres on host port **5433** (see `status.md`).
 - Development secrets in `.env` are not production-grade.
+- The new analytics rate limiter is process-local; if the Medusa app is later scaled horizontally, the same policy should move to a shared counter store such as Redis.
 
 ## Recommended next steps
 
-1. **Move to Phase 11** as the next broad local lane now that Phase 10 is closed out for the current local scope. Leave PayPal webhook/public-HTTPS follow-through and the deferred Stripe remount/webhook work for a hosted HTTPS environment.
+1. **Continue Phase 11** from the new backend rate-limit baseline by hardening JWT/cookie/frontend auth boundaries. Leave PayPal webhook/public-HTTPS follow-through and the deferred Stripe remount/webhook work for a hosted HTTPS environment.
 2. **Optional Phase 8 expansion:** map remaining Medusa admin modules to permissions; add ACL audit logging if compliance needs it.
 3. Keep **Phase 4.5** and **Phase 6** in “maintain / polish” mode unless new gaps appear.
 4. Revisit **Stripe** only when deployment environment supports finishing it cleanly.
 
 ## Bottom line
 
-The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. **Phase 9 is complete for the current scope**, and **Phase 10 is now closed out for the current local scope**: PayPal is complete locally, the offline-payment flow is explicitly framed for shoppers, and webhook/public-HTTPS proof remains the hosted follow-through.
+The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. **Phase 9 is complete for the current scope**, **Phase 10 is closed out for the current local scope**, and **Phase 11 has now started** with backend rate limiting on the anonymous analytics ingest routes while webhook/public-HTTPS proof remains a hosted follow-through item.
