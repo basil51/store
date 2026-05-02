@@ -379,8 +379,8 @@ Routes **not** listed here still use Medusa’s default admin authentication onl
 Current note:
 - Treat Phase 10 as **payment completion from the current local milestone**, not as a greenfield payments build.
 - **Stripe** overlaps heavily with deferred Phase 5 work.
-- **Manual payment** already has a working local flow, but may still need production-facing clarification depending on whether you want true cash/manual operations or only the current local/manual provider path.
-- **PayPal** local provider/storefront wiring is now in place; the remaining payment lane is verification and webhook/public-HTTPS follow-through.
+- **PayPal** is now complete for the current local scope: backend provider wiring, storefront checkout support, session verification, and browser coverage are in place. The only PayPal follow-through left is hosted webhook/public-HTTPS verification.
+- **Manual payment** is the next local payment item: clarify whether the current provider should be presented as cash on delivery, offline/manual collection, or a local test-only flow.
 
 ## 10.1 Already covered
 - [x] Stripe backend wiring, readiness verification, local provider sync, and payment-session initialization.
@@ -393,18 +393,21 @@ Current note:
 - [ ] Resume Stripe UI and webhook follow-up work only once the project is running in a server-hosted HTTPS-capable environment.
 - [ ] Re-verify webhook-driven capture-state advancement outside the current local dev limitations.
 
-## 10.3 Still actually open
+## 10.3 Completed for current local scope
 ### PayPal implementation checklist
 - [x] Backend: implement the in-repo Medusa PayPal provider strategy, wire it into `medusa-config.ts`, and configure local sandbox credentials.
 - [x] Backend: enable PayPal on the active local region(s) so carts can initialize a PayPal payment session alongside the existing providers.
 - [x] Storefront: add a real PayPal checkout path in the payment step and review step, including provider selection, SDK wrapper, approval handoff, and local place-order path.
 - [x] Storefront: extend payment summary, review, and checkout analytics flows so PayPal sessions behave as first-class local checkout states.
-- [ ] Verification: complete the local sandbox flow that proves PayPal payment-session creation, approval, return, and order completion. Runbook: `paypal-sandbox.md`.
-- [ ] Verification: add browser or integration coverage for the PayPal happy path once the environment can support it reliably.
+- [x] Verification: complete the local sandbox flow that proves PayPal payment-session creation, approval, return, and order completion. Runbook: `paypal-sandbox.md`.
+- [x] Verification: add browser or integration coverage for the PayPal happy path once the environment can support it reliably.
+
+### PayPal hosted follow-through
 - [ ] Webhooks / hosted follow-through: set `PAYPAL_WEBHOOK_ID`, expose a public HTTPS callback path, and verify `/hooks/payment/paypal_paypal` end to end.
 
 ### Manual-payment clarification
-- [ ] Decide whether `Manual (cash)` needs extra merchant/customer UX, operational guidance, or production semantics beyond the current local/manual provider flow.
+- [ ] Decide whether `Manual (cash)` should be presented as cash on delivery, offline/manual collection, or kept explicitly as a local test-only flow.
+- [ ] Align checkout wording and shopper guidance with that manual-payment decision.
 
 ## 10.4 Future
 - [ ] Local gateways (Israel / Middle East)

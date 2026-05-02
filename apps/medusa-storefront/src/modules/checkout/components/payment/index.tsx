@@ -1,7 +1,7 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isPaypal, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isManual, isPaypal, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import {
   type CheckoutBlockerCode,
@@ -514,6 +514,8 @@ const Payment = ({
                       ? cardBrand
                       : isPaypal(selectedPaymentMethod)
                       ? "You'll confirm in PayPal"
+                      : isManual(selectedPaymentMethod)
+                      ? "Payment is collected offline after order confirmation"
                       : "Another step will appear"}
                   </span>
                 </div>

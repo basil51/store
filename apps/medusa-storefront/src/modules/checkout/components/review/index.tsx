@@ -84,7 +84,7 @@ const getEstimatedConfirmationTiming = ({
   }
 
   if (isManual(providerId)) {
-    return "Usually instant in this environment"
+    return "Confirmed first, then collected offline in this environment"
   }
 
   return "Usually within a few minutes"

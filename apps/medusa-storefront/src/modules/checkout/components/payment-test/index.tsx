@@ -3,8 +3,8 @@ import { Badge } from "@medusajs/ui"
 const PaymentTest = ({ className }: { className?: string }) => {
   return (
     <Badge color="orange" className={className}>
-      <span className="font-semibold">Attention:</span> For testing purposes
-      only.
+      <span className="font-semibold">Local test flow:</span> payment is
+      collected outside checkout in this environment.
     </Badge>
   )
 }
