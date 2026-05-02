@@ -20,7 +20,8 @@
     "test:e2e:whatsapp-admin": "playwright test e2e/whatsapp-admin.spec.ts",
     "test:e2e:checkout": "playwright test e2e/checkout-*.spec.ts",
     "test:e2e:checkout-matrix": "playwright test e2e/checkout-deeplink-matrix.spec.ts",
-    "test:e2e:checkout-happy-path": "playwright test e2e/checkout-happy-path.spec.ts"
+    "test:e2e:checkout-happy-path": "playwright test e2e/checkout-happy-path.spec.ts",
+    "test:e2e:checkout-paypal": "playwright test e2e/checkout-paypal.spec.ts"
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
