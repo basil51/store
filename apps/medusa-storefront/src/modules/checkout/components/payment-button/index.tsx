@@ -263,18 +263,20 @@ const ManualTestPaymentButton = ({
   cart,
   providerId,
   notReady,
+  "data-testid": dataTestId,
 }: {
   cart: HttpTypes.StoreCart
   providerId?: string
   notReady: boolean
+  "data-testid"?: string
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const disabledReason = submitting
-    ? "Submitting your secure order..."
+    ? "Submitting your offline order..."
     : notReady
-    ? "Complete address and delivery details before placing your order."
+    ? "Complete address and delivery details before placing your offline order."
     : null
 
   const onPaymentCompleted = async () => {
@@ -315,9 +317,9 @@ const ManualTestPaymentButton = ({
         className="btn-primary"
         disabled={notReady || submitting}
         onClick={handlePayment}
-        data-testid="submit-order-button"
+        data-testid={dataTestId}
       >
-        {submitting ? "Placing secure order..." : "Place secure order"}
+        {submitting ? "Placing offline order..." : "Place offline order"}
       </button>
       {disabledReason ? (
         <DisabledHint

@@ -106,6 +106,7 @@ const Review = ({ cart }: { cart: any }) => {
   )
 
   const paymentProviderId = activePaymentSession?.provider_id as string | undefined
+  const isManualPayment = isManual(paymentProviderId)
   const paymentMethodLabel = paidByGiftcard
     ? "Gift card"
     : paymentProviderId
@@ -331,8 +332,16 @@ const Review = ({ cart }: { cart: any }) => {
                 </p>
                 <div className="mt-3 flex flex-col gap-3">
                   <AssuranceItem
-                    title="Secure payment processing"
-                    detail="Your payment details are handled by the selected payment provider."
+                    title={
+                      isManualPayment
+                        ? "Offline payment collection"
+                        : "Secure payment processing"
+                    }
+                    detail={
+                      isManualPayment
+                        ? "No online charge is captured in checkout for this method. Payment is collected offline after the order is placed."
+                        : "Your payment details are handled by the selected payment provider."
+                    }
                   />
                   <AssuranceItem
                     title="No hidden checkout charges"
@@ -358,13 +367,17 @@ const Review = ({ cart }: { cart: any }) => {
                 </p>
                 <div className="mt-2 flex flex-col gap-1">
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
-                    1. We place your order securely with the selected payment method.
+                    {isManualPayment
+                      ? "1. We place your order now and keep payment collection for the offline follow-up step."
+                      : "1. We place your order securely with the selected payment method."}
                   </p>
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
                     2. You are taken to the order confirmation page right away.
                   </p>
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
-                    3. We send your confirmation details to {cart?.email ?? "your email"}.
+                    {isManualPayment
+                      ? `3. We send your confirmation details to ${cart?.email ?? "your email"} so payment can be arranged offline.`
+                      : `3. We send your confirmation details to ${cart?.email ?? "your email"}.`}
                   </p>
                 </div>
               </div>

@@ -1,4 +1,4 @@
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isManual, isStripeLike, paymentInfoMap } from "@lib/constants"
 import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -51,6 +51,8 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                 >
                   {isStripeLike(payment.provider_id) && payment.data?.card_last4
                     ? `**** **** **** ${payment.data.card_last4}`
+                    : isManual(payment.provider_id)
+                    ? "No online payment captured. Collect payment offline after order confirmation."
                     : `${convertToLocale({
                         amount: payment.amount,
                         currency_code: order.currency_code,
