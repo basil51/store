@@ -26,6 +26,11 @@ export default defineMiddlewares({
       middlewares: [requirePermission("analytics.read")],
     },
     {
+      matcher: "/admin/dashboard*",
+      method: ["GET"],
+      middlewares: [requirePermission("orders.manage")],
+    },
+    {
       matcher: "/admin/products*",
       method: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       middlewares: [requirePermission("catalog.manage")],

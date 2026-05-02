@@ -1,6 +1,13 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useState, useEffect, useMemo } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
+const CART_SETTINGS_REQUIRED_PERMISSIONS = ["settings.manage"] as const
+
 // ─── Sidebar icon ─────────────────────────────────────────────────────────────
 const CartIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width={16} height={16}>
@@ -688,6 +695,16 @@ const sectionSubtitle: React.CSSProperties = {
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
 function CartSettingsPage() {
+  const pageHeader = (
+    <>
+      <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--ui-fg-base)", margin: 0 }}>
+        Cart Settings
+      </h1>
+      <p style={{ fontSize: 14, color: "var(--ui-fg-subtle)", marginTop: 6 }}>
+        Configure currency display, checkout mode, and WhatsApp ordering.
+      </p>
+    </>
+  )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeId, setStoreId] = useState("")
@@ -719,10 +736,15 @@ function CartSettingsPage() {
     DEFAULT_PREVIEW_CUSTOMER_NOTES
   )
   const [previewDataError, setPreviewDataError] = useState<string | null>(null)
+  const access = useAdminRouteAccess(CART_SETTINGS_REQUIRED_PERMISSIONS)
 
   useEffect(() => {
-    loadStore()
-  }, [])
+    if (!access.hasAccess) {
+      return
+    }
+
+    void loadStore()
+  }, [access.hasAccess])
 
   useEffect(() => {
     if (!previewPublishableKey) {
@@ -1053,7 +1075,6 @@ function CartSettingsPage() {
     }))
   }
 
-  const enabledCurrencies = currencies.filter((c) => c.enabled)
   const baseCurrencySymbol =
     currencies.find((c) => c.code === baseCurrency)?.symbol ?? baseCurrency
   const activeWhatsAppTemplate =
@@ -1411,18 +1432,23 @@ function CartSettingsPage() {
     )
   }
 
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
+        <div style={{ marginBottom: 28 }}>{pageHeader}</div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={CART_SETTINGS_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 24px" }}>
 
       {/* ── Header ── */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--ui-fg-base)", margin: 0 }}>
-          Cart Settings
-        </h1>
-        <p style={{ fontSize: 14, color: "var(--ui-fg-subtle)", marginTop: 6 }}>
-          Configure currency display, checkout mode, and WhatsApp ordering.
-        </p>
-      </div>
+      <div style={{ marginBottom: 28 }}>{pageHeader}</div>
 
       {/* ── Toast ── */}
       {toast && (

@@ -431,7 +431,7 @@ function parseVariantCombinationsValue(value: unknown) {
   }
 }
 
-function createDraft(entry?: SpecificationEntry, index = 0): SpecificationDraft {
+function createDraft(entry?: SpecificationEntry): SpecificationDraft {
   const mode = entry?.option
     ? "option"
     : entry?.values?.length
@@ -856,7 +856,7 @@ function ProductMetadataWidget({ data }: ProductWidgetProps) {
     setTemplateDefaults(parseTemplateDefaults(meta.specification_template_defaults))
     const parsedSpecifications = parseSpecificationsValue(meta.specifications)
     setSpecificationDrafts(
-      parsedSpecifications.value.map((entry, index) => createDraft(entry, index))
+      parsedSpecifications.value.map((entry) => createDraft(entry))
     )
     setSpecificationsError(parsedSpecifications.error)
     setVariantCombinationDrafts(
@@ -932,7 +932,7 @@ function ProductMetadataWidget({ data }: ProductWidgetProps) {
   }
 
   const addSpecificationDraft = () => {
-    setSpecificationDrafts((current) => [...current, createDraft(undefined, current.length)])
+    setSpecificationDrafts((current) => [...current, createDraft()])
     if (specificationsError) {
       setSpecificationsError(null)
     }
@@ -947,7 +947,7 @@ function ProductMetadataWidget({ data }: ProductWidgetProps) {
 
     setSpecificationDrafts((current) => [
       ...current,
-      ...template.entries.map((entry, index) => createDraft(entry, current.length + index)),
+      ...template.entries.map((entry) => createDraft(entry)),
     ])
 
     if (specificationsError) {

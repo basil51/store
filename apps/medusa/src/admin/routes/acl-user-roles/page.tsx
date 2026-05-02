@@ -1,6 +1,11 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useEffect, useMemo, useState } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
 type RoleItem = {
   key: string
   permissions: string[]
@@ -19,14 +24,7 @@ type StoreItem = {
   name: string
 }
 
-type CurrentAdminContext = {
-  role: string | null
-  role_source: string
-  user_id: string | null
-  requested_store_id: string | null
-  allowed_store_ids: string[]
-  store_scope_allowed: boolean
-}
+const ACL_USER_ROLES_REQUIRED_PERMISSIONS = ["users.manage"] as const
 
 const ShieldIcon = () => (
   <svg
@@ -45,6 +43,12 @@ const ShieldIcon = () => (
 )
 
 function AclUserRolesPage() {
+  const pageSubtitle = (
+    <>
+      Assign <code style={inlineCode}>acl_role</code> and{" "}
+      <code style={inlineCode}>acl_store_ids</code> on admin user metadata.
+    </>
+  )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [users, setUsers] = useState<UserItem[]>([])
@@ -54,12 +58,17 @@ function AclUserRolesPage() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<string>("")
   const [selectedStoreIds, setSelectedStoreIds] = useState<string[]>([])
-  const [currentContext, setCurrentContext] = useState<CurrentAdminContext | null>(null)
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null)
+  const access = useAdminRouteAccess(ACL_USER_ROLES_REQUIRED_PERMISSIONS)
+  const currentContext = access.context
 
   useEffect(() => {
+    if (!access.hasAccess) {
+      return
+    }
+
     void loadData()
-  }, [])
+  }, [access.hasAccess])
 
   const selectedUser = useMemo(
     () => users.find((user) => user.id === selectedUserId) ?? null,
@@ -92,14 +101,9 @@ function AclUserRolesPage() {
   async function loadData() {
     setLoading(true)
     try {
-      const [usersRes, contextRes] = await Promise.all([
-        fetch("/admin/acl/user-roles", {
-          credentials: "include",
-        }),
-        fetch("/admin/acl/roles", {
-          credentials: "include",
-        }),
-      ])
+      const usersRes = await fetch("/admin/acl/user-roles", {
+        credentials: "include",
+      })
 
       if (!usersRes.ok) {
         throw new Error("Failed to load ACL user roles.")
@@ -110,9 +114,6 @@ function AclUserRolesPage() {
         stores?: StoreItem[]
         roles?: RoleItem[]
       }
-      const contextData = contextRes.ok
-        ? ((await contextRes.json()) as Partial<CurrentAdminContext>)
-        : null
 
       const loadedUsers = Array.isArray(data.users) ? data.users : []
       const loadedStores = Array.isArray(data.stores) ? data.stores : []
@@ -121,32 +122,6 @@ function AclUserRolesPage() {
       setUsers(loadedUsers)
       setStores(loadedStores)
       setRoles(loadedRoles)
-      setCurrentContext(
-        contextData
-          ? {
-              role: typeof contextData.role === "string" ? contextData.role : null,
-              role_source:
-                typeof contextData.role_source === "string"
-                  ? contextData.role_source
-                  : "none",
-              user_id:
-                typeof contextData.user_id === "string" ? contextData.user_id : null,
-              requested_store_id:
-                typeof contextData.requested_store_id === "string"
-                  ? contextData.requested_store_id
-                  : null,
-              allowed_store_ids: Array.isArray(contextData.allowed_store_ids)
-                ? contextData.allowed_store_ids.filter(
-                    (storeId): storeId is string => typeof storeId === "string"
-                  )
-                : [],
-              store_scope_allowed:
-                typeof contextData.store_scope_allowed === "boolean"
-                  ? contextData.store_scope_allowed
-                  : false,
-            }
-          : null
-      )
 
       if (loadedUsers.length > 0) {
         hydrateEditor(loadedUsers[0])
@@ -219,14 +194,26 @@ function AclUserRolesPage() {
     }
   }
 
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={container}>
+        <div style={header}>
+          <h1 style={title}>ACL User Roles</h1>
+          <p style={subtitle}>{pageSubtitle}</p>
+        </div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={ACL_USER_ROLES_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={container}>
       <div style={header}>
         <h1 style={title}>ACL User Roles</h1>
-        <p style={subtitle}>
-          Assign <code style={inlineCode}>acl_role</code> and{" "}
-          <code style={inlineCode}>acl_store_ids</code> on admin user metadata.
-        </p>
+        <p style={subtitle}>{pageSubtitle}</p>
         {currentContext && (
           <div style={contextPanel}>
             <div style={contextHeading}>Current admin context</div>

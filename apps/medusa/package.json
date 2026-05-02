@@ -18,6 +18,7 @@
     "seed:locales": "medusa exec ./src/scripts/seed-locales.ts",
     "shipping:ensure-il": "medusa exec ./src/scripts/ensure-israel-shipping.ts",
     "stripe:sync-provider": "medusa exec ./src/scripts/sync-stripe-payment-provider.ts",
+    "paypal:sync-provider": "medusa exec ./src/scripts/sync-paypal-payment-provider.ts",
     "stripe:verify": "medusa exec ./src/scripts/verify-stripe-readiness.ts",
     "stripe:verify-order": "medusa exec ./src/scripts/verify-stripe-order-completion.ts",
     "provision:tenant": "medusa exec ./src/scripts/provision-store-tenant.ts",
@@ -44,7 +45,8 @@
     "@medusajs/framework": "2.13.6",
     "@medusajs/medusa": "2.13.6",
     "@medusajs/payment-stripe": "2.13.6",
-    "@medusajs/ui": "4.1.6"
+    "@medusajs/ui": "4.1.6",
+    "@paypal/paypal-server-sdk": "^2.3.0"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.6",

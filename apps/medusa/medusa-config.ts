@@ -37,23 +37,47 @@ const s3FileModule = s3Configured
 const stripeConfigured =
   !!process.env.STRIPE_API_KEY && !!process.env.STRIPE_WEBHOOK_SECRET
 
-const stripePaymentModule = stripeConfigured
+const paypalConfigured =
+  !!process.env.PAYPAL_CLIENT_ID && !!process.env.PAYPAL_CLIENT_SECRET
+
+const paymentProviders = [
+  ...(stripeConfigured
+    ? [
+        {
+          resolve: '@medusajs/medusa/payment-stripe' as const,
+          id: 'stripe',
+          options: {
+            apiKey: process.env.STRIPE_API_KEY,
+            webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+            capture: process.env.STRIPE_CAPTURE === 'true',
+            automaticPaymentMethods:
+              process.env.STRIPE_AUTOMATIC_PAYMENT_METHODS !== 'false',
+          },
+        },
+      ]
+    : []),
+  ...(paypalConfigured
+    ? [
+        {
+          resolve: './src/modules/paypal' as const,
+          id: 'paypal',
+          options: {
+            client_id: process.env.PAYPAL_CLIENT_ID,
+            client_secret: process.env.PAYPAL_CLIENT_SECRET,
+            environment: process.env.PAYPAL_ENVIRONMENT || 'sandbox',
+            autoCapture: process.env.PAYPAL_AUTO_CAPTURE === 'true',
+            webhook_id: process.env.PAYPAL_WEBHOOK_ID,
+          },
+        },
+      ]
+    : []),
+]
+
+const paymentModule = paymentProviders.length
   ? {
       resolve: '@medusajs/medusa/payment' as const,
       options: {
-        providers: [
-          {
-            resolve: '@medusajs/medusa/payment-stripe' as const,
-            id: 'stripe',
-            options: {
-              apiKey: process.env.STRIPE_API_KEY,
-              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-              capture: process.env.STRIPE_CAPTURE === 'true',
-              automaticPaymentMethods:
-                process.env.STRIPE_AUTOMATIC_PAYMENT_METHODS !== 'false',
-            },
-          },
-        ],
+        providers: paymentProviders,
       },
     }
   : null
@@ -73,7 +97,7 @@ module.exports = defineConfig({
   modules: [
     { resolve: '@medusajs/medusa/translation' },
     ...(s3FileModule ? [s3FileModule] : []),
-    ...(stripePaymentModule ? [stripePaymentModule] : []),
+    ...(paymentModule ? [paymentModule] : []),
   ],
   featureFlags: {
     translation: true,

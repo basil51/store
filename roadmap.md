@@ -13,7 +13,7 @@
 | **Phase 6 — WhatsApp Integration** | **Started** — existing WhatsApp/cart-settings work is reconciled; PDP quantity now drives add-to-cart and click-to-order, templates support richer placeholders, cart/PDP WhatsApp lines include more ordering context, localized EN/AR/HE WhatsApp templates now drive generated message copy, the generated message body now pulls current-locale option/spec labels when catalog metadata provides them, Admin → Cart Settings now offers locale-aware editing plus live preview for PDP vs cart flows using localized store-API product reads, shoppers can now add an optional WhatsApp note from PDP/cart with backward-compatible `{{customer_note}}` template support, Admin → WhatsApp Analytics now includes daily trend charting plus richer date/source/locale/event filtering, Playwright coverage now exercises both storefront and admin WhatsApp regressions, and a dedicated GitHub Actions workflow now runs the WhatsApp suite separately from checkout coverage. |
 | **Phase 7 — Inventory Models** | **7.1 complete for current scope** — stock-mode behavior is aligned across PDP, cart, and browse with store-level fallback + tests. |
 | **Phase 8 — Roles and permissions** | **Done (core scope)** — ACL matrix + store scope from user metadata; middleware on key admin routes; `api_keys.secrets` + publishable-only list lockdown for secret keys; unit + HTTP integration tests; **Admin → ACL Users** UI and `/admin/acl/user-roles` API for `acl_role` / `acl_store_ids`; current-admin context panel on that page. Optional follow-ups: more admin modules behind ACL, audit logs. |
-| **Phase 9 — Admin panel (roadmap track)** | **Next** — start when you open the Phase 9 conversation; foundation admin + custom routes already exist. |
+| **Phase 9 — Admin panel (roadmap track)** | **Completed for current scope** — **9.1:** Store overview + overview API + deep links. **9.2:** Catalog hub + Medusa product screens for CRUD, variants, and uploads. **9.3:** Category management is satisfied by Medusa Admin (`/categories`, `/categories/organize`). **9.4:** Order operations are satisfied by Medusa Admin (`/orders`) and native Medusa states. |
 
 *Details: see root `status.md`.*
 
@@ -347,13 +347,19 @@ Routes **not** listed here still use Medusa’s default admin authentication onl
 - Orders
 - Top products
 
+**Done (current scope):** **Store overview** (`/store-overview`) + `GET /admin/dashboard/overview` — KPIs, status mix, recent orders, top products; ACL sales-channel scoping; **deep links** into Medusa `/orders`, `/orders/:id`, and `/products/:id/edit` where ids exist. Optional later: SQL rollups beyond the 500-order fetch cap, cross-links to Preset Analytics.
+
 ## 9.2 Product Management
 - Add/edit/delete
 - Manage variants
 - Upload images
 
+**Done (current scope):** **Catalog hub** (`/catalog-hub`) — shortcuts to Medusa **Products** (list + **Create**), **Collections**, **Categories** + **Organize**; links to **Preset defaults**, **Spec defaults**, **Cart settings**; **Recent products** table (Admin API, `catalog.manage`) with thumbnails and **Edit** → `/products/:id/edit`. Full CRUD, variants, and file uploads are intentionally handled on the core Medusa product screens + existing product metadata widget, so 9.2 is complete without duplicating those flows.
+
 ## 9.3 Category Management
 - Tree view editor
+
+**Done (current scope, via Medusa Admin):** **Categories** list/create/edit, product membership, metadata, and **Organize ranking** tree UI (`/categories`, `/categories/organize`). **Catalog hub** already links there. Optional later only if you need a **custom** tree (e.g. tenant-specific UX, bulk translation, or rules outside `ProductCategory`).
 
 ## 9.4 Orders
 - Order status:
@@ -362,17 +368,45 @@ Routes **not** listed here still use Medusa’s default admin authentication onl
   - shipped
   - completed
 
+**Done (current scope, via Medusa Admin + engine):** orders list/detail, payments, fulfillments, captures, returns/exchanges where configured — using Medusa’s **native order / fulfillment / payment states**, not a separate enum named pending/confirmed/shipped/completed. **Store overview** links into `/orders` and `/orders/:id`. Optional later: merchant-facing **status labels** (map Medusa states → your four stages), automation, or **9.4-only** custom workflows if ops outgrow defaults.
+
+**Phase 9 can now be treated as complete for the current roadmap scope. Phase 10 is the next primary lane.**
+
 ---
 
 # 💳 PHASE 10 — Payments
 
-## 10.1 Integrations
-- Stripe
-- PayPal
-- Manual (cash)
+Current note:
+- Treat Phase 10 as **payment completion from the current local milestone**, not as a greenfield payments build.
+- **Stripe** overlaps heavily with deferred Phase 5 work.
+- **Manual payment** already has a working local flow, but may still need production-facing clarification depending on whether you want true cash/manual operations or only the current local/manual provider path.
+- **PayPal** is still the main truly open provider lane.
 
-## 10.2 Future:
-- Local gateways (Israel / Middle East)
+## 10.1 Already covered
+- [x] Stripe backend wiring, readiness verification, local provider sync, and payment-session initialization.
+- [x] Storefront Stripe checkout fixes already landed for `return_url`, immutable `clientSecret` handling, delivery-step stability, and the default credit-card path.
+- [x] Stripe test-mode order completion is already verified with the dedicated Medusa verification script.
+- [x] A working local manual payment flow exists and is covered in Playwright checkout coverage.
+
+## 10.2 Deferred until hosted HTTPS environment
+- [ ] Reopen the remaining Stripe card-field remount gap after payment-session initiation.
+- [ ] Resume Stripe UI and webhook follow-up work only once the project is running in a server-hosted HTTPS-capable environment.
+- [ ] Re-verify webhook-driven capture-state advancement outside the current local dev limitations.
+
+## 10.3 Still actually open
+### PayPal implementation checklist
+- [ ] Backend: select the Medusa PayPal provider strategy/package and configure the required sandbox/live credentials, callback URLs, and webhook expectations for a hosted HTTPS-capable environment.
+- [ ] Backend: enable and verify PayPal on the target region(s) so carts can initialize a PayPal payment session alongside the existing providers.
+- [ ] Storefront: add a real PayPal checkout path in the payment step instead of relying on the current Stripe/manual assumptions, including provider selection, approval/redirect handling, and return-path recovery.
+- [ ] Storefront: extend payment summary, review, confirmation, and checkout analytics flows so PayPal sessions behave as first-class checkout states.
+- [ ] Verification: add a documented sandbox flow or script that covers PayPal payment-session creation, approval, return, and order completion.
+- [ ] Verification: add browser or integration coverage for the PayPal happy path once the environment can support it reliably.
+
+### Manual-payment clarification
+- [ ] Decide whether `Manual (cash)` needs extra merchant/customer UX, operational guidance, or production semantics beyond the current local/manual provider flow.
+
+## 10.4 Future
+- [ ] Local gateways (Israel / Middle East)
 
 ---
 

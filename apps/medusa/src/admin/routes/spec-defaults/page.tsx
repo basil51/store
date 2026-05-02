@@ -1,6 +1,13 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useEffect, useState } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
+const SPEC_DEFAULTS_REQUIRED_PERMISSIONS = ["catalog.manage", "settings.manage"] as const
+
 // ─── Sidebar icon ──────────────────────────────────────────────────────────────
 const SpecIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" width={16} height={16}>
@@ -21,16 +28,28 @@ type TypeDefaultsMap = Record<string, string[]>
 type ProductType = { id: string; value: string }
 
 function SpecDefaultsPage() {
+  const pageSubtitle = (
+    <>
+      Choose which spec templates are suggested by default for each product type. These global
+      defaults are merged with any per-product overrides set on individual products. Saved to
+      store metadata as <code style={codeStyle}>specification_template_defaults_by_type</code>.
+    </>
+  )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeId, setStoreId] = useState("")
   const [productTypes, setProductTypes] = useState<ProductType[]>([])
   const [defaultsMap, setDefaultsMap] = useState<TypeDefaultsMap>({})
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null)
+  const access = useAdminRouteAccess(SPEC_DEFAULTS_REQUIRED_PERMISSIONS)
 
   useEffect(() => {
-    loadAll()
-  }, [])
+    if (!access.hasAccess) {
+      return
+    }
+
+    void loadAll()
+  }, [access.hasAccess])
 
   function showToast(type: "ok" | "err", text: string) {
     setToast({ type, text })
@@ -109,17 +128,29 @@ function SpecDefaultsPage() {
     }
   }
 
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={pageStyle}>
+        <div style={headerStyle}>
+          <div>
+            <h1 style={titleStyle}>Specification Template Defaults</h1>
+            <p style={subtitleStyle}>{pageSubtitle}</p>
+          </div>
+        </div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={SPEC_DEFAULTS_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={pageStyle}>
       <div style={headerStyle}>
         <div>
           <h1 style={titleStyle}>Specification Template Defaults</h1>
-          <p style={subtitleStyle}>
-            Choose which spec templates are suggested by default for each product
-            type. These global defaults are merged with any per-product overrides
-            set on individual products. Saved to store metadata as{" "}
-            <code style={codeStyle}>specification_template_defaults_by_type</code>.
-          </p>
+          <p style={subtitleStyle}>{pageSubtitle}</p>
         </div>
       </div>
 

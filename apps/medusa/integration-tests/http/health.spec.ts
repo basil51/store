@@ -386,6 +386,27 @@ medusaIntegrationTestRunner({
         expect(response.data.message).toContain("users.manage")
       })
 
+      it("returns current ACL context for authenticated roles without users.manage", async () => {
+        const { token, userId } = await createAdminAuthContext({
+          role: "manager",
+        })
+
+        const response = await api.get("/admin/acl/context", {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toBe(200)
+        expect(response.data.role).toBe("manager")
+        expect(response.data.user_id).toBe(userId)
+        expect(response.data.allowed_permissions).toEqual(
+          expect.arrayContaining(["catalog.manage", "orders.manage", "analytics.read"])
+        )
+        expect(response.data.allowed_permissions).not.toContain("users.manage")
+      })
+
       it("enforces store scope when store_id is requested", async () => {
         const container = getContainer()
         const { data } = await container.resolve(ContainerRegistrationKeys.QUERY).graph({
@@ -543,6 +564,47 @@ medusaIntegrationTestRunner({
         expect(response.status).toBe(200)
         const keys = response.data?.api_keys ?? []
         expect(keys.some((k: { type?: string }) => k.type === "secret")).toBe(true)
+      })
+
+      it("allows orders.manage roles to access dashboard overview", async () => {
+        const { token } = await createAdminAuthContext({
+          role: "staff",
+        })
+
+        const response = await api.get("/admin/dashboard/overview", {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toBe(200)
+        expect(response.data.summary).toEqual(
+          expect.objectContaining({
+            order_count: expect.any(Number),
+            revenue_total: expect.any(Number),
+          })
+        )
+        expect(response.data.scope).toEqual(
+          expect.objectContaining({
+            restricted: true,
+            sales_channel_ids: [],
+          })
+        )
+      })
+
+      it("denies dashboard overview when the ACL role is missing", async () => {
+        const { token } = await createAdminAuthContext({})
+
+        const response = await api.get("/admin/dashboard/overview", {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+          validateStatus: () => true,
+        })
+
+        expect(response.status).toBe(401)
+        expect(response.data.message).toContain("Missing role context")
       })
     })
   },

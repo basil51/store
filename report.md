@@ -7,9 +7,9 @@ Source of truth: `status.md`, `roadmap.md`, and the repo as of this report.
 
 The platform is in **post–Phase-8** shape for access control: roles and permissions are defined in code, enforced on major Medusa admin route groups, secret admin API keys are locked down for non–`super_admin` users, and operators can assign **`acl_role`** / **`acl_store_ids`** from **Admin → ACL Users** instead of editing metadata by hand. Unit and HTTP integration tests cover ACL and API-key behavior.
 
-**Phase 8 is treated as complete for the agreed core scope.** The next primary roadmap lane is **Phase 9 (admin panel track)**—building or extending operational admin experiences on top of Medusa Dashboard and the existing custom admin routes (Cart Settings, preset/spec defaults, analytics, ACL Users, etc.).
+**Phase 8 is treated as complete for the agreed core scope.** **Phase 9 (admin panel track) is complete for the current scope**: **9.1** store overview is done, **9.2** product management is covered by **Catalog hub** plus native Medusa product screens, and **9.3 / 9.4** are satisfied by Medusa Dashboard capabilities unless a custom requirement appears.
 
-Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally; **Phase 4.5** (RTL / locale copy) stays in light stabilization; **Phase 6** WhatsApp is substantial and can receive polish as needed.
+Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused locally, so **Phase 10 should be treated as payment completion from that local milestone rather than as a greenfield payments build**. In practice, **PayPal is the main open provider lane**, while the existing local manual payment flow works today but may still need production-facing clarification. **Phase 4.5** (RTL / locale copy) stays in light stabilization; **Phase 6** WhatsApp is substantial and can receive polish as needed.
 
 ## Phase Snapshot
 
@@ -24,8 +24,9 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 | Phase 6 | WhatsApp integration | Active / largely implemented |
 | Phase 7.1 | Inventory stock modes | Done for current scope |
 | **Phase 8** | **Roles & permissions** | **Done (core scope)** — matrix, middleware, API keys, tests, **ACL Users** admin UI |
-| **Phase 9** | **Admin panel (roadmap)** | **Next** — start in a dedicated Phase 9 thread |
-| Phases 10+ | Payments, security, i18n at scale, performance, etc. | Pending or partially grounded by earlier work |
+| **Phase 9** | **Admin panel (roadmap)** | **Completed for current scope** — 9.1 store overview, 9.2 Catalog hub + Medusa product screens, 9.3 categories, and 9.4 orders are all covered |
+| **Phase 10** | **Payments** | **Payment completion lane** — Stripe is mostly covered locally and deferred for hosted HTTPS follow-up, PayPal is still the main open provider lane, and manual payment already works locally but may need production semantics clarification |
+| Phases 11+ | Security, i18n at scale, performance, etc. | Pending or partially grounded by earlier work |
 
 ## What landed for Phase 8 (high level)
 
@@ -53,11 +54,11 @@ Long-standing caveats unchanged: **Phase 5 Stripe** remains intentionally paused
 
 ## Recommended next steps
 
-1. **Start Phase 9** using `roadmap.md` §9 as the backlog anchor; reuse patterns from existing custom admin routes.
+1. **Start Phase 10** as payment completion from the current local milestone, not as a greenfield rebuild. Use `roadmap.md` §10.1–10.3 as the backlog anchor: prioritize the still-open **PayPal** backend/storefront/verification checklist and any manual-payment semantics clarification locally, while leaving the deferred Stripe remount/webhook work for a hosted HTTPS environment.
 2. **Optional Phase 8 expansion:** map remaining Medusa admin modules to permissions; add ACL audit logging if compliance needs it.
 3. Keep **Phase 4.5** and **Phase 6** in “maintain / polish” mode unless new gaps appear.
 4. Revisit **Stripe** only when deployment environment supports finishing it cleanly.
 
 ## Bottom line
 
-The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. You can **open Phase 9** without blocking on further Phase 8 work, unless you explicitly want full admin-surface ACL coverage first.
+The repo has crossed into **controlled platform operations**: Phase 8 delivers real ACL enforcement, secret-key isolation, tests, and an operator-facing **ACL Users** screen. **Phase 9 is complete for the current scope**, so the next primary roadmap lane is **Phase 10** — with **PayPal** as the main genuinely open provider and deferred Stripe work left intentionally parked until hosted HTTPS is available.

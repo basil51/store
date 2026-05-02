@@ -1,6 +1,13 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useEffect, useState } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
+const WHATSAPP_ANALYTICS_REQUIRED_PERMISSIONS = ["analytics.read"] as const
+
 const AnalyticsIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -431,6 +438,8 @@ const EmptyTableRow = ({ colSpan, message }: { colSpan: number; message: string 
 }
 
 function WhatsAppAnalyticsPage() {
+  const pageSubtitle =
+    "Track preview opens, message copies, and continue clicks across the WhatsApp ordering funnel"
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [days, setDays] = useState("30")
@@ -441,6 +450,7 @@ function WhatsAppAnalyticsPage() {
   const [locale, setLocale] = useState("")
   const [eventName, setEventName] = useState("")
   const [data, setData] = useState<WhatsAppAnalyticsData | null>(null)
+  const access = useAdminRouteAccess(WHATSAPP_ANALYTICS_REQUIRED_PERMISSIONS)
 
   const fetchAnalytics = async (filters: AnalyticsFilters) => {
     setLoading(true)
@@ -466,6 +476,10 @@ function WhatsAppAnalyticsPage() {
   }
 
   useEffect(() => {
+    if (!access.hasAccess) {
+      return
+    }
+
     void fetchAnalytics({
       days: "30",
       limit: "10",
@@ -475,7 +489,7 @@ function WhatsAppAnalyticsPage() {
       locale: "",
       eventName: "",
     })
-  }, [])
+  }, [access.hasAccess])
 
   const handleRefresh = () => {
     void fetchAnalytics({
@@ -540,13 +554,26 @@ function WhatsAppAnalyticsPage() {
       ].filter(Boolean) as Array<{ label: string; value: string }>
     : []
 
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={container}>
+        <div style={header}>
+          <h1 style={title}>WhatsApp Analytics</h1>
+          <p style={subtitle}>{pageSubtitle}</p>
+        </div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={WHATSAPP_ANALYTICS_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={container}>
       <div style={header}>
         <h1 style={title}>WhatsApp Analytics</h1>
-        <p style={subtitle}>
-          Track preview opens, message copies, and continue clicks across the WhatsApp ordering funnel
-        </p>
+        <p style={subtitle}>{pageSubtitle}</p>
       </div>
 
       {error && <div style={errorMessage}>{error}</div>}

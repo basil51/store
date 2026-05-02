@@ -1,7 +1,7 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isPaypal, isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
 import {
   type CheckoutBlockerCode,
@@ -126,7 +126,7 @@ const Payment = ({
     setError(null)
     setStoredPaymentMethod(cartId, method)
     setSelectedPaymentMethod(method)
-    if (isStripeLike(method)) {
+    if (isStripeLike(method) || isPaypal(method)) {
       try {
         await initializePaymentSessionWithRecovery(method)
         router.refresh()
@@ -234,7 +234,7 @@ const Payment = ({
       }
     }
 
-    if (!isStripeLike(selectedPaymentMethod)) {
+    if (!(isStripeLike(selectedPaymentMethod) || isPaypal(selectedPaymentMethod))) {
       autoInitiatedPaymentMethodRef.current = null
       return () => {
         cancelled = true
@@ -510,7 +510,11 @@ const Payment = ({
                     {paymentInfoMap[selectedPaymentMethod]?.icon || <CreditCard />}
                   </span>
                   <span className="text-sm">
-                    {isStripeLike(selectedPaymentMethod) && cardBrand ? cardBrand : "Another step will appear"}
+                    {isStripeLike(selectedPaymentMethod) && cardBrand
+                      ? cardBrand
+                      : isPaypal(selectedPaymentMethod)
+                      ? "You'll confirm in PayPal"
+                      : "Another step will appear"}
                   </span>
                 </div>
               </div>

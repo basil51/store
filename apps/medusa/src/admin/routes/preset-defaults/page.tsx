@@ -1,6 +1,13 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useEffect, useMemo, useState } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
+const PRESET_DEFAULTS_REQUIRED_PERMISSIONS = ["catalog.manage", "settings.manage"] as const
+
 type ProductType = { id: string; value: string }
 
 type VariantCombinationEntry = {
@@ -161,6 +168,13 @@ function normalizeVariantCombinationDefaultsByType(value: unknown) {
 }
 
 function PresetDefaultsPage() {
+  const pageSubtitle = (
+    <>
+      Save reusable preset combinations at the store level by product type.
+      Products without their own <code style={codeStyle}>metadata.variant_combinations</code>
+      automatically fall back to these defaults on the PDP.
+    </>
+  )
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeId, setStoreId] = useState("")
@@ -168,10 +182,15 @@ function PresetDefaultsPage() {
   const [defaultsMap, setDefaultsMap] = useState<Record<string, string>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [toast, setToast] = useState<ToastState>(null)
+  const access = useAdminRouteAccess(PRESET_DEFAULTS_REQUIRED_PERMISSIONS)
 
   useEffect(() => {
+    if (!access.hasAccess) {
+      return
+    }
+
     void loadAll()
-  }, [])
+  }, [access.hasAccess])
 
   function showToast(type: "ok" | "err", text: string) {
     setToast({ type, text })
@@ -220,6 +239,23 @@ function PresetDefaultsPage() {
     () => [...productTypes].sort((left, right) => left.value.localeCompare(right.value)),
     [productTypes]
   )
+
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={pageStyle}>
+        <div style={headerStyle}>
+          <div>
+            <h1 style={titleStyle}>Preset Defaults</h1>
+            <p style={subtitleStyle}>{pageSubtitle}</p>
+          </div>
+        </div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={PRESET_DEFAULTS_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
 
   function updateTypeValue(typeValue: string, nextValue: string) {
     setDefaultsMap((current) => ({
@@ -329,11 +365,7 @@ function PresetDefaultsPage() {
       <div style={headerStyle}>
         <div>
           <h1 style={titleStyle}>Preset Defaults</h1>
-          <p style={subtitleStyle}>
-            Save reusable preset combinations at the store level by product type.
-            Products without their own <code style={codeStyle}>metadata.variant_combinations</code>
-            automatically fall back to these defaults on the PDP.
-          </p>
+          <p style={subtitleStyle}>{pageSubtitle}</p>
         </div>
       </div>
 

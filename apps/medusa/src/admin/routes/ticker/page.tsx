@@ -1,6 +1,13 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { useState, useEffect } from "react"
 
+import {
+  AdminRouteAccessNotice,
+  useAdminRouteAccess,
+} from "../../lib/admin-route-access"
+
+const TICKER_REQUIRED_PERMISSIONS = ["settings.manage"] as const
+
 // ─── Sidebar icon ─────────────────────────────────────────────────────────────
 const TickerIcon = () => (
   <svg
@@ -26,16 +33,27 @@ const DEFAULT_MESSAGES = [
 ]
 
 function TickerPage() {
+  const pageSubtitle = (
+    <>
+      Manage the scrolling announcement bar at the top of the storefront. Changes are saved to
+      store metadata and take effect on the next page load (up to 60 s cache).
+    </>
+  )
   const [messages, setMessages] = useState<string[]>([])
   const [newMsg, setNewMsg] = useState("")
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [storeId, setStoreId] = useState("")
   const [toast, setToast] = useState<{ type: "ok" | "err"; text: string } | null>(null)
+  const access = useAdminRouteAccess(TICKER_REQUIRED_PERMISSIONS)
 
   useEffect(() => {
-    fetchStore()
-  }, [])
+    if (!access.hasAccess) {
+      return
+    }
+
+    void fetchStore()
+  }, [access.hasAccess])
 
   function showToast(type: "ok" | "err", text: string) {
     setToast({ type, text })
@@ -122,16 +140,29 @@ function TickerPage() {
     }
   }
 
+  if (access.loading || access.error || !access.hasAccess) {
+    return (
+      <div style={pageStyle}>
+        <div style={headerStyle}>
+          <div>
+            <h1 style={titleStyle}>Ticker Messages</h1>
+            <p style={subtitleStyle}>{pageSubtitle}</p>
+          </div>
+        </div>
+        <AdminRouteAccessNotice
+          access={access}
+          requiredPermissions={TICKER_REQUIRED_PERMISSIONS}
+        />
+      </div>
+    )
+  }
+
   return (
     <div style={pageStyle}>
       <div style={headerStyle}>
         <div>
           <h1 style={titleStyle}>Ticker Messages</h1>
-          <p style={subtitleStyle}>
-            Manage the scrolling announcement bar at the top of the storefront.
-            Changes are saved to store metadata and take effect on the next page
-            load (up to 60 s cache).
-          </p>
+          <p style={subtitleStyle}>{pageSubtitle}</p>
         </div>
         <button onClick={resetToDefaults} style={ghostBtnStyle}>
           Reset defaults
