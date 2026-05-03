@@ -15,7 +15,7 @@
 | **Phase 8 — Roles and permissions** | **Done (core scope)** — ACL matrix + store scope from user metadata; middleware on key admin routes; `api_keys.secrets` + publishable-only list lockdown for secret keys; unit + HTTP integration tests; **Admin → ACL Users** UI and `/admin/acl/user-roles` API for `acl_role` / `acl_store_ids`; current-admin context panel on that page. Optional follow-ups: more admin modules behind ACL, audit logs. |
 | **Phase 9 — Admin panel (roadmap track)** | **Completed for current scope** — **9.1:** Store overview + overview API + deep links. **9.2:** Catalog hub + Medusa product screens for CRUD, variants, and uploads. **9.3:** Category management is satisfied by Medusa Admin (`/categories`, `/categories/organize`). **9.4:** Order operations are satisfied by Medusa Admin (`/orders`) and native Medusa states. |
 | **Phase 10 — Payments** | **Completed for current local scope** — local PayPal and Offline payment flows are in place; hosted PayPal webhook/public-HTTPS follow-through stays deferred. |
-| **Phase 11 — Security** | **Started** — first backend hardening slice adds rate limiting to public store analytics ingest routes via Medusa middleware, with focused unit coverage. |
+| **Phase 11 — Security** | **Stopped at current local milestone** — the local backend/storefront hardening slices are in place; deploy-time HTTPS and firewall checks stay deferred until the real server is up. Phase 12 is the next primary lane. |
 
 *Details: see root `status.md`.*
 
@@ -420,25 +420,38 @@ Current note:
 
 Current progress:
 - The first concrete Phase 11 slice is in: Medusa now rate-limits the anonymous `POST /store/analytics/preset` and `POST /store/analytics/whatsapp` ingest endpoints at the middleware layer using per-IP fixed windows, returns `429` plus `Retry-After` when a client exceeds the current bucket, and emits rate-limit headers for observability.
+- The next backend scaling-hardening slice is now in: the analytics limiter now stores counters in Redis with atomic expiry instead of keeping buckets only in process memory, so the same abuse controls survive multiple Medusa app instances while retaining an in-memory fallback if Redis is temporarily unavailable.
+- The next backend auth-hardening slice is now in: Medusa config no longer relies on predictable `supersecret` JWT/cookie fallbacks in production, resolves strong non-production fallbacks for local/test boot, and validates `STORE_CORS` / `ADMIN_CORS` / `AUTH_CORS` at config load time.
+- The first storefront/session-boundary slice is now in: tenant, publishable-key, default-locale, tenant-locale, and tenant-cache cookies are now written with hardened server-side attributes (`httpOnly`, `sameSite=strict`, `path=/`, `secure` in production), and tenant cookie deletions now use the same boundary instead of looser default writes.
+- The next storefront write-surface slice is now in: the custom analytics sink proxies (`POST /api/analytics/preset`, `POST /api/analytics/whatsapp`) now reject missing-origin and cross-origin requests, accepting only same-origin `Origin` or same-origin `Referer` before forwarding to Medusa.
+- The next storefront server-action slice is now in: cart, checkout, customer-account, locale-switch, order-transfer, and onboarding-reset mutations now enforce the same same-origin `Origin` / `Referer` discipline inside the shared storefront data layer before they mutate carts, sessions, customer records, or cookies.
+- Focused regression coverage now includes helper-level origin tests, an action-level customer mutation test, and a runtime-facing Playwright replay that proves hostile Add to cart server-action requests are rejected before they can be reused cross-origin.
 - Defaults are tuned for the current local/prod-like single-process setup and can be adjusted via `STORE_ANALYTICS_RATE_LIMIT_WINDOW_MS` and `STORE_ANALYTICS_RATE_LIMIT_MAX_REQUESTS`.
-- Recommended next security slice remains auth hardening (JWT / cookie / frontend session boundaries), not reopening deferred Stripe or hosted PayPal webhook work.
+- The current local storefront CSRF/origin hardening pass is complete for the active write surfaces.
+- Phase 11 is being stopped at the current local milestone. The remaining HTTPS and firewall items are deployment checks to revisit only after the server is deployed and started with its real HTTPS entrypoint.
 
 ## 11.1 Backend
-- [ ] JWT authentication hardening
+- [x] JWT/cookie secret hardening at Medusa config load
 - [x] Role-based access control
 - [x] Rate limiting on public store analytics ingest routes
 
 ## 11.2 Frontend
-- [ ] Secure API calls
-- [ ] CSRF protection
+- [x] Storefront session/cookie boundary hardening for tenant-scoped metadata cookies
+- [x] Trusted-origin protection on custom analytics POST routes
+- [x] Trusted-origin protection on storefront server actions for cart, checkout, customer, locale, order-transfer, and onboarding flows
+- [x] Current local storefront CSRF/origin hardening pass with runtime-facing rejection coverage
 
 ## 11.3 Infrastructure
-- [ ] HTTPS
-- [ ] Firewall rules
+- [ ] HTTPS — check after deploy/start on the real server with the final public domain and TLS terminator in place
+- [ ] Firewall rules — check after deploy/start so only required public ingress stays exposed
+- [x] Shared Redis-backed rate limiting for multi-instance Medusa deploys
 
 ---
 
 # 🌍 PHASE 12 — Multi-Language System
+
+Current note:
+- Phase 12 is now the next primary lane after the current local Phase 11 stop-point.
 
 ## 12.1 Content Translation
 - Products
