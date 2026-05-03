@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -70,6 +71,8 @@ export const retrieveCustomer =
   }
 
 export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
+  await ensureTrustedServerActionRequest()
+
   const headers = {
     ...(await getAuthHeaders()),
   }
@@ -86,6 +89,8 @@ export const updateCustomer = async (body: HttpTypes.StoreUpdateCustomer) => {
 }
 
 export async function signup(_currentState: unknown, formData: FormData) {
+  await ensureTrustedServerActionRequest()
+
   const password = formData.get("password") as string
   const customerForm = {
     email: formData.get("email") as string,
@@ -131,6 +136,8 @@ export async function signup(_currentState: unknown, formData: FormData) {
 }
 
 export async function login(_currentState: unknown, formData: FormData) {
+  await ensureTrustedServerActionRequest()
+
   const email = formData.get("email") as string
   const password = formData.get("password") as string
 
@@ -154,6 +161,8 @@ export async function login(_currentState: unknown, formData: FormData) {
 }
 
 export async function signout(countryCode: string) {
+  await ensureTrustedServerActionRequest()
+
   await sdk.auth.logout()
 
   await removeAuthToken()
@@ -170,6 +179,8 @@ export async function signout(countryCode: string) {
 }
 
 export async function transferCart() {
+  await ensureTrustedServerActionRequest()
+
   const cartId = await getCartId()
 
   if (!cartId) {
@@ -203,6 +214,8 @@ export const addCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData
 ): Promise<any> => {
+  await ensureTrustedServerActionRequest()
+
   const isDefaultBilling = (currentState.isDefaultBilling as boolean) || false
   const isDefaultShipping = (currentState.isDefaultShipping as boolean) || false
 
@@ -240,6 +253,8 @@ export const addCustomerAddress = async (
 export const deleteCustomerAddress = async (
   addressId: string
 ): Promise<void> => {
+  await ensureTrustedServerActionRequest()
+
   const headers = {
     ...(await getAuthHeaders()),
   }
@@ -260,6 +275,8 @@ export const updateCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData
 ): Promise<any> => {
+  await ensureTrustedServerActionRequest()
+
   const addressId =
     (currentState.addressId as string) || (formData.get("addressId") as string)
 

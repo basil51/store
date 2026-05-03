@@ -8,6 +8,14 @@ export const TENANT_CACHE_COOKIE_BASE = "_medusa_cache_id"
 export const TENANT_LOCALE_COOKIE_BASE = "_medusa_locale"
 export const DEFAULT_TENANT_SLUG = "default"
 
+type TenantCookieOptions = {
+  maxAge: number
+  httpOnly: boolean
+  sameSite: "strict"
+  secure: boolean
+  path: "/"
+}
+
 export type StoreTenantContext = {
   id: string
   name: string | null
@@ -63,3 +71,21 @@ export const getTenantScopedCookieName = (
   const normalizedSlug = normalizeTenantSlug(tenantSlug)
   return `${baseName}_${normalizedSlug}`
 }
+
+const isSecureCookieEnvironment = (nodeEnv = process.env.NODE_ENV) =>
+  nodeEnv === "production"
+
+export const getTenantServerCookieOptions = (
+  maxAge: number,
+  nodeEnv = process.env.NODE_ENV
+): TenantCookieOptions => ({
+  maxAge,
+  httpOnly: true,
+  sameSite: "strict",
+  secure: isSecureCookieEnvironment(nodeEnv),
+  path: "/",
+})
+
+export const getTenantServerCookieDeletionOptions = (
+  nodeEnv = process.env.NODE_ENV
+): TenantCookieOptions => getTenantServerCookieOptions(-1, nodeEnv)

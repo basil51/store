@@ -9,6 +9,8 @@ import {
   TENANT_DEFAULT_LOCALE_COOKIE_NAME,
   TENANT_LOCALE_COOKIE_BASE,
   TENANT_PUBLISHABLE_KEY_COOKIE_NAME,
+  getTenantServerCookieDeletionOptions,
+  getTenantServerCookieOptions,
   getTenantScopedCookieName,
   normalizeTenantSlug,
   resolveTenantPublishableKey,
@@ -35,7 +37,7 @@ const setTenantCookieValue = (
   cookies.set(getTenantScopedCookieName(baseName, tenantSlug), value, options)
 
   if (legacyName) {
-    cookies.set(legacyName, "", { maxAge: -1 })
+    cookies.set(legacyName, "", getTenantServerCookieDeletionOptions())
   }
 }
 
@@ -108,12 +110,7 @@ export const setAuthToken = async (token: string) => {
     TENANT_AUTH_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     token,
-    {
-      maxAge: 60 * 60 * 24 * 7,
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    },
+    getTenantServerCookieOptions(60 * 60 * 24 * 7),
     TENANT_AUTH_COOKIE_BASE
   )
 }
@@ -125,9 +122,7 @@ export const removeAuthToken = async () => {
     TENANT_AUTH_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     "",
-    {
-      maxAge: -1,
-    },
+    getTenantServerCookieDeletionOptions(),
     TENANT_AUTH_COOKIE_BASE
   )
 }
@@ -182,12 +177,7 @@ export const setTenantLocale = async (locale: string) => {
     TENANT_LOCALE_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     locale,
-    {
-      maxAge: 60 * 60 * 24 * 365,
-      httpOnly: false,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    },
+    getTenantServerCookieOptions(60 * 60 * 24 * 365),
     TENANT_LOCALE_COOKIE_BASE
   )
 }
@@ -199,9 +189,7 @@ export const clearTenantLocale = async () => {
     TENANT_LOCALE_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     "",
-    {
-      maxAge: -1,
-    },
+    getTenantServerCookieDeletionOptions(),
     TENANT_LOCALE_COOKIE_BASE
   )
 }
@@ -213,12 +201,7 @@ export const setCartId = async (cartId: string) => {
     TENANT_CART_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     cartId,
-    {
-      maxAge: 60 * 60 * 24 * 7,
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    },
+    getTenantServerCookieOptions(60 * 60 * 24 * 7),
     TENANT_CART_COOKIE_BASE
   )
 }
@@ -230,9 +213,7 @@ export const removeCartId = async () => {
     TENANT_CART_COOKIE_BASE,
     getCurrentTenantSlug(cookies),
     "",
-    {
-      maxAge: -1,
-    },
+    getTenantServerCookieDeletionOptions(),
     TENANT_CART_COOKIE_BASE
   )
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -204,6 +205,8 @@ export async function getOrSetCart(countryCode: string) {
 }
 
 export async function updateCart(data: HttpTypes.StoreUpdateCart) {
+  await ensureTrustedServerActionRequest()
+
   const cartId = await getCartId()
 
   if (!cartId) {
@@ -239,6 +242,8 @@ export async function addToCart({
   countryCode: string
   metadata?: Record<string, unknown>
 }) {
+  await ensureTrustedServerActionRequest()
+
   if (!variantId) {
     throw new Error("Missing variant ID when adding to cart")
   }
@@ -313,6 +318,8 @@ export async function updateLineItem({
   lineId: string
   quantity: number
 }) {
+  await ensureTrustedServerActionRequest()
+
   if (!lineId) {
     throw new Error("Missing lineItem ID when updating line item")
   }
@@ -340,6 +347,8 @@ export async function updateLineItem({
 }
 
 export async function deleteLineItem(lineId: string) {
+  await ensureTrustedServerActionRequest()
+
   if (!lineId) {
     throw new Error("Missing lineItem ID when deleting line item")
   }
@@ -373,6 +382,8 @@ export async function setShippingMethod({
   cartId: string
   shippingMethodId: string
 }) {
+  await ensureTrustedServerActionRequest()
+
   const headers = {
     ...(await getAuthHeaders()),
   }
@@ -390,6 +401,8 @@ export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
 ) {
+  await ensureTrustedServerActionRequest()
+
   const headers = {
     ...(await getAuthHeaders()),
   }
@@ -405,6 +418,8 @@ export async function initiatePaymentSession(
 }
 
 export async function applyPromotions(codes: string[]) {
+  await ensureTrustedServerActionRequest()
+
   const cartId = await getCartId()
 
   if (!cartId) {
@@ -541,6 +556,8 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
  * @returns The cart object if the order was successful, or null if not.
  */
 export async function placeOrder(cartId?: string) {
+  await ensureTrustedServerActionRequest()
+
   const id = cartId || (await getCartId())
 
   if (!id) {
@@ -607,6 +624,8 @@ export async function placeOrder(cartId?: string) {
  * @param countryCode
  */
 export async function updateRegion(countryCode: string, currentPath: string) {
+  await ensureTrustedServerActionRequest()
+
   const cartId = await getCartId()
   const region = await getRegion(countryCode)
 

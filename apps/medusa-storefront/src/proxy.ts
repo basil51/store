@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server"
 import {
   canUseDefaultPublishableKeyFallback,
   DEFAULT_TENANT_SLUG,
+  getTenantServerCookieDeletionOptions,
+  getTenantServerCookieOptions,
   resolveTenantPublishableKey,
   StoreTenantContext,
   TENANT_CACHE_COOKIE_BASE,
@@ -135,11 +137,12 @@ function applyTenantCookies(
 ) {
   const maxAge = 60 * 60 * 24 * 30
   const defaultLocale = tenantContext?.default_locale || DEFAULT_LOCALE
+  const tenantCookieOptions = getTenantServerCookieOptions(maxAge)
 
   if (tenantContext?.tenant_slug) {
-    response.cookies.set(TENANT_COOKIE_NAME, tenantContext.tenant_slug, { maxAge })
+    response.cookies.set(TENANT_COOKIE_NAME, tenantContext.tenant_slug, tenantCookieOptions)
   } else {
-    response.cookies.set(TENANT_COOKIE_NAME, DEFAULT_TENANT_SLUG, { maxAge })
+    response.cookies.set(TENANT_COOKIE_NAME, DEFAULT_TENANT_SLUG, tenantCookieOptions)
   }
 
   const publishableKey = resolveTenantPublishableKey({
@@ -152,21 +155,23 @@ function applyTenantCookies(
     response.cookies.set(
       TENANT_PUBLISHABLE_KEY_COOKIE_NAME,
       publishableKey,
-      { maxAge }
+      tenantCookieOptions
     )
   } else {
-    response.cookies.delete(TENANT_PUBLISHABLE_KEY_COOKIE_NAME)
+    response.cookies.set(
+      TENANT_PUBLISHABLE_KEY_COOKIE_NAME,
+      "",
+      getTenantServerCookieDeletionOptions()
+    )
   }
 
   if (tenantContext?.storefront_host) {
     response.cookies.set(TENANT_STOREFRONT_HOST_COOKIE_NAME, tenantContext.storefront_host, {
-      maxAge,
+      ...tenantCookieOptions,
     })
   }
 
-  response.cookies.set(TENANT_DEFAULT_LOCALE_COOKIE_NAME, defaultLocale, {
-    maxAge,
-  })
+  response.cookies.set(TENANT_DEFAULT_LOCALE_COOKIE_NAME, defaultLocale, tenantCookieOptions)
 
   if (!existingLocale) {
     response.cookies.set(
@@ -175,12 +180,7 @@ function applyTenantCookies(
         tenantContext?.tenant_slug ?? "default"
       ),
       defaultLocale,
-      {
-        maxAge: 60 * 60 * 24 * 365,
-        httpOnly: false,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      }
+      getTenantServerCookieOptions(60 * 60 * 24 * 365)
     )
   }
 
@@ -269,9 +269,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (urlHasCountryCode && !cacheIdCookie) {
-    response.cookies.set(cacheCookieName, cacheId, {
-      maxAge: 60 * 60 * 24,
-    })
+    response.cookies.set(cacheCookieName, cacheId, getTenantServerCookieOptions(60 * 60 * 24))
 
     return applyTenantCookies(response, tenantContext, localeCookie)
   }
@@ -292,9 +290,11 @@ export async function proxy(request: NextRequest) {
     const rewritten = NextResponse.rewrite(rewriteUrl)
 
     if (!cacheIdCookie) {
-      rewritten.cookies.set(cacheCookieName, cacheId, {
-        maxAge: 60 * 60 * 24,
-      })
+      rewritten.cookies.set(
+        cacheCookieName,
+        cacheId,
+        getTenantServerCookieOptions(60 * 60 * 24)
+      )
     }
 
     return applyTenantCookies(rewritten, tenantContext, localeCookie)

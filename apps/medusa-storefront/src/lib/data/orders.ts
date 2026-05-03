@@ -2,6 +2,7 @@
 
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
+import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 import { HttpTypes } from "@medusajs/types"
 
@@ -72,6 +73,8 @@ export const createTransferRequest = async (
   error: string | null
   order: HttpTypes.StoreOrder | null
 }> => {
+  await ensureTrustedServerActionRequest()
+
   const id = formData.get("order_id") as string
 
   if (!id) {
@@ -94,6 +97,8 @@ export const createTransferRequest = async (
 }
 
 export const acceptTransferRequest = async (id: string, token: string) => {
+  await ensureTrustedServerActionRequest()
+
   const headers = await getAuthHeaders()
 
   return await sdk.store.order
@@ -103,6 +108,8 @@ export const acceptTransferRequest = async (id: string, token: string) => {
 }
 
 export const declineTransferRequest = async (id: string, token: string) => {
+  await ensureTrustedServerActionRequest()
+
   const headers = await getAuthHeaders()
 
   return await sdk.store.order

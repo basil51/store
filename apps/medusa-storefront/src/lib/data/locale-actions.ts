@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import { revalidateTag } from "next/cache"
 import { cookies as nextCookies } from "next/headers"
 import {
@@ -36,6 +37,8 @@ export const setLocaleCookie = async (locale: string) => {
  * Also updates the cart with the new locale if one exists.
  */
 export const updateLocale = async (localeCode: string): Promise<string> => {
+  await ensureTrustedServerActionRequest()
+
   const cookies = await nextCookies()
 
   if (!localeCode) {

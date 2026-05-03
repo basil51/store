@@ -4,6 +4,7 @@ import {
   TENANT_COOKIE_NAME,
   TENANT_PUBLISHABLE_KEY_COOKIE_NAME,
 } from "@lib/util/tenant"
+import { validateTrustedOrigin } from "@lib/util/trusted-origin"
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -11,6 +12,12 @@ const resolveBackendUrl = () =>
   process.env.MEDUSA_BACKEND_URL?.replace(/\/$/, "") ?? "http://localhost:9000"
 
 export async function POST(req: NextRequest) {
+  const trustedOriginResult = validateTrustedOrigin(req)
+
+  if (!trustedOriginResult.ok) {
+    return trustedOriginResult.response
+  }
+
   const backendUrl = resolveBackendUrl()
   const cookieStore = await cookies()
   const tenantSlug = cookieStore.get(TENANT_COOKIE_NAME)?.value ?? null

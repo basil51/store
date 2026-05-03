@@ -1,7 +1,11 @@
-import { createIpRateLimit } from "../middlewares/rate-limit"
+import {
+  createInMemoryRateLimitStore,
+  createIpRateLimit,
+  createRedisRateLimitStore,
+} from "../middlewares/rate-limit"
 
 describe("store analytics rate limit", () => {
-  it("blocks requests above the configured per-IP window", () => {
+  it("blocks requests above the configured per-IP window", async () => {
     let currentTime = 1_000
 
     const middleware = createIpRateLimit({
@@ -9,6 +13,7 @@ describe("store analytics rate limit", () => {
       maxRequests: 2,
       keyPrefix: "test-analytics",
       now: () => currentTime,
+      store: createInMemoryRateLimitStore(),
     })
 
     const makeReq = () =>
@@ -43,7 +48,7 @@ describe("store analytics rate limit", () => {
 
     const nextFirst = jest.fn()
     const firstRes = makeRes()
-    middleware(makeReq(), firstRes.response as any, nextFirst)
+    await middleware(makeReq(), firstRes.response as any, nextFirst)
 
     expect(nextFirst).toHaveBeenCalledTimes(1)
     expect(firstRes.headers["X-RateLimit-Limit"]).toBe(2)
@@ -51,14 +56,14 @@ describe("store analytics rate limit", () => {
 
     const nextSecond = jest.fn()
     const secondRes = makeRes()
-    middleware(makeReq(), secondRes.response as any, nextSecond)
+    await middleware(makeReq(), secondRes.response as any, nextSecond)
 
     expect(nextSecond).toHaveBeenCalledTimes(1)
     expect(secondRes.headers["X-RateLimit-Remaining"]).toBe(0)
 
     const nextThird = jest.fn()
     const thirdRes = makeRes()
-    middleware(makeReq(), thirdRes.response as any, nextThird)
+    await middleware(makeReq(), thirdRes.response as any, nextThird)
 
     expect(nextThird).not.toHaveBeenCalled()
     expect(thirdRes.response.status).toHaveBeenCalledWith(429)
@@ -71,18 +76,19 @@ describe("store analytics rate limit", () => {
 
     const nextAfterReset = jest.fn()
     const resetRes = makeRes()
-    middleware(makeReq(), resetRes.response as any, nextAfterReset)
+    await middleware(makeReq(), resetRes.response as any, nextAfterReset)
 
     expect(nextAfterReset).toHaveBeenCalledTimes(1)
     expect(resetRes.headers["X-RateLimit-Remaining"]).toBe(1)
   })
 
-  it("tracks limits independently per route and client IP", () => {
+  it("tracks limits independently per route and client IP", async () => {
     const middleware = createIpRateLimit({
       windowMs: 60_000,
       maxRequests: 1,
       keyPrefix: "test-analytics",
       now: () => 5_000,
+      store: createInMemoryRateLimitStore(),
     })
 
     const makeRes = () => {
@@ -96,7 +102,7 @@ describe("store analytics rate limit", () => {
     }
 
     const nextPreset = jest.fn()
-    middleware(
+    await middleware(
       {
         path: "/store/analytics/preset",
         headers: { "x-forwarded-for": "198.51.100.10" },
@@ -106,7 +112,7 @@ describe("store analytics rate limit", () => {
     )
 
     const nextWhatsApp = jest.fn()
-    middleware(
+    await middleware(
       {
         path: "/store/analytics/whatsapp",
         headers: { "x-forwarded-for": "198.51.100.10" },
@@ -116,7 +122,7 @@ describe("store analytics rate limit", () => {
     )
 
     const nextOtherIp = jest.fn()
-    middleware(
+    await middleware(
       {
         path: "/store/analytics/preset",
         headers: { "x-forwarded-for": "198.51.100.11" },
@@ -128,5 +134,50 @@ describe("store analytics rate limit", () => {
     expect(nextPreset).toHaveBeenCalledTimes(1)
     expect(nextWhatsApp).toHaveBeenCalledTimes(1)
     expect(nextOtherIp).toHaveBeenCalledTimes(1)
+  })
+
+  it("maps Redis counter results onto limiter buckets", async () => {
+    const evalMock = jest.fn().mockResolvedValue(["3", "1500"])
+    const store = createRedisRateLimitStore({
+      redisUrl: "redis://127.0.0.1:6380",
+      clientFactory: async () => ({
+        eval: evalMock,
+        on: jest.fn(),
+      }),
+    })
+
+    await expect(store.increment("test-analytics:key", 60_000, 10_000)).resolves.toEqual({
+      count: 3,
+      resetAt: 11_500,
+    })
+
+    expect(evalMock).toHaveBeenCalledWith(
+      expect.stringContaining('redis.call("INCR", KEYS[1])'),
+      1,
+      "test-analytics:key",
+      "60000"
+    )
+  })
+
+  it("falls back to in-memory buckets when Redis is unavailable", async () => {
+    const fallbackStore = createInMemoryRateLimitStore()
+    const store = createRedisRateLimitStore({
+      redisUrl: "redis://127.0.0.1:6380",
+      fallbackStore,
+      clientFactory: async () => ({
+        eval: jest.fn().mockRejectedValue(new Error("redis unavailable")),
+        on: jest.fn(),
+      }),
+    })
+
+    await expect(store.increment("test-analytics:key", 60_000, 1_000)).resolves.toEqual({
+      count: 1,
+      resetAt: 61_000,
+    })
+
+    await expect(store.increment("test-analytics:key", 60_000, 1_500)).resolves.toEqual({
+      count: 2,
+      resetAt: 61_000,
+    })
   })
 })

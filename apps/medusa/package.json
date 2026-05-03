@@ -47,7 +47,8 @@
     "@medusajs/medusa": "2.13.6",
     "@medusajs/payment-stripe": "2.13.6",
     "@medusajs/ui": "4.1.6",
-    "@paypal/paypal-server-sdk": "^2.3.0"
+    "@paypal/paypal-server-sdk": "^2.3.0",
+    "ioredis": "5.10.1"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.6",

@@ -1,6 +1,16 @@
 import { loadEnv, defineConfig } from '@medusajs/framework/utils'
+import { resolveHttpSecurityConfig } from './src/shared/security-config'
 
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
+
+const httpSecurityConfig = resolveHttpSecurityConfig({
+  nodeEnv: process.env.NODE_ENV,
+  storeCors: process.env.STORE_CORS,
+  adminCors: process.env.ADMIN_CORS,
+  authCors: process.env.AUTH_CORS,
+  jwtSecret: process.env.JWT_SECRET,
+  cookieSecret: process.env.COOKIE_SECRET,
+})
 
 const s3Configured =
   !!process.env.S3_BUCKET &&
@@ -87,11 +97,11 @@ module.exports = defineConfig({
     databaseUrl: process.env.DATABASE_URL,
     redisUrl: process.env.REDIS_URL,
     http: {
-      storeCors: process.env.STORE_CORS!,
-      adminCors: process.env.ADMIN_CORS!,
-      authCors: process.env.AUTH_CORS!,
-      jwtSecret: process.env.JWT_SECRET || 'supersecret',
-      cookieSecret: process.env.COOKIE_SECRET || 'supersecret',
+      storeCors: httpSecurityConfig.storeCors,
+      adminCors: httpSecurityConfig.adminCors,
+      authCors: httpSecurityConfig.authCors,
+      jwtSecret: httpSecurityConfig.jwtSecret,
+      cookieSecret: httpSecurityConfig.cookieSecret,
     },
   },
   modules: [
