@@ -1,4 +1,6 @@
-import { isManual, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { getLocale } from "@lib/data/locale-actions"
+import { getLocalizedPaymentMethodTitle, isManual, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { getAccountCopy } from "@modules/account/account-copy"
 import Divider from "@modules/common/components/divider"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -7,7 +9,10 @@ type PaymentDetailsProps = {
   order: HttpTypes.StoreOrder
 }
 
-const PaymentDetails = ({ order }: PaymentDetailsProps) => {
+const PaymentDetails = async ({ order }: PaymentDetailsProps) => {
+  const locale = await getLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
   const payment = order.payment_collections?.[0].payments?.[0]
 
   return (
@@ -16,26 +21,26 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
         className="font-syne text-lg font-black mb-4"
         style={{ color: "var(--text)" }}
       >
-        Payment
+        {t("orderConfirmedPaymentTitle")}
       </h3>
       <div>
         {payment && (
           <div className="flex flex-wrap gap-6">
             <div className="flex flex-col gap-y-1 min-w-[160px]">
               <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>
-                Payment method
+                {t("orderConfirmedPaymentMethod")}
               </p>
               <p
                 className="text-sm"
                 style={{ color: "var(--text)" }}
                 data-testid="payment-method"
               >
-                {paymentInfoMap[payment.provider_id].title}
+                {getLocalizedPaymentMethodTitle(payment.provider_id, locale)}
               </p>
             </div>
             <div className="flex flex-col gap-y-1">
               <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>
-                Payment details
+                {t("orderConfirmedPaymentDetails")}
               </p>
               <div className="flex gap-2 items-center">
                 <span
@@ -52,13 +57,20 @@ const PaymentDetails = ({ order }: PaymentDetailsProps) => {
                   {isStripeLike(payment.provider_id) && payment.data?.card_last4
                     ? `**** **** **** ${payment.data.card_last4}`
                     : isManual(payment.provider_id)
-                    ? "No online payment captured. Collect payment offline after order confirmation."
-                    : `${convertToLocale({
-                        amount: payment.amount,
-                        currency_code: order.currency_code,
-                      })} paid at ${new Date(
-                        payment.created_at ?? ""
-                      ).toLocaleString()}`}
+                    ? t("orderConfirmedOfflinePaymentDetail")
+                    : t("orderConfirmedPaidAt", {
+                        amount: convertToLocale({
+                          amount: payment.amount,
+                          currency_code: order.currency_code,
+                        }),
+                        date: new Date(payment.created_at ?? "").toLocaleString(
+                          locale ?? undefined,
+                          {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          }
+                        ),
+                      })}
                 </p>
               </div>
             </div>

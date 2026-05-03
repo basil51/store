@@ -1,4 +1,8 @@
+"use client"
+
 import repeat from "@lib/util/repeat"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import { HttpTypes } from "@medusajs/types"
 import { Table, Text } from "@medusajs/ui"
 
@@ -19,6 +23,9 @@ const ItemsTemplate = ({ cart, defaultStockMode }: ItemsTemplateProps) => {
   const items = cart?.items
   const displayGrouping = shouldDisplayPresetGrouping(items)
   const groupedItems = displayGrouping && items ? groupLineItemsByPreset(items) : null
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   return (
     <div>
@@ -27,7 +34,7 @@ const ItemsTemplate = ({ cart, defaultStockMode }: ItemsTemplateProps) => {
           className="font-syne text-2xl font-bold"
           style={{ color: "var(--text)" }}
         >
-          Cart
+          {t("cartTitle")}
         </h2>
       </div>
       <Table>
@@ -38,19 +45,19 @@ const ItemsTemplate = ({ cart, defaultStockMode }: ItemsTemplateProps) => {
               style={{ color: "var(--text-dim)", paddingInlineStart: 0 }}
               colSpan={2}
             >
-              Item
+              {t("cartTableItem")}
             </Table.HeaderCell>
             <Table.HeaderCell
               className="text-xs font-semibold uppercase tracking-widest"
               style={{ color: "var(--text-dim)" }}
             >
-              Quantity
+              {t("cartTableQuantity")}
             </Table.HeaderCell>
             <Table.HeaderCell
               className="hidden small:table-cell text-xs font-semibold uppercase tracking-widest"
               style={{ color: "var(--text-dim)" }}
             >
-              Price
+              {t("cartTablePrice")}
             </Table.HeaderCell>
             <Table.HeaderCell
               className="text-xs font-semibold uppercase tracking-widest"
@@ -60,7 +67,7 @@ const ItemsTemplate = ({ cart, defaultStockMode }: ItemsTemplateProps) => {
                 textAlign: "end",
               }}
             >
-              Total
+              {t("cartTableTotal")}
             </Table.HeaderCell>
           </Table.Row>
         </Table.Header>
@@ -101,6 +108,9 @@ type GroupProps = {
 }
 
 const Group = ({ group, currencyCode, defaultStockMode }: GroupProps) => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const sortedItems = group.items.sort((a, b) =>
     (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
   )
@@ -131,7 +141,7 @@ const Group = ({ group, currencyCode, defaultStockMode }: GroupProps) => {
               className="text-xs"
               style={{ color: "var(--text-dim)", marginInlineStart: "auto" }}
             >
-              {group.totalQuantity} items · Total: ${group.totalPrice.toFixed(2)}
+              {t("cartGroupItemsCount", { count: group.totalQuantity })} · {t("cartGroupTotal")}: ${group.totalPrice.toFixed(2)}
             </Text>
           </div>
         </Table.Cell>

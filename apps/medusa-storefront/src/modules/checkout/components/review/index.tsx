@@ -1,10 +1,12 @@
 "use client"
 
-import { isManual, isPaypal, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isManual, isPaypal, isStripeLike, getLocalizedPaymentMethodTitle } from "@lib/constants"
 import {
   type CheckoutBlockerCode,
   trackCheckoutBlockerShown,
 } from "@lib/util/analytics"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import PaymentButton from "../payment-button"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef } from "react"
@@ -12,9 +14,13 @@ import { useEffect, useRef } from "react"
 const StepStatus = ({
   label,
   complete,
+  completeLabel,
+  pendingLabel,
 }: {
   label: string
   complete: boolean
+  completeLabel: string
+  pendingLabel: string
 }) => {
   return (
     <div className="flex items-center justify-between">
@@ -29,7 +35,7 @@ const StepStatus = ({
           border: `1px solid ${complete ? "rgba(0, 229, 200, 0.35)" : "var(--border)"}`,
         }}
       >
-        {complete ? "Complete" : "Pending"}
+        {complete ? completeLabel : pendingLabel}
       </span>
     </div>
   )
@@ -63,37 +69,42 @@ const AssuranceItem = ({
 const getEstimatedConfirmationTiming = ({
   paidByGiftcard,
   providerId,
+  locale,
 }: {
   paidByGiftcard: boolean
   providerId?: string
+  locale: string | null | undefined
 }) => {
   if (paidByGiftcard) {
-    return "Usually instant after order placement"
+    return getUiCopy(locale, "checkoutEstimateInstantAfterPlacement")
   }
 
   if (!providerId) {
-    return "Usually within a few minutes"
+    return getUiCopy(locale, "checkoutEstimateFewMinutes")
   }
 
   if (isStripeLike(providerId)) {
-    return "Usually instant after card authorization"
+    return getUiCopy(locale, "checkoutEstimateAfterCardAuthorization")
   }
 
   if (isPaypal(providerId)) {
-    return "Usually instant after provider confirmation"
+    return getUiCopy(locale, "checkoutEstimateAfterProviderConfirmation")
   }
 
   if (isManual(providerId)) {
-    return "Confirmed first, then collected offline in this environment"
+    return getUiCopy(locale, "checkoutEstimateOfflineFollowUp")
   }
 
-  return "Usually within a few minutes"
+  return getUiCopy(locale, "checkoutEstimateFewMinutes")
 }
 
 const Review = ({ cart }: { cart: any }) => {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   const isOpen = searchParams.get("step") === "review"
   const lastTrackedBlockerRef = useRef<CheckoutBlockerCode | null>(null)
@@ -108,14 +119,15 @@ const Review = ({ cart }: { cart: any }) => {
   const paymentProviderId = activePaymentSession?.provider_id as string | undefined
   const isManualPayment = isManual(paymentProviderId)
   const paymentMethodLabel = paidByGiftcard
-    ? "Gift card"
+    ? t("checkoutGiftCard")
     : paymentProviderId
-    ? paymentInfoMap[paymentProviderId]?.title ?? paymentProviderId
-    : "Not selected yet"
+    ? getLocalizedPaymentMethodTitle(paymentProviderId, locale)
+    : t("checkoutPending")
 
   const estimatedConfirmationTiming = getEstimatedConfirmationTiming({
     paidByGiftcard,
     providerId: paymentProviderId,
+    locale,
   })
 
   const hasAddressStep =
@@ -136,11 +148,11 @@ const Review = ({ cart }: { cart: any }) => {
 
   const firstIncompleteLabel =
     firstIncompleteStep === "address"
-      ? "address details"
+      ? t("checkoutAddressDetails")
       : firstIncompleteStep === "delivery"
-      ? "delivery method"
+      ? t("checkoutDeliveryMethod")
       : firstIncompleteStep === "payment"
-      ? "payment method"
+      ? t("checkoutPaymentMethod")
       : ""
 
   const reviewBlockerCode: CheckoutBlockerCode | null =
@@ -166,9 +178,9 @@ const Review = ({ cart }: { cart: any }) => {
     label: string
     complete: boolean
   }> = [
-    { key: "address", label: "Address", complete: hasAddressStep },
-    { key: "delivery", label: "Delivery", complete: hasDeliveryStep },
-    { key: "payment", label: "Payment", complete: hasPaymentStep },
+    { key: "address", label: t("checkoutStepAddress"), complete: hasAddressStep },
+    { key: "delivery", label: t("checkoutStepDelivery"), complete: hasDeliveryStep },
+    { key: "payment", label: t("checkoutStepPayment"), complete: hasPaymentStep },
   ]
 
   const goToIncompleteStep = () => {
@@ -215,7 +227,7 @@ const Review = ({ cart }: { cart: any }) => {
         className="font-syne text-xl font-black mb-6"
         style={{ color: "var(--text)" }}
       >
-        Review
+        {t("checkoutReviewTitle")}
       </h2>
       {isOpen && (
         <>
@@ -233,7 +245,7 @@ const Review = ({ cart }: { cart: any }) => {
                   className="text-[10px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--text-dim)" }}
                 >
-                  Payment summary
+                  {t("checkoutPaymentSummaryStripTitle")}
                 </span>
                 <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>
                   {paymentMethodLabel}
@@ -245,7 +257,7 @@ const Review = ({ cart }: { cart: any }) => {
                   className="text-[10px] font-semibold uppercase tracking-wide"
                   style={{ color: "var(--text-dim)" }}
                 >
-                  Estimated confirmation
+                  {t("checkoutEstimatedConfirmation")}
                 </span>
                 <span className="text-sm" style={{ color: "var(--text)" }}>
                   {estimatedConfirmationTiming}
@@ -255,7 +267,7 @@ const Review = ({ cart }: { cart: any }) => {
 
             {!hasPaymentStep ? (
               <p className="mt-2 text-xs" style={{ color: "var(--text-dim)" }}>
-                Complete payment setup to lock this estimate before placing your order.
+                {t("checkoutCompletePaymentSetupEstimate")}
               </p>
             ) : null}
           </div>
@@ -265,12 +277,12 @@ const Review = ({ cart }: { cart: any }) => {
             style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}
           >
             <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-              Before placing your order
+              {t("checkoutBeforePlacingOrder")}
             </p>
             <div className="mt-3 flex flex-col gap-2">
-              <StepStatus label="Address details" complete={hasAddressStep} />
-              <StepStatus label="Delivery method" complete={hasDeliveryStep} />
-              <StepStatus label="Payment method" complete={hasPaymentStep} />
+              <StepStatus label={t("checkoutAddressDetails")} complete={hasAddressStep} completeLabel={t("checkoutComplete")} pendingLabel={t("checkoutPending")} />
+              <StepStatus label={t("checkoutDeliveryMethod")} complete={hasDeliveryStep} completeLabel={t("checkoutComplete")} pendingLabel={t("checkoutPending")} />
+              <StepStatus label={t("checkoutPaymentMethod")} complete={hasPaymentStep} completeLabel={t("checkoutComplete")} pendingLabel={t("checkoutPending")} />
             </div>
           </div>
 
@@ -281,7 +293,7 @@ const Review = ({ cart }: { cart: any }) => {
           >
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <p className="text-xs font-semibold" style={{ color: "var(--text-dim)" }}>
-                Need to edit something?
+                {t("checkoutNeedToEditSomething")}
               </p>
               <div className="flex items-center gap-2 flex-wrap">
                 {stepShortcuts.map((step) => (
@@ -314,9 +326,7 @@ const Review = ({ cart }: { cart: any }) => {
                 className="text-sm mb-6 leading-relaxed"
                 style={{ color: "var(--text-dim)" }}
               >
-                By clicking the Place Order button, you confirm that you have read,
-                understand and accept our Terms of Use, Terms of Sale and Returns
-                Policy and acknowledge that you have read our Privacy Policy.
+                {t("checkoutTermsAcknowledgement")}
               </p>
 
               <div
@@ -328,28 +338,30 @@ const Review = ({ cart }: { cart: any }) => {
                 data-testid="review-assurance"
               >
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                  Order assurance
+                  {t("checkoutOrderAssuranceTitle")}
                 </p>
                 <div className="mt-3 flex flex-col gap-3">
                   <AssuranceItem
                     title={
                       isManualPayment
-                        ? "Offline payment collection"
-                        : "Secure payment processing"
+                        ? t("checkoutOfflinePaymentCollectionTitle")
+                        : t("checkoutSecurePaymentProcessingTitle")
                     }
                     detail={
                       isManualPayment
-                        ? "No online charge is captured in checkout for this method. Payment is collected offline after the order is placed."
-                        : "Your payment details are handled by the selected payment provider."
+                        ? t("checkoutOfflinePaymentCollectionDetail")
+                        : t("checkoutSecurePaymentProcessingDetail")
                     }
                   />
                   <AssuranceItem
-                    title="No hidden checkout charges"
-                    detail="Your current totals in the summary are the charges used at order placement."
+                    title={t("checkoutNoHiddenChargesTitle")}
+                    detail={t("checkoutNoHiddenChargesDetail")}
                   />
                   <AssuranceItem
-                    title="Instant confirmation"
-                    detail={`A confirmation will be sent to ${cart?.email ?? "your email"} after successful placement.`}
+                    title={t("checkoutInstantConfirmationTitle")}
+                    detail={t("checkoutInstantConfirmationDetail", {
+                      email: cart?.email ?? "your email",
+                    })}
                   />
                 </div>
               </div>
@@ -363,21 +375,25 @@ const Review = ({ cart }: { cart: any }) => {
                 data-testid="review-micro-commitment"
               >
                 <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                  What happens next
+                  {t("checkoutWhatHappensNextTitle")}
                 </p>
                 <div className="mt-2 flex flex-col gap-1">
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
                     {isManualPayment
-                      ? "1. We place your order now and keep payment collection for the offline follow-up step."
-                      : "1. We place your order securely with the selected payment method."}
+                      ? t("checkoutWhatNextManualStep1")
+                      : t("checkoutWhatNextStandardStep1")}
                   </p>
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
-                    2. You are taken to the order confirmation page right away.
+                    {t("checkoutWhatNextStep2")}
                   </p>
                   <p className="text-xs" style={{ color: "var(--text-dim)" }}>
                     {isManualPayment
-                      ? `3. We send your confirmation details to ${cart?.email ?? "your email"} so payment can be arranged offline.`
-                      : `3. We send your confirmation details to ${cart?.email ?? "your email"}.`}
+                      ? t("checkoutWhatNextManualStep3", {
+                          email: cart?.email ?? "your email",
+                        })
+                      : t("checkoutWhatNextStep3", {
+                          email: cart?.email ?? "your email",
+                        })}
                   </p>
                 </div>
               </div>
@@ -393,10 +409,10 @@ const Review = ({ cart }: { cart: any }) => {
               }}
             >
               <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                Complete {firstIncompleteLabel} to continue
+                {t("checkoutCompleteSectionToContinue", { section: firstIncompleteLabel })}
               </p>
               <p className="mt-1 text-xs" style={{ color: "var(--text-dim)" }}>
-                Once this is done, return here to place your order.
+                {t("checkoutOnceDoneReturnHere")}
               </p>
               {firstIncompleteStep ? (
                 <button
@@ -409,7 +425,7 @@ const Review = ({ cart }: { cart: any }) => {
                     border: "1px solid rgba(255, 159, 10, 0.4)",
                   }}
                 >
-                  Continue to {firstIncompleteLabel}
+                  {t("checkoutContinueToStep", { step: firstIncompleteLabel })}
                 </button>
               ) : null}
             </div>

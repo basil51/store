@@ -1,3 +1,5 @@
+import { getLocale } from "@lib/data/locale-actions"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
@@ -6,7 +8,7 @@ import CategorySidebar from "@modules/layout/components/category-sidebar"
 
 import PaginatedProducts from "./paginated-products"
 
-const StoreTemplate = ({
+const StoreTemplate = async ({
   sortBy,
   page,
   countryCode,
@@ -15,6 +17,9 @@ const StoreTemplate = ({
   page?: string
   countryCode: string
 }) => {
+  const locale = (await getLocale()) ?? "en"
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
@@ -29,17 +34,16 @@ const StoreTemplate = ({
           className="overflow-hidden rounded-2xl px-6 py-8 small:px-8"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
-          <p className="tech-kicker">Catalog</p>
+          <p className="tech-kicker">{t("heroCatalogLabel")}</p>
           <h1
             className="mt-2 font-syne text-3xl font-bold tracking-tight small:text-5xl"
             style={{ color: "var(--text)" }}
             data-testid="store-page-title"
           >
-            All products
+            {t("sidebarAllProducts")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7" style={{ color: "var(--text-muted)" }}>
-            Browse the full catalog — mobiles, laptops, gaming, peripherals,
-            software, and accessories.
+            {t("storePageSubtitle")}
           </p>
         </div>
 

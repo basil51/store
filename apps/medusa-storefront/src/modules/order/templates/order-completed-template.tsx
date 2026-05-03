@@ -1,5 +1,7 @@
 import { cookies as nextCookies } from "next/headers"
 
+import { getLocale } from "@lib/data/locale-actions"
+import { getAccountCopy } from "@modules/account/account-copy"
 import CartTotals from "@modules/common/components/cart-totals"
 import CheckoutSuccessAnalytics from "@modules/order/components/checkout-success-analytics"
 import Help from "@modules/order/components/help"
@@ -21,6 +23,9 @@ export default async function OrderCompletedTemplate({
   order,
 }: OrderCompletedTemplateProps) {
   const cookies = await nextCookies()
+  const locale = await getLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
 
   const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
 
@@ -107,10 +112,10 @@ export default async function OrderCompletedTemplate({
               className="font-syne text-3xl font-black mb-1"
               style={{ color: "var(--text)" }}
             >
-              Thank you! 🎉
+              {t("orderConfirmedThankYou")}
             </h1>
             <p className="text-base" style={{ color: "var(--text-dim)" }}>
-              Your order was placed successfully.
+              {t("orderConfirmedPlacedSuccessfully")}
             </p>
           </div>
           <OrderDetails order={order} />
@@ -119,7 +124,7 @@ export default async function OrderCompletedTemplate({
               className="font-syne text-xl font-black mb-4"
               style={{ color: "var(--text)" }}
             >
-              Summary
+              {t("orderConfirmedSummaryTitle")}
             </h2>
             <Items order={order} />
           </div>

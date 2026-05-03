@@ -1,6 +1,8 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { setAddresses } from "@lib/data/cart"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import compareAddresses from "@lib/util/compare-addresses"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -23,6 +25,9 @@ const Addresses = ({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   const isOpen = searchParams.get("step") === "address"
 
@@ -48,7 +53,7 @@ const Addresses = ({
           className="font-syne text-xl font-black flex items-center gap-2"
           style={{ color: "var(--text)" }}
         >
-          Shipping Address
+          {t("checkoutAddressTitle")}
           {!isOpen && <CheckCircleSolid style={{ color: "var(--teal)" }} />}
         </h2>
         {!isOpen && cart?.shipping_address && (
@@ -58,7 +63,7 @@ const Addresses = ({
             style={{ color: "var(--teal)" }}
             data-testid="edit-address-button"
           >
-            Edit
+            {t("commonEdit")}
           </button>
         )}
       </div>
@@ -78,14 +83,14 @@ const Addresses = ({
                   className="font-syne text-lg font-bold pb-6 pt-8"
                   style={{ color: "var(--text)" }}
                 >
-                  Billing address
+                  {t("checkoutBillingAddressSummary")}
                 </h3>
 
                 <BillingAddress cart={cart} />
               </div>
             )}
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              Continue to delivery
+              {t("checkoutContinueToDelivery")}
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -95,21 +100,21 @@ const Addresses = ({
           {cart && cart.shipping_address ? (
             <div className="flex items-start gap-6 flex-wrap">
               <div className="flex flex-col min-w-[150px]" data-testid="shipping-address-summary">
-                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Shipping Address</span>
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutShippingAddressSummary")}</span>
                 <span className="text-sm" style={{ color: "var(--text)" }}>{cart.shipping_address.first_name} {cart.shipping_address.last_name}</span>
                 <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.shipping_address.address_1} {cart.shipping_address.address_2}</span>
                 <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.shipping_address.postal_code}, {cart.shipping_address.city}</span>
                 <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.shipping_address.country_code?.toUpperCase()}</span>
               </div>
               <div className="flex flex-col min-w-[150px]" data-testid="shipping-contact-summary">
-                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Contact</span>
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutContactSummary")}</span>
                 <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.shipping_address.phone}</span>
                 <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.email}</span>
               </div>
               <div className="flex flex-col min-w-[150px]" data-testid="billing-address-summary">
-                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Billing Address</span>
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutBillingAddressSummary")}</span>
                 {sameAsBilling ? (
-                  <span className="text-sm" style={{ color: "var(--text-dim)" }}>Same as shipping</span>
+                  <span className="text-sm" style={{ color: "var(--text-dim)" }}>{t("checkoutSameAsShipping")}</span>
                 ) : (
                   <>
                     <span className="text-sm" style={{ color: "var(--text-dim)" }}>{cart.billing_address?.first_name} {cart.billing_address?.last_name}</span>

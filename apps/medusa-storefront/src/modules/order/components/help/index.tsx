@@ -1,7 +1,15 @@
+"use client"
+
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import React from "react"
 
 const Help = () => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) =>
+    getAccountCopy(locale, key)
+
   return (
     <div
       className="rounded-xl p-4"
@@ -11,7 +19,7 @@ const Help = () => {
         className="text-sm font-semibold mb-2"
         style={{ color: "var(--text)" }}
       >
-        Need help?
+        {t("needHelp")}
       </p>
       <ul className="flex flex-col gap-y-1">
         <li>
@@ -20,7 +28,7 @@ const Help = () => {
             className="text-sm hover:underline"
             style={{ color: "var(--teal)" }}
           >
-            Contact support
+            {t("contactSupport")}
           </LocalizedClientLink>
         </li>
         <li>
@@ -29,7 +37,7 @@ const Help = () => {
             className="text-sm hover:underline"
             style={{ color: "var(--teal)" }}
           >
-            Returns &amp; Exchanges
+            {t("returnsExchanges")}
           </LocalizedClientLink>
         </li>
       </ul>

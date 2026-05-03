@@ -1,5 +1,7 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import { convertToLocale } from "@lib/util/money"
 import React from "react"
 
@@ -16,6 +18,9 @@ type CartTotalsProps = {
 }
 
 const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const {
     currency_code,
     total,
@@ -53,20 +58,20 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   return (
     <div className="flex flex-col gap-y-2">
       <Row
-        label="Subtotal (excl. shipping and taxes)"
+        label={t("cartTotalsSubtotalExcludingShippingTaxes")}
         value={convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
         testId="cart-subtotal"
         testValue={item_subtotal ?? 0}
       />
       <Row
-        label="Shipping"
+        label={t("cartTotalsShipping")}
         value={convertToLocale({ amount: shipping_subtotal ?? 0, currency_code })}
         testId="cart-shipping"
         testValue={shipping_subtotal ?? 0}
       />
       {!!discount_subtotal && (
         <Row
-          label="Discount"
+          label={t("cartTotalsDiscount")}
           value={`- ${convertToLocale({ amount: discount_subtotal ?? 0, currency_code })}`}
           highlight
           testId="cart-discount"
@@ -74,7 +79,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
         />
       )}
       <Row
-        label="Taxes"
+        label={t("cartTotalsTaxes")}
         value={convertToLocale({ amount: tax_total ?? 0, currency_code })}
         testId="cart-taxes"
         testValue={tax_total ?? 0}
@@ -84,7 +89,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
 
       <div className="flex items-center justify-between">
         <span className="font-semibold" style={{ color: "var(--text)" }}>
-          Total
+          {t("cartTotalsTotal")}
         </span>
         <span
           className="text-xl font-black"

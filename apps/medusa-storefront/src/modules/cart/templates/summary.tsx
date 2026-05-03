@@ -163,7 +163,7 @@ const Summary = ({ cart, storeSettings }: SummaryProps) => {
           className="font-syne text-2xl font-bold"
           style={{ color: "var(--text)" }}
         >
-          Summary
+          {t("cartSummaryTitle")}
         </h2>
 
         <DiscountCode cart={cart} />
@@ -292,7 +292,7 @@ const Summary = ({ cart, storeSettings }: SummaryProps) => {
               className="btn-primary w-full py-3 text-base font-bold"
               style={{ borderRadius: "0.75rem" }}
             >
-              Go to checkout →
+              {t("cartCheckoutCta")}
             </button>
           </LocalizedClientLink>
         )}

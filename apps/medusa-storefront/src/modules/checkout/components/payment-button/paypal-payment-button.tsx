@@ -1,6 +1,8 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { placeOrder } from "@lib/data/cart"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import {
   type CheckoutBlockerCode,
   trackCheckoutPlaceOrderAttempt,
@@ -39,6 +41,9 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
   notReady,
   "data-testid": dataTestId,
 }) => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [{ isPending, isRejected, isResolved }] = usePayPalScriptReducer()
@@ -66,7 +71,7 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
         }
 
         const message =
-          error instanceof Error ? error.message : "Unable to place order"
+          error instanceof Error ? error.message : t("checkoutUnableToPlaceOrder")
         setErrorMessage(message)
         reportFailure(message, "place_order_error")
       })
@@ -99,7 +104,7 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
     }
 
     const message =
-      "PayPal order not found. Re-select PayPal to create a fresh payment session."
+      t("checkoutPayPalOrderNotFound")
     setErrorMessage(message)
     reportFailure(message, "payment_form_not_ready")
     setSubmitting(false)
@@ -115,7 +120,7 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
       const message =
         error instanceof Error
           ? error.message
-          : "Failed to process PayPal payment"
+          : t("checkoutPayPalProcessFailed")
       setErrorMessage(message)
       reportFailure(message, "payment_confirmation_error")
       setSubmitting(false)
@@ -126,7 +131,7 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
     const message =
       typeof error.message === "string"
         ? error.message
-        : "An error occurred while loading PayPal"
+        : t("checkoutPayPalLoadFailed")
 
     setErrorMessage(message)
     reportFailure(message, "payment_confirmation_error")
@@ -134,28 +139,28 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
   }
 
   const handleCancel = () => {
-    setErrorMessage("PayPal payment was cancelled")
+    setErrorMessage(t("checkoutPayPalCancelled"))
     setSubmitting(false)
   }
 
   const disabledReason = submitting
-    ? "Confirming your PayPal payment..."
+    ? t("checkoutConfirmingPayPalPayment")
     : notReady
-    ? "Complete address and delivery details before paying with PayPal."
+    ? t("checkoutCompleteAddressDeliveryBeforePayPal")
     : !paymentSession
-    ? "Preparing PayPal session..."
+    ? t("checkoutPreparingPayPalSession")
     : isPending || !isResolved
-    ? "Loading PayPal checkout..."
+    ? t("checkoutLoadingPayPalCheckout")
     : null
 
   if (isRejected) {
     return (
       <>
         <button className="btn-primary" disabled>
-          PayPal unavailable
+          {t("checkoutPayPalUnavailable")}
         </button>
         <p className="mt-2 text-xs" style={{ color: "var(--text-dim)" }}>
-          Unable to load the PayPal SDK. Check NEXT_PUBLIC_PAYPAL_CLIENT_ID.
+          {t("checkoutPayPalSdkMissing")}
         </p>
         <ErrorMessage
           error={errorMessage}
@@ -169,7 +174,7 @@ const PayPalPaymentButton: React.FC<PayPalPaymentButtonProps> = ({
     return (
       <>
         <button className="btn-primary" disabled>
-          Loading PayPal...
+          {t("checkoutLoadingPayPal")}
         </button>
         {disabledReason ? (
           <p className="mt-2 text-xs" style={{ color: "var(--text-dim)" }}>

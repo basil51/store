@@ -89,19 +89,19 @@ const CheckoutSummary = ({
   const nextStep = firstRequiredStep
 
   const stepLabels: Record<CheckoutStep, string> = {
-    address: "Address",
-    delivery: "Delivery",
-    payment: "Payment",
-    review: "Review",
+    address: t("checkoutStepAddress"),
+    delivery: t("checkoutStepDelivery"),
+    payment: t("checkoutStepPayment"),
+    review: t("checkoutStepReview"),
   }
 
   const steps = [
-    { key: "address", label: "Address", complete: hasAddressStep },
-    { key: "delivery", label: "Delivery", complete: hasDeliveryStep },
-    { key: "payment", label: "Payment", complete: hasPaymentStep },
+    { key: "address", label: t("checkoutStepAddress"), complete: hasAddressStep },
+    { key: "delivery", label: t("checkoutStepDelivery"), complete: hasDeliveryStep },
+    { key: "payment", label: t("checkoutStepPayment"), complete: hasPaymentStep },
     {
       key: "review",
-      label: "Review",
+      label: t("checkoutStepReview"),
       complete: hasAddressStep && hasDeliveryStep && hasPaymentStep,
     },
   ]
@@ -179,7 +179,7 @@ const CheckoutSummary = ({
           className="font-syne text-xl font-black mb-4"
           style={{ color: "var(--text)" }}
         >
-          Order Summary
+          {t("checkoutOrderSummaryTitle")}
         </h2>
 
         <div
@@ -189,7 +189,7 @@ const CheckoutSummary = ({
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm font-bold" style={{ color: "var(--text)" }}>
-              Checkout progress
+              {t("checkoutProgressTitle")}
             </p>
             <span
               className="text-[10px] font-semibold uppercase tracking-wide px-2 py-1 rounded-full"
@@ -198,7 +198,10 @@ const CheckoutSummary = ({
                 background: "rgba(0, 229, 200, 0.12)",
               }}
             >
-              Step {Math.max(steps.findIndex((step) => step.key === activeStep) + 1, 1)} / 4
+              {t("checkoutStepOfTotal", {
+                current: Math.max(steps.findIndex((step) => step.key === activeStep) + 1, 1),
+                total: 4,
+              })}
             </span>
           </div>
 
@@ -230,7 +233,7 @@ const CheckoutSummary = ({
                       }`,
                     }}
                   >
-                    {step.complete ? "Complete" : isActive ? "Current" : "Pending"}
+                    {step.complete ? t("checkoutComplete") : isActive ? t("checkoutCurrent") : t("checkoutPending")}
                   </span>
                 </div>
               )
@@ -239,8 +242,8 @@ const CheckoutSummary = ({
 
           <p className="mt-3 text-xs" style={{ color: "var(--text-dim)" }}>
             {nextStep === "review"
-              ? "All prerequisites are ready. Review and place your order when ready."
-              : `Next required step: ${stepLabels[nextStep]}.`}
+              ? t("checkoutAllPrerequisitesReady")
+              : t("checkoutNextRequiredStep", { step: stepLabels[nextStep] })}
           </p>
 
           {activeStep !== nextStep ? (
@@ -254,7 +257,7 @@ const CheckoutSummary = ({
                 border: "1px solid rgba(0, 229, 200, 0.45)",
               }}
             >
-              Continue to {stepLabels[nextStep]} →
+              {t("checkoutContinueToStep", { step: stepLabels[nextStep] })}
             </button>
           ) : null}
         </div>

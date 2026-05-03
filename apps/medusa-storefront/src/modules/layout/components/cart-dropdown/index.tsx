@@ -106,7 +106,7 @@ const CartDropdown = ({
             className="hover:underline"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`Cart (${totalItems})`}</LocalizedClientLink>
+          >{t("navCartWithCount", { count: totalItems })}</LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
@@ -137,7 +137,7 @@ const CartDropdown = ({
                 className="font-syne text-base font-black uppercase tracking-widest"
                 style={{ color: "var(--text)" }}
               >
-                Cart
+                {t("miniCartTitle")}
               </h3>
               {totalItems > 0 && (
                 <span
@@ -147,7 +147,7 @@ const CartDropdown = ({
                     color: "var(--bg)",
                   }}
                 >
-                  {totalItems} {totalItems === 1 ? "item" : "items"}
+                  {t("miniCartItemsCount", { count: totalItems })}
                 </span>
               )}
             </div>
@@ -214,7 +214,7 @@ const CartDropdown = ({
                                 data-testid="cart-item-quantity"
                                 data-value={item.quantity}
                               >
-                                Qty: {item.quantity}
+                                {t("miniCartQty", { count: item.quantity })}
                               </span>
                               <DeleteButton
                                 id={item.id}
@@ -224,7 +224,7 @@ const CartDropdown = ({
                                   className="text-xs hover:underline"
                                   style={{ color: "var(--coral)" }}
                                 >
-                                  Remove
+                                  {t("miniCartRemove")}
                                 </span>
                               </DeleteButton>
                             </div>
@@ -300,12 +300,12 @@ const CartDropdown = ({
                       className="text-sm font-semibold"
                       style={{ color: "var(--text)" }}
                     >
-                      Subtotal
+                      {t("miniCartSubtotal")}
                       <span
                         className="font-normal text-xs"
                         style={{ color: "var(--text-dim)", marginInlineStart: "0.25rem" }}
                       >
-                        (excl. taxes)
+                        {t("miniCartSubtotalExcludingTaxes")}
                       </span>
                     </span>
                     <span
@@ -324,7 +324,7 @@ const CartDropdown = ({
                       className="btn-primary w-full text-sm"
                       data-testid="go-to-cart-button"
                     >
-                      View Cart & Checkout →
+                      {t("miniCartViewCartCheckout")}
                     </button>
                   </LocalizedClientLink>
                 </div>
@@ -343,13 +343,13 @@ const CartDropdown = ({
                     className="font-syne font-bold text-sm"
                     style={{ color: "var(--text)" }}
                   >
-                    Your cart is empty
+                    {t("cartEmptyTitle")}
                   </p>
                   <p
                     className="text-xs mt-1"
                     style={{ color: "var(--text-dim)" }}
                   >
-                    Add items to get started
+                    {t("miniCartEmptyDescription")}
                   </p>
                 </div>
                 <LocalizedClientLink href="/store">
@@ -357,7 +357,7 @@ const CartDropdown = ({
                     className="btn-ghost text-sm"
                     onClick={close}
                   >
-                    Explore products →
+                    {t("cartEmptyExploreProducts")}
                   </button>
                 </LocalizedClientLink>
               </div>

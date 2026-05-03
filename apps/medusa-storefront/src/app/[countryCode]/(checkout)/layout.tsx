@@ -2,6 +2,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import ChevronDown from "@modules/common/icons/chevron-down"
 import { getLocale } from "@lib/data/locale-actions"
 import { listLocales } from "@lib/data/locales"
+import { getUiCopy } from "@lib/ui-copy"
 import LanguageQaSwitch from "@modules/layout/components/language-qa-switch"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 
@@ -11,6 +12,8 @@ export default async function CheckoutLayout({
   children: React.ReactNode
 }) {
   const [locales, currentLocale] = await Promise.all([listLocales(), getLocale()])
+  const backToCartLabel = getUiCopy(currentLocale, "checkoutBackToCart")
+  const backLabel = getUiCopy(currentLocale, "checkoutBack")
 
   return (
     <div className="w-full bg-white relative small:min-h-screen">
@@ -23,10 +26,10 @@ export default async function CheckoutLayout({
           >
             <ChevronDown className="rotate-90" size={16} />
             <span className="mt-px hidden small:block txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base ">
-              Back to shopping cart
+              {backToCartLabel}
             </span>
             <span className="mt-px block small:hidden txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base">
-              Back
+              {backLabel}
             </span>
           </LocalizedClientLink>
           <LocalizedClientLink

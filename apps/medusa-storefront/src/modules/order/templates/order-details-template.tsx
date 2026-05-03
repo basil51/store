@@ -2,6 +2,8 @@
 
 import { XMark } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getAccountCopy } from "@modules/account/account-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Help from "@modules/order/components/help"
 import Items from "@modules/order/components/items"
@@ -17,6 +19,10 @@ type OrderDetailsTemplateProps = {
 const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
   order,
 }) => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) =>
+    getAccountCopy(locale, key)
+
   return (
     <div className="flex flex-col justify-center gap-y-4">
       <div className="flex gap-2 justify-between items-center">
@@ -24,7 +30,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           className="font-syne text-2xl font-black"
           style={{ color: "var(--text)" }}
         >
-          Order details
+          {t("orderDetailsTitle")}
         </h1>
         <LocalizedClientLink
           href="/account/orders"
@@ -32,7 +38,7 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           style={{ color: "var(--text-dim)" }}
           data-testid="back-to-overview-button"
         >
-          <XMark /> Back to overview
+          <XMark /> {t("backToOverview")}
         </LocalizedClientLink>
       </div>
       <div

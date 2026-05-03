@@ -4,6 +4,8 @@ import React, { useContext, useMemo, type JSX } from "react"
 import Radio from "@modules/common/components/radio"
 
 import { isManual } from "@lib/constants"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
 import { CardElement } from "@stripe/react-stripe-js"
 import { StripeCardElementOptions } from "@stripe/stripe-js"
@@ -26,6 +28,9 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
   children,
 }) => {
   const isDevelopment = process.env.NODE_ENV === "development"
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   return (
     <RadioGroupOption
@@ -54,7 +59,7 @@ const PaymentContainer: React.FC<PaymentContainerProps> = ({
       </div>
       {isManual(paymentProviderId) && (
         <p className="text-xs leading-relaxed" style={{ color: "var(--text-dim)" }}>
-          Place your order now and arrange payment offline after confirmation.
+          {t("checkoutOfflinePaymentDescription")}
         </p>
       )}
       {isManual(paymentProviderId) && isDevelopment && (
@@ -81,6 +86,9 @@ export const StripeCardContainer = ({
   setCardComplete: (complete: boolean) => void
 }) => {
   const stripeReady = useContext(StripeContext)
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   const useOptions: StripeCardElementOptions = useMemo(() => {
     return {
@@ -110,7 +118,7 @@ export const StripeCardContainer = ({
       {selectedPaymentOptionId === paymentProviderId &&
         (stripeReady ? (
           <div className="my-4 transition-all duration-150 ease-in-out">
-            <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>Enter your card details:</p>
+            <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>{t("checkoutPaymentEnterCardDetailsLabel")}</p>
             <CardElement
               options={useOptions as StripeCardElementOptions}
               onChange={(e) => {
@@ -125,7 +133,7 @@ export const StripeCardContainer = ({
         ) : (
           <div className="my-4 transition-all duration-150 ease-in-out">
             <p className="text-sm font-medium mb-2" style={{ color: "var(--text)" }}>
-              Preparing secure card form...
+              {t("checkoutPreparingSecureCardForm")}
             </p>
             <SkeletonCardDetails />
           </div>

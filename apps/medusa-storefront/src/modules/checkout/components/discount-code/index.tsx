@@ -1,5 +1,7 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import React from "react"
 
 import { applyPromotions } from "@lib/data/cart"
@@ -18,6 +20,9 @@ type DiscountCodeProps = {
 const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
   const [isOpen, setIsOpen] = React.useState(false)
   const [errorMessage, setErrorMessage] = React.useState("")
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   const { promotions = [] } = cart
   const removePromotionCode = async (code: string) => {
@@ -66,7 +71,9 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
               style={{ color: "var(--teal)" }}
               data-testid="add-discount-button"
             >
-              {isOpen ? "− Hide" : "+ Add Promotion Code(s)"}
+              {isOpen
+                ? `− ${t("cartDiscountHide")}`
+                : `+ ${t("cartDiscountAddCodes")}`}
             </button>
           </div>
 
@@ -84,14 +91,14 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                   name="code"
                   type="text"
                   autoFocus={false}
-                  placeholder="Promo code"
+                  placeholder={t("cartDiscountPlaceholder")}
                   data-testid="discount-input"
                 />
                 <SubmitButton
                   variant="secondary"
                   data-testid="discount-apply-button"
                 >
-                  Apply
+                  {t("cartDiscountApply")}
                 </SubmitButton>
               </div>
 
@@ -106,7 +113,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
         {promotions.length > 0 && (
           <div className="w-full flex items-center">
             <div className="flex flex-col w-full gap-1">
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-dim)" }}>Promotions applied:</p>
+              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-dim)" }}>{t("cartDiscountApplied")}</p>
 
               {promotions.map((promotion) => (
                 <div

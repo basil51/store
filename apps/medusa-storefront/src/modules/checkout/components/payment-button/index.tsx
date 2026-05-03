@@ -1,7 +1,9 @@
 "use client"
 
 import { isManual, isPaypal, isStripeLike } from "@lib/constants"
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { placeOrder } from "@lib/data/cart"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import {
   trackCheckoutPlaceOrderAttempt,
   trackCheckoutPlaceOrderFail,
@@ -53,6 +55,9 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
   "data-testid": dataTestId,
 }) => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const notReady =
     !cart ||
     !cart.shipping_address ||
@@ -94,10 +99,10 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       return (
         <div className="flex flex-col">
           <button className="btn-primary" disabled>
-            Select a payment method
+            {t("checkoutSelectPaymentMethod")}
           </button>
           <DisabledHint
-            text="Return to Payment and choose a payment method before placing your order."
+            text={t("checkoutReturnToPaymentChooseMethod")}
             testId="place-order-disabled-reason"
           />
         </div>
@@ -124,7 +129,7 @@ const StripePaymentButton = ({
           return
         }
 
-        const message = err?.message ?? "Unable to place order"
+        const message = err?.message ?? t("checkoutUnableToPlaceOrder")
         setErrorMessage(message)
         trackCheckoutPlaceOrderFail({
           payment_provider_id: session?.provider_id,
@@ -147,13 +152,13 @@ const StripePaymentButton = ({
 
   const disabled = !stripe || !elements || !session?.data?.client_secret
   const disabledReason = submitting
-    ? "Submitting your secure order..."
+    ? t("checkoutSubmittingSecureOrder")
     : notReady
-    ? "Complete address and delivery details before placing your order."
+    ? t("checkoutCompleteAddressDeliveryBeforeOrder")
     : !session?.data?.client_secret
-    ? "Preparing secure payment session..."
+    ? t("checkoutPreparingSecurePaymentSession")
     : !stripe || !elements
-    ? "Loading secure card form..."
+    ? t("checkoutLoadingSecureCardForm")
     : null
 
   const handlePayment = async () => {
@@ -243,7 +248,7 @@ const StripePaymentButton = ({
         onClick={handlePayment}
         data-testid={dataTestId}
       >
-        {submitting ? "Placing secure order..." : "Place secure order"}
+        {submitting ? t("checkoutPlacingSecureOrder") : t("checkoutPlaceSecureOrder")}
       </button>
       {disabledReason ? (
         <DisabledHint
@@ -270,13 +275,16 @@ const ManualTestPaymentButton = ({
   notReady: boolean
   "data-testid"?: string
 }) => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const disabledReason = submitting
-    ? "Submitting your offline order..."
+    ? t("checkoutSubmittingOfflineOrder")
     : notReady
-    ? "Complete address and delivery details before placing your offline order."
+    ? t("checkoutCompleteAddressDeliveryBeforeOfflineOrder")
     : null
 
   const onPaymentCompleted = async () => {
@@ -286,7 +294,7 @@ const ManualTestPaymentButton = ({
           return
         }
 
-        const message = err?.message ?? "Unable to place order"
+        const message = err?.message ?? t("checkoutUnableToPlaceOrder")
         setErrorMessage(message)
         trackCheckoutPlaceOrderFail({
           payment_provider_id: providerId,
@@ -319,7 +327,7 @@ const ManualTestPaymentButton = ({
         onClick={handlePayment}
         data-testid={dataTestId}
       >
-        {submitting ? "Placing offline order..." : "Place offline order"}
+        {submitting ? t("checkoutPlacingOfflineOrder") : t("checkoutPlaceOfflineOrder")}
       </button>
       {disabledReason ? (
         <DisabledHint

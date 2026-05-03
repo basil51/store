@@ -1,14 +1,10 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-
-const SORT_OPTIONS: { label: string; value: SortOptions }[] = [
-  { label: "Newest", value: "created_at" },
-  { label: "Price ↑", value: "price_asc" },
-  { label: "Price ↓", value: "price_desc" },
-]
 
 export default function SortBar({
   sortBy,
@@ -17,9 +13,18 @@ export default function SortBar({
   sortBy: SortOptions
   count?: number
 }) {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
+  const sortOptions: { label: string; value: SortOptions }[] = [
+    { label: t("storeSortNewest"), value: "created_at" },
+    { label: t("storeSortPriceLowHigh"), value: "price_asc" },
+    { label: t("storeSortPriceHighLow"), value: "price_desc" },
+  ]
 
   const setSort = useCallback(
     (value: SortOptions) => {
@@ -39,7 +44,7 @@ export default function SortBar({
           <span className="font-semibold" style={{ color: "var(--teal)" }}>
             {count}
           </span>{" "}
-          product{count !== 1 ? "s" : ""}
+          {count === 1 ? t("storeProductSingular") : t("storeProductPlural")}
         </p>
       )}
 
@@ -48,7 +53,7 @@ export default function SortBar({
         className="flex items-center gap-1 rounded-full p-1"
         style={{ background: "var(--surface2)", border: "1px solid var(--border)" }}
       >
-        {SORT_OPTIONS.map((opt) => {
+        {sortOptions.map((opt) => {
           const active = sortBy === opt.value
           return (
             <button

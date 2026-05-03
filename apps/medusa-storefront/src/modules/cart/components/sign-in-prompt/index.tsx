@@ -1,6 +1,14 @@
+"use client"
+
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const SignInPrompt = () => {
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
+
   return (
     <div
       className="flex items-center justify-between rounded-xl px-5 py-4"
@@ -11,10 +19,10 @@ const SignInPrompt = () => {
     >
       <div>
         <p className="font-semibold" style={{ color: "var(--text)" }}>
-          Already have an account?
+          {t("cartSignInTitle")}
         </p>
         <p className="mt-0.5 text-sm" style={{ color: "var(--text-dim)" }}>
-          Sign in for a better experience.
+          {t("cartSignInDescription")}
         </p>
       </div>
       <LocalizedClientLink href="/account">
@@ -22,7 +30,7 @@ const SignInPrompt = () => {
           className="btn-ghost text-sm"
           data-testid="sign-in-button"
         >
-          Sign in →
+          {t("cartSignInCta")}
         </button>
       </LocalizedClientLink>
     </div>

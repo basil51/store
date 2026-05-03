@@ -1,6 +1,10 @@
+"use client"
+
 import repeat from "@lib/util/repeat"
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { HttpTypes } from "@medusajs/types"
 import { Table, Text } from "@medusajs/ui"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 import Divider from "@modules/common/components/divider"
 import Item from "@modules/order/components/item"
@@ -15,6 +19,9 @@ type ItemsProps = {
 }
 
 const Items = ({ order }: ItemsProps) => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) =>
+    getAccountCopy(locale, key)
   const items = order.items
   const displayGrouping = shouldDisplayPresetGrouping(items)
   const groupedItems = displayGrouping && items ? groupLineItemsByPreset(items) : null
@@ -31,6 +38,7 @@ const Items = ({ order }: ItemsProps) => {
                     key={group.presetKey}
                     group={group}
                     currencyCode={order.currency_code}
+                    itemLabel={t(group.totalQuantity === 1 ? "item" : "items")}
                   />
                 ))
               : items
@@ -58,9 +66,10 @@ const Items = ({ order }: ItemsProps) => {
 type OrderGroupProps = {
   group: ReturnType<typeof groupLineItemsByPreset>[0]
   currencyCode?: string
+  itemLabel: string
 }
 
-const OrderGroup = ({ group, currencyCode }: OrderGroupProps) => {
+const OrderGroup = ({ group, currencyCode, itemLabel }: OrderGroupProps) => {
   const sortedItems = group.items.sort((a, b) =>
     (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
   )
@@ -91,7 +100,7 @@ const OrderGroup = ({ group, currencyCode }: OrderGroupProps) => {
               className="text-xs ml-auto"
               style={{ color: "var(--text-dim)" }}
             >
-              {group.totalQuantity} items
+              {group.totalQuantity} {itemLabel}
             </Text>
           </div>
         </Table.Cell>

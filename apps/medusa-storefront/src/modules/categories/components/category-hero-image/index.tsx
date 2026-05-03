@@ -1,4 +1,6 @@
+import { getLocale } from "@lib/data/locale-actions"
 import { getCategoryImageUrl } from "@lib/util/category-metadata"
+import { getUiCopy } from "@lib/ui-copy"
 
 type Props = {
   name: string
@@ -8,7 +10,8 @@ type Props = {
 /**
  * Wide banner when the category has `metadata.image` (or `image_url` / `thumbnail`).
  */
-export default function CategoryHeroImage({ name, metadata }: Props) {
+export default async function CategoryHeroImage({ name, metadata }: Props) {
+  const locale = (await getLocale()) ?? "en"
   const src = getCategoryImageUrl(metadata)
   if (!src) {
     return null
@@ -29,7 +32,7 @@ export default function CategoryHeroImage({ name, metadata }: Props) {
       <div className="absolute inset-0 bg-gradient-to-r from-[#08111f]/70 via-[#08111f]/30 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-6 small:p-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/70">
-          Category spotlight
+          {getUiCopy(locale, "categoryPageSpotlight")}
         </p>
         <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-white small:text-4xl">
           {name}

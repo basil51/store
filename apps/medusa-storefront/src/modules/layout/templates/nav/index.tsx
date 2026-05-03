@@ -112,7 +112,7 @@ export default async function Nav() {
                 {t("navShop")}
               </LocalizedClientLink>
               <LocalizedClientLink
-                href="/store"
+                href="/collections"
                 className="rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:text-white"
                 style={{ color: "var(--text-muted)" }}
               >

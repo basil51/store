@@ -9,8 +9,10 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import { HttpTypes } from "@medusajs/types"
 import CategoryHeroImage from "@modules/categories/components/category-hero-image"
 import { getCategoryImageUrl } from "@lib/util/category-metadata"
+import { getLocale } from "@lib/data/locale-actions"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 
-export default function CategoryTemplate({
+export default async function CategoryTemplate({
   category,
   sortBy,
   page,
@@ -21,6 +23,9 @@ export default function CategoryTemplate({
   page?: string
   countryCode: string
 }) {
+  const locale = (await getLocale()) ?? "en"
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
@@ -64,7 +69,7 @@ export default function CategoryTemplate({
                 </span>
               ))}
           </div>
-          <p className="tech-kicker">Category</p>
+          <p className="tech-kicker">{t("categoryPageLabel")}</p>
           <h1
             className="mt-3 font-syne text-3xl font-bold tracking-tight small:text-5xl"
             style={{ color: "var(--text)" }}
@@ -84,9 +89,9 @@ export default function CategoryTemplate({
         {category.category_children && (
           <div className="text-base-large">
             <div className="mb-4">
-              <p className="tech-kicker">Subcategories</p>
+              <p className="tech-kicker">{t("categoryPageSubcategories")}</p>
               <p className="mt-2 text-xl font-semibold tracking-[-0.03em]" style={{ color: "var(--text)" }}>
-                Narrow the catalog faster
+                {t("categoryPageNarrowCatalogFaster")}
               </p>
             </div>
             <ul className="grid grid-cols-1 gap-4 small:grid-cols-2">
@@ -118,7 +123,7 @@ export default function CategoryTemplate({
                       <div>
                         <span className="block font-semibold">{c.name}</span>
                         <span className="mt-1 block text-sm" style={{ color: "var(--text-muted)" }}>
-                          Explore products in this section
+                          {t("categoryPageExploreSection")}
                         </span>
                       </div>
                     </LocalizedClientLink>

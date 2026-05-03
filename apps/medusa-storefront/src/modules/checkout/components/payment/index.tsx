@@ -1,8 +1,10 @@
 "use client"
 
 import { RadioGroup } from "@headlessui/react"
-import { isManual, isPaypal, isStripeLike, paymentInfoMap } from "@lib/constants"
+import { isManual, isPaypal, isStripeLike, paymentInfoMap, getLocalizedPaymentMethodTitle } from "@lib/constants"
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { initiatePaymentSession } from "@lib/data/cart"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 import {
   type CheckoutBlockerCode,
   trackCheckoutBlockerShown,
@@ -98,6 +100,9 @@ const Payment = ({
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
 
   const isOpen = searchParams.get("step") === "payment"
 
@@ -131,7 +136,7 @@ const Payment = ({
         await initializePaymentSessionWithRecovery(method)
         router.refresh()
       } catch (err: any) {
-        setError(err?.message ?? "Unable to prepare payment method. Please try again.")
+        setError(err?.message ?? t("checkoutPreparePaymentFailed"))
       }
     }
   }
@@ -160,11 +165,11 @@ const Payment = ({
     : null
 
   const readinessMessage = !hasShippingMethod
-    ? "Select a delivery method before continuing."
+    ? t("checkoutDeliveryRequiredDescription")
     : !hasSelectedPaymentMethod
-    ? "Choose a payment method to continue."
+    ? t("checkoutSelectPaymentMethod")
     : requiresCardDetails && !cardComplete
-    ? "Enter complete card details to continue to review."
+    ? t("checkoutEnterCardDetailsToContinue")
     : null
 
   const createQueryString = useCallback(
@@ -376,7 +381,7 @@ const Payment = ({
             opacity: !isOpen && !paymentReady ? 0.4 : 1,
           }}
         >
-          Payment
+          {t("checkoutPaymentTitle")}
           {!isOpen && paymentReady && <CheckCircleSolid style={{ color: "var(--teal)" }} />}
         </h2>
         {!isOpen && paymentReady && (
@@ -386,7 +391,7 @@ const Payment = ({
             style={{ color: "var(--teal)" }}
             data-testid="edit-payment-button"
           >
-            Edit
+            {t("commonEdit")}
           </button>
         )}
       </div>
@@ -401,10 +406,10 @@ const Payment = ({
               }}
             >
               <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>
-                Delivery method required
+                {t("checkoutDeliveryRequiredTitle")}
               </p>
               <p className="mt-1 text-xs" style={{ color: "var(--text-dim)" }}>
-                Pick a shipping method first, then return to payment.
+                {t("checkoutDeliveryRequiredDescription")}
               </p>
               <button
                 type="button"
@@ -416,7 +421,7 @@ const Payment = ({
                   border: "1px solid rgba(255, 159, 10, 0.4)",
                 }}
               >
-                Go to delivery
+                {t("checkoutGoToDelivery")}
               </button>
             </div>
           )}
@@ -453,8 +458,8 @@ const Payment = ({
 
           {paidByGiftcard && (
             <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Payment method</span>
-              <span className="text-sm" style={{ color: "var(--text)" }} data-testid="payment-method-summary">Gift card</span>
+              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutPaymentMethodLabel")}</span>
+              <span className="text-sm" style={{ color: "var(--text)" }} data-testid="payment-method-summary">{t("checkoutGiftCard")}</span>
             </div>
           )}
 
@@ -473,12 +478,12 @@ const Payment = ({
             data-testid="submit-payment-button"
           >
             {!hasShippingMethod
-              ? "Select delivery first"
+              ? t("checkoutSelectDeliveryFirst")
               : isStripeLike(selectedPaymentMethod) && !cardComplete
-              ? "Enter card details to continue"
+              ? t("checkoutEnterCardDetailsToContinue")
               : !activeSession && isStripeLike(selectedPaymentMethod)
-              ? "Enter card details"
-              : "Continue to review"}
+              ? t("checkoutEnterCardDetails")
+              : t("checkoutContinueToReview")}
           </button>
           {readinessMessage ? (
             <p className="mt-3 text-xs" style={{ color: "var(--text-dim)" }}>
@@ -486,7 +491,7 @@ const Payment = ({
             </p>
           ) : (
             <p className="mt-3 text-xs" style={{ color: "var(--text-dim)" }}>
-              Next, you will review your order details before placing it.
+              {t("checkoutPaymentNextReview")}
             </p>
           )}
         </div>
@@ -495,13 +500,13 @@ const Payment = ({
           {cart && paymentReady && activeSession ? (
             <div className="flex items-start gap-6 flex-wrap">
               <div className="flex flex-col">
-                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Payment method</span>
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutPaymentMethodLabel")}</span>
                 <span className="text-sm" style={{ color: "var(--text)" }} data-testid="payment-method-summary">
-                  {paymentInfoMap[activeSession?.provider_id]?.title || activeSession?.provider_id}
+                  {getLocalizedPaymentMethodTitle(activeSession?.provider_id, locale)}
                 </span>
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Payment details</span>
+                <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutPaymentDetailsLabel")}</span>
                 <div className="flex gap-2 items-center" style={{ color: "var(--text-dim)" }} data-testid="payment-details-summary">
                   <span
                     className="flex items-center justify-center h-7 w-7 rounded-lg"
@@ -513,18 +518,18 @@ const Payment = ({
                     {isStripeLike(selectedPaymentMethod) && cardBrand
                       ? cardBrand
                       : isPaypal(selectedPaymentMethod)
-                      ? "You'll confirm in PayPal"
+                      ? t("checkoutPaypalConfirmLater")
                       : isManual(selectedPaymentMethod)
-                      ? "Payment is collected offline after order confirmation"
-                      : "Another step will appear"}
+                      ? t("checkoutOfflineCollectedAfterConfirmation")
+                      : t("checkoutAnotherStepWillAppear")}
                   </span>
                 </div>
               </div>
             </div>
           ) : paidByGiftcard ? (
             <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Payment method</span>
-              <span className="text-sm" style={{ color: "var(--text)" }} data-testid="payment-method-summary">Gift card</span>
+              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutPaymentMethodLabel")}</span>
+              <span className="text-sm" style={{ color: "var(--text)" }} data-testid="payment-method-summary">{t("checkoutGiftCard")}</span>
             </div>
           ) : null}
         </div>

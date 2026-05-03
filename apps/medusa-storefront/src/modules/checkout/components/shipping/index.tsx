@@ -181,7 +181,7 @@ const Shipping: React.FC<ShippingProps> = ({
             opacity: !isOpen && cart.shipping_methods?.length === 0 ? 0.4 : 1,
           }}
         >
-          Delivery
+          {t("checkoutDeliveryTitle")}
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
             <CheckCircleSolid style={{ color: "var(--teal)" }} />
           )}
@@ -193,7 +193,7 @@ const Shipping: React.FC<ShippingProps> = ({
             style={{ color: "var(--teal)" }}
             data-testid="edit-delivery-button"
           >
-            Edit
+            {t("commonEdit")}
           </button>
         )}
       </div>
@@ -201,8 +201,8 @@ const Shipping: React.FC<ShippingProps> = ({
         <>
           <div className="grid">
             <div className="flex flex-col mb-4">
-              <span className="font-medium text-sm" style={{ color: "var(--text)" }}>Shipping method</span>
-              <span className="text-sm" style={{ color: "var(--text-dim)" }}>How would you like your order delivered</span>
+              <span className="font-medium text-sm" style={{ color: "var(--text)" }}>{t("checkoutShippingMethodTitle")}</span>
+              <span className="text-sm" style={{ color: "var(--text-dim)" }}>{t("checkoutShippingMethodDescription")}</span>
             </div>
             {showFreeShippingBanner && (
               <div
@@ -313,7 +313,7 @@ const Shipping: React.FC<ShippingProps> = ({
                         <MedusaRadio
                           checked={showPickupOptions === PICKUP_OPTION_ON}
                         />
-                          <span className="text-sm" style={{ color: "var(--text)" }}>Pick up your order</span>
+                          <span className="text-sm" style={{ color: "var(--text)" }}>{t("checkoutPickupOrder")}</span>
                         </div>
                         <span style={{ color: "var(--text-dim)" }}>-</span>
                     </Radio>
@@ -381,8 +381,8 @@ const Shipping: React.FC<ShippingProps> = ({
           {showPickupOptions === PICKUP_OPTION_ON && (
             <div className="grid">
               <div className="flex flex-col mb-4">
-                <span className="font-medium text-sm" style={{ color: "var(--text)" }}>Store</span>
-                <span className="text-sm" style={{ color: "var(--text-dim)" }}>Choose a store near you</span>
+                <span className="font-medium text-sm" style={{ color: "var(--text)" }}>{t("checkoutStoreTitle")}</span>
+                <span className="text-sm" style={{ color: "var(--text-dim)" }}>{t("checkoutChooseStoreNearYou")}</span>
               </div>
               <div data-testid="delivery-options-container">
                 <div className="pb-8 md:pt-0 pt-2">
@@ -448,7 +448,7 @@ const Shipping: React.FC<ShippingProps> = ({
               disabled={isLoading || !hasSelectedShippingMethod}
               data-testid="submit-delivery-option-button"
             >
-              {isLoading ? <Loader /> : "Continue to payment"}
+              {isLoading ? <Loader /> : t("checkoutContinueToPayment")}
             </button>
           </div>
         </>
@@ -456,7 +456,7 @@ const Shipping: React.FC<ShippingProps> = ({
         <div>
           {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
             <div className="flex flex-col">
-              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>Method</span>
+              <span className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: "var(--text-dim)" }}>{t("checkoutMethod")}</span>
               <span className="text-sm" style={{ color: "var(--text)" }}>
                 {cart.shipping_methods!.at(-1)!.name}{" "}
                 {convertToLocale({

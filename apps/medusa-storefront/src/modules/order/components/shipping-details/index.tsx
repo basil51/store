@@ -1,5 +1,9 @@
+"use client"
+
 import { convertToLocale } from "@lib/util/money"
+import { useUiLocale } from "@lib/context/ui-locale-context"
 import { HttpTypes } from "@medusajs/types"
+import { getAccountCopy } from "@modules/account/account-copy"
 
 import Divider from "@modules/common/components/divider"
 
@@ -8,13 +12,17 @@ type ShippingDetailsProps = {
 }
 
 const ShippingDetails = ({ order }: ShippingDetailsProps) => {
+  const locale = useUiLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1]) =>
+    getAccountCopy(locale, key)
+
   return (
     <div>
       <h3
         className="font-syne text-lg font-black mb-4"
         style={{ color: "var(--text)" }}
       >
-        Delivery
+        {t("deliveryTitle")}
       </h3>
       <div className="flex flex-wrap gap-6">
         <div
@@ -22,7 +30,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
           data-testid="shipping-address-summary"
         >
           <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>
-            Shipping Address
+            {t("shippingAddress")}
           </p>
           <p className="text-sm" style={{ color: "var(--text)" }}>
             {order.shipping_address?.first_name}{" "}
@@ -45,7 +53,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
           className="flex flex-col gap-y-1 min-w-[140px]"
           data-testid="shipping-contact-summary"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>Contact</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>{t("contact")}</p>
           <p className="text-sm" style={{ color: "var(--text-dim)" }}>
             {order.shipping_address?.phone}
           </p>
@@ -56,7 +64,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
           className="flex flex-col gap-y-1 min-w-[140px]"
           data-testid="shipping-method-summary"
         >
-          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>Method</p>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>{t("method")}</p>
           <p className="text-sm" style={{ color: "var(--text-dim)" }}>
             {(order as any).shipping_methods[0]?.name} (
             {convertToLocale({

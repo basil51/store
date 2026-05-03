@@ -4,6 +4,7 @@ import { CreditCard } from "@medusajs/icons"
 import Ideal from "@modules/common/icons/ideal"
 import Bancontact from "@modules/common/icons/bancontact"
 import PayPal from "@modules/common/icons/paypal"
+import { getUiCopy } from "@lib/ui-copy"
 
 /* Map of payment provider_id to their title and icon. Add in any payment providers you want to use. */
 export const paymentInfoMap: Record<
@@ -49,6 +50,25 @@ export const isPaypal = (providerId?: string) => {
 }
 export const isManual = (providerId?: string) => {
   return providerId?.startsWith("pp_system_default")
+}
+
+export const getLocalizedPaymentMethodTitle = (
+  providerId?: string,
+  locale?: string | null
+) => {
+  if (isStripeLike(providerId)) {
+    return getUiCopy(locale, "paymentMethodCreditCard")
+  }
+
+  if (isPaypal(providerId)) {
+    return getUiCopy(locale, "paymentMethodPayPal")
+  }
+
+  if (isManual(providerId)) {
+    return getUiCopy(locale, "paymentMethodOffline")
+  }
+
+  return paymentInfoMap[providerId ?? ""]?.title ?? providerId ?? ""
 }
 
 // Add currencies that don't need to be divided by 100

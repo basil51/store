@@ -1,3 +1,5 @@
+import { getLocale } from "@lib/data/locale-actions"
+import { getAccountCopy } from "@modules/account/account-copy"
 import { acceptTransferRequest } from "@lib/data/orders"
 import { Heading, Text } from "@medusajs/ui"
 import TransferImage from "@modules/order/components/transfer-image"
@@ -8,6 +10,9 @@ export default async function TransferPage({
   params: { id: string; token: string }
 }) {
   const { id, token } = params
+  const locale = await getLocale()
+  const t = (key: Parameters<typeof getAccountCopy>[1], params?: Record<string, string | number>) =>
+    getAccountCopy(locale, key, params)
 
   const { success, error } = await acceptTransferRequest(id, token)
 
@@ -18,20 +23,20 @@ export default async function TransferPage({
         {success && (
           <>
             <Heading level="h1" className="text-xl text-zinc-900">
-              Order transfered!
+              {t("orderTransferAcceptedTitle")}
             </Heading>
             <Text className="text-zinc-600">
-              Order {id} has been successfully transfered to the new owner.
+              {t("orderTransferAcceptedDescription", { id })}
             </Text>
           </>
         )}
         {!success && (
           <>
             <Text className="text-zinc-600">
-              There was an error accepting the transfer. Please try again.
+              {t("orderTransferAcceptError")}
             </Text>
             {error && (
-              <Text className="text-red-500">Error message: {error}</Text>
+              <Text className="text-red-500">{t("orderTransferErrorMessage", { error })}</Text>
             )}
           </>
         )}
