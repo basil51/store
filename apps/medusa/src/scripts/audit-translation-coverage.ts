@@ -13,6 +13,12 @@ type CategoryLike = {
   name?: string | null
 }
 
+type CollectionLike = {
+  id: string
+  handle?: string | null
+  title?: string | null
+}
+
 type LocaleLike = {
   code: string
 }
@@ -135,6 +141,34 @@ const pickCategoryReference = async (translationModule: any): Promise<string> =>
   return "product_category"
 }
 
+const pickCollectionReference = async (translationModule: any): Promise<string> => {
+  try {
+    const fields = await translationModule.getTranslatableFields()
+    const keys = Array.isArray(fields)
+      ? fields
+      : typeof fields === "object" && fields
+        ? Object.keys(fields)
+        : []
+
+    const preferred = keys.find((key) => key === "product_collection")
+    if (preferred) {
+      return preferred
+    }
+
+    const inferred = keys.find(
+      (key) => key.toLowerCase().includes("product") && key.toLowerCase().includes("collection")
+    )
+
+    if (inferred) {
+      return inferred
+    }
+  } catch {
+    return "product_collection"
+  }
+
+  return "product_collection"
+}
+
 const getPrimaryTranslation = async ({
   translationModule,
   reference,
@@ -178,10 +212,26 @@ export default async function auditTranslationCoverage({
     )
   }
 
-  const [products, categories, categoryReference, productLabels, categoryLabels] = await Promise.all([
+  const [
+    products,
+    categories,
+    collections,
+    categoryReference,
+    collectionReference,
+    productLabels,
+    categoryLabels,
+    collectionLabels,
+  ] = await Promise.all([
     productModule.listProducts({}) as Promise<ProductLike[]>,
     productModule.listProductCategories({}) as Promise<CategoryLike[]>,
+    query
+      .graph({
+        entity: "product_collection",
+        fields: ["id", "handle", "title"],
+      })
+      .then(({ data }) => (data ?? []) as CollectionLike[]),
     pickCategoryReference(translationModule),
+    pickCollectionReference(translationModule),
     buildLabelMap({
       query,
       entity: "product",
@@ -194,6 +244,12 @@ export default async function auditTranslationCoverage({
       fields: ["id", "handle", "name"],
       labelFields: ["handle", "name"],
     }),
+    buildLabelMap({
+      query,
+      entity: "product_collection",
+      fields: ["id", "handle", "title"],
+      labelFields: ["handle", "title"],
+    }),
   ])
 
   const auditedCategories = categories.filter((category) => {
@@ -204,10 +260,12 @@ export default async function auditTranslationCoverage({
 
   const missingProductsByLocale: Record<string, string[]> = {}
   const missingCategoriesByLocale: Record<string, string[]> = {}
+  const missingCollectionsByLocale: Record<string, string[]> = {}
 
   for (const localeCode of targetLocales) {
     missingProductsByLocale[localeCode] = []
     missingCategoriesByLocale[localeCode] = []
+    missingCollectionsByLocale[localeCode] = []
 
     for (const product of products) {
       const translation = await getPrimaryTranslation({
@@ -242,22 +300,43 @@ export default async function auditTranslationCoverage({
         )
       }
     }
+
+    for (const collection of collections) {
+      const translation = await getPrimaryTranslation({
+        translationModule,
+        reference: collectionReference,
+        referenceId: collection.id,
+        localeCode,
+      })
+
+      const title = translation?.translations?.title
+
+      if (!isNonEmptyString(title)) {
+        missingCollectionsByLocale[localeCode].push(
+          collectionLabels.get(collection.id) ??
+            missingLabel([collection.handle, collection.title], collection.id)
+        )
+      }
+    }
   }
 
   console.log(`Baseline locale: ${baselineLocale}`)
   console.log(`Audited locales: ${targetLocales.join(", ")}`)
   console.log(`Products audited: ${products.length}`)
   console.log(`Categories audited: ${auditedCategories.length}`)
+  console.log(`Collections audited: ${collections.length}`)
 
   let hasMissingTranslations = false
 
   for (const localeCode of targetLocales) {
     const missingProducts = missingProductsByLocale[localeCode]
     const missingCategories = missingCategoriesByLocale[localeCode]
+    const missingCollections = missingCollectionsByLocale[localeCode]
 
     console.log(`\nLocale '${localeCode}':`)
     console.log(`- Products missing translated title: ${missingProducts.length}`)
     console.log(`- Categories missing translated name: ${missingCategories.length}`)
+    console.log(`- Collections missing translated title: ${missingCollections.length}`)
 
     if (missingProducts.length) {
       hasMissingTranslations = true
@@ -268,11 +347,18 @@ export default async function auditTranslationCoverage({
       hasMissingTranslations = true
       console.log(`  Category handles: ${missingCategories.join(", ")}`)
     }
+
+    if (missingCollections.length) {
+      hasMissingTranslations = true
+      console.log(`  Collection handles: ${missingCollections.join(", ")}`)
+    }
   }
 
   if (hasMissingTranslations) {
     throw new Error("Translation coverage audit failed: missing catalog translations detected.")
   }
 
-  console.log("Translation coverage audit passed: all audited products and categories have translated primary fields.")
+  console.log(
+    "Translation coverage audit passed: all audited products, categories, and collections have translated primary fields."
+  )
 }

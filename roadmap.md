@@ -452,6 +452,7 @@ Current progress:
 
 Current note:
 - Phase 12 is now the next primary lane after the current local Phase 11 stop-point.
+- The first concrete Phase 12 slice is now in: collection translation tooling now exists alongside the earlier product/category tooling, so collection-driven storefront content has a real upsert, audit, and verification path instead of being a blind spot in the multilingual catalog workflow.
 
 ## 12.1 Content Translation
 - Products
