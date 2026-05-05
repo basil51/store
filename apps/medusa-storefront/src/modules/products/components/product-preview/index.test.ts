@@ -20,6 +20,7 @@ vi.mock("@modules/common/components/localized-client-link", () => ({
 
 vi.mock("../thumbnail", () => ({
   default: () => React.createElement("div", { "data-testid": "thumbnail-mock" }),
+  PRODUCT_CARD_IMAGE_SIZES: "280px",
 }))
 
 vi.mock("./wishlist-button", () => ({

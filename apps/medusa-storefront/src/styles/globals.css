@@ -26,6 +26,8 @@
     --text-dim:    #4e566a;
     --radius:      14px;
     --radius-sm:   8px;
+    --font-syne: "Syne";
+    --font-dm-sans: "DM Sans";
     --glow-teal:   0 0 24px rgba(0, 229, 200, 0.30);
     --glow-coral:  0 0 24px rgba(255, 94, 98, 0.35);
     --nav-bg:      rgba(12, 14, 20, 0.92);

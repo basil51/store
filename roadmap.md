@@ -15,7 +15,9 @@
 | **Phase 8 — Roles and permissions** | **Done (core scope)** — ACL matrix + store scope from user metadata; middleware on key admin routes; `api_keys.secrets` + publishable-only list lockdown for secret keys; unit + HTTP integration tests; **Admin → ACL Users** UI and `/admin/acl/user-roles` API for `acl_role` / `acl_store_ids`; current-admin context panel on that page. Optional follow-ups: more admin modules behind ACL, audit logs. |
 | **Phase 9 — Admin panel (roadmap track)** | **Completed for current scope** — **9.1:** Store overview + overview API + deep links. **9.2:** Catalog hub + Medusa product screens for CRUD, variants, and uploads. **9.3:** Category management is satisfied by Medusa Admin (`/categories`, `/categories/organize`). **9.4:** Order operations are satisfied by Medusa Admin (`/orders`) and native Medusa states. |
 | **Phase 10 — Payments** | **Completed for current local scope** — local PayPal and Offline payment flows are in place; hosted PayPal webhook/public-HTTPS follow-through stays deferred. |
-| **Phase 11 — Security** | **Stopped at current local milestone** — the local backend/storefront hardening slices are in place; deploy-time HTTPS and firewall checks stay deferred until the real server is up. Phase 12 is the next primary lane. |
+| **Phase 11 — Security** | **Stopped at current local milestone** — the local backend/storefront hardening slices are in place; deploy-time HTTPS and firewall checks stay deferred until the real server is up. |
+| **Phase 12 — Multi-language system** | **Done (current scope)** — collection translation tooling plus storefront EN/AR/HE localization coverage are now in place across the key shopping, account, order, category, collection, cart, checkout, and metadata surfaces. |
+| **Phase 13 — Performance & Scaling** | **Nearly complete for local scope** — storefront read-path cache lifecycles now cover settings, ticker, locales, catalog, regions, orders, fulfillment, and carts; product-card thumbnail `sizes` hints are tighter; shared category/collection shell reads no longer pull full product relation payloads; raw metadata images now carry explicit sizing/decode/load hints; image CDN hosts can be configured with `NEXT_IMAGE_REMOTE_PATTERNS`; and production build/profile validation now passes locally. |
 
 *Details: see root `status.md`.*
 
@@ -451,8 +453,10 @@ Current progress:
 # 🌍 PHASE 12 — Multi-Language System
 
 Current note:
-- Phase 12 is now the next primary lane after the current local Phase 11 stop-point.
-- The first concrete Phase 12 slice is now in: collection translation tooling now exists alongside the earlier product/category tooling, so collection-driven storefront content has a real upsert, audit, and verification path instead of being a blind spot in the multilingual catalog workflow.
+- Phase 12 is complete for the current scope.
+- Collection translation tooling now exists alongside the earlier product/category tooling, and the storefront EN / AR / HE copy pass is now landed across the key shopper-facing flows and metadata surfaces that were in active scope.
+- Seed/upsert scripts remain a backfill and audit tool for the existing catalog, not the required runtime workflow for future products. New product creation plus later admin translation edits now invalidate storefront catalog caches automatically, so if a merchant adds AR or HE product translations in Medusa Admin, those localized values can replace the older storefront copy without returning to project scripts.
+- Product save now also has an automatic missing-locale path for future catalog entries: on `product.created` / `product.updated`, Medusa fills missing product translations for the configured locales. If AI translation is configured, it translates title/subtitle/description from the detected source language; if AI is not configured, it copies the entered source text through to the missing locales so every storefront locale still shows the merchant-entered product content until a manual translation is added. Existing non-empty locale translations are preserved.
 
 ## 12.1 Content Translation
 - Products
@@ -468,29 +472,65 @@ OR
 
 # ⚡ PHASE 13 — Performance & Scaling
 
+Current note:
+- Phase 13 is now the active lane.
+- Storefront read-path cache lifecycles now cover settings, ticker, locales, catalog, regions, orders, fulfillment, and carts with tenant-aware tags plus timed revalidation.
+- The first media-sizing slice is in: product-card thumbnails now pass responsive `sizes` hints while compact square thumbnails stay small.
+- A focused runtime/profile pass found heavy shared shell payloads; category and collection navigation/page-shell reads now request only the fields needed instead of full product relation payloads.
+- Category, brand, and video raw metadata images now include explicit dimensions plus decode/load priority hints without forcing arbitrary metadata URLs through Next image optimization.
+- Next image remote-pattern/CDN policy is now configurable through `NEXT_IMAGE_REMOTE_PATTERNS` for comma-separated CDN URL patterns, while local MinIO and Medusa Cloud defaults remain.
+- Production-mode validation now passes locally: `next build` completes, `next start` serves the built app, and the key storefront routes render with production timings. Build-time Google Fonts fetching was removed so production builds do not depend on Google Fonts network access.
+
 ## 13.1 Caching
-- Redis caching
-- CDN for images
+- Read-path cache lifecycles across storefront data helpers
+- Redis caching where backend/shared runtime state needs it
+- Configurable CDN/image remote-pattern policy
 
 ## 13.2 Optimization
-- Lazy loading images
-- Server-side rendering
+- Lazy loading and responsive image sizing
+- Raw metadata image dimension/decode/load hints
+- Field selection / payload trimming for shared shell reads
+- Server-side rendering and production-mode profiling
 
 ---
 
 # 📈 PHASE 14 — Advanced Features (YOUR ADVANTAGE 🔥)
 
+Current note:
+- Phase 14 has started with the SEO system first, because it is the safest deployment-adjacent advanced feature after the Phase 13 performance pass.
+- The first SEO foundation slices are in: dynamic sitemap, robots policy, canonical URLs for key public pages, `hreflang` / `x-default` alternate-language metadata through crawlable `?locale=` URLs, consistent OpenGraph/Twitter image metadata with product/category/collection images preferred and NEXMART fallbacks everywhere else, and structured JSON-LD across the home page, store index, collections index, and product/category/collection detail pages so search crawlers get explicit website, organization, breadcrumb, item-list, collection-page, and product entities. Product JSON-LD also now picks up brand, GTIN, aggregate rating, and review data when merchants provide that metadata.
+- Smart-search groundwork has started without adding a separate search service yet: `/store?q=...` now performs product search through the Medusa Store API, renders a localized search-results state, normalizes queries, persists search submissions/results into Medusa, exposes an admin Search Analytics readout for top and zero-result queries, now lets admins add exact-query recovery overrides for synonyms and misspellings, reports recovered-query performance so override-driven rescues can be distinguished from analytics-driven fallbacks, shows live product suggestions while typing in the nav search, applies local query-aware reranking so stronger title/prefix/token matches surface ahead of looser matches when no explicit price sort is overriding relevance, uses those admin-managed overrides first and then stored search analytics to recover common zero-result store queries onto historically successful similar searches before leaving the shopper at an empty result set, and now applies the same recovery path to the nav suggestion dropdown when direct suggestions come back empty.
+- Product recommendations have now started on the PDP: the related-products rail no longer uses the starter placeholder query and instead ranks candidates by shared collection, category, and tag signals with deterministic fallback filling when the stronger matches do not provide enough products, surfaces localized explanation chips for the strongest matching signal, and now applies bounded CTR-based analytics boosts from real recommendation interactions so better performers can rise inside the same relevance bucket without swamping the primary signal ordering.
+- Recommendation measurement is now in place for that PDP rail as well: impressions and clicks persist into Medusa and are visible in Admin → Recommendation Analytics, so future ranking changes can be evaluated with real CTR and product-level interaction data instead of guesswork.
+
 ## 14.1 AI Features
 - Product recommendations
+  - Current groundwork: weighted shared-signal PDP recommendations (collection/category/tag) with fallback filling
+  - Current analytics: rail impressions, product clicks, CTR, top source products, and top clicked recommended products
+  - Next: add recommendation reasons or ranking refinements based on the new interaction data
 - Smart search
+  - Current groundwork: Store API product search via `q`
+  - Current analytics: persisted search submissions/results with top and zero-result query readout
+  - Current UX: typeahead product suggestions in nav search
+  - Next: better ranking after more query telemetry exists
 
 ## 14.2 Analytics
 - Conversion tracking
 - User behavior
+- Search query analytics
+  - Top queries
+  - Zero-result searches
 
-## 14.3 SEO System
-- Meta tags per product
+## 14.3 SEO System (complete for current scope)
+- Meta tags per product/category/collection
 - Sitemap
+- Robots policy
+- Canonical URLs
+- Hreflang / alternate-language URLs
+- Social metadata image consistency
+- Structured JSON-LD for public pages
+  - Current coverage: home, store index, collections index, product detail, category detail, collection detail
+  - Current richness: website, organization, breadcrumb, item-list, collection-page, product, and metadata-driven brand/GTIN/review signals
 
 ## 14.4 Multi-Store (Future SaaS)
 - Each user = store
@@ -499,6 +539,9 @@ OR
 ---
 
 # 🧪 PHASE 15 — Testing
+
+Current note:
+- Phase 15 has started with focused API coverage for the storefront search-suggestions route so the recent smart-search work has a route-level regression check in addition to the existing utility and Playwright coverage.
 
 - Unit tests
 - API tests

@@ -5,7 +5,8 @@ import { PRODUCT_PREVIEW_FIELDS } from "@lib/data/product-fields"
 import { sortProducts } from "@lib/util/sort-products"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import { getAuthHeaders, getCacheOptions } from "./cookies"
+import { getAuthHeaders } from "./cookies"
+import { getCatalogCacheOptions } from "./catalog-cache"
 import { getRegion, retrieveRegion } from "./regions"
 
 export const listProducts = async ({
@@ -51,7 +52,7 @@ export const listProducts = async ({
   }
 
   const next = {
-    ...(await getCacheOptions("products")),
+    ...(await getCatalogCacheOptions("products")),
   }
 
   return sdk.client

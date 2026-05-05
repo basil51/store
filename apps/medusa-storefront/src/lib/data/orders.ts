@@ -3,8 +3,10 @@
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
-import { getAuthHeaders, getCacheOptions } from "./cookies"
+import { revalidateTag } from "next/cache"
+import { getAuthHeaders, getCacheTag } from "./cookies"
 import { HttpTypes } from "@medusajs/types"
+import { getOrdersCacheOptions } from "./orders-cache"
 
 export const retrieveOrder = async (id: string) => {
   const headers = {
@@ -12,7 +14,7 @@ export const retrieveOrder = async (id: string) => {
   }
 
   const next = {
-    ...(await getCacheOptions("orders")),
+    ...(await getOrdersCacheOptions()),
   }
 
   return sdk.client
@@ -40,7 +42,7 @@ export const listOrders = async (
   }
 
   const next = {
-    ...(await getCacheOptions("orders")),
+    ...(await getOrdersCacheOptions()),
   }
 
   return sdk.client
@@ -92,7 +94,14 @@ export const createTransferRequest = async (
       },
       headers
     )
-    .then(({ order }) => ({ success: true, error: null, order }))
+    .then(async ({ order }) => {
+      const ordersCacheTag = await getCacheTag("orders")
+      if (ordersCacheTag) {
+        revalidateTag(ordersCacheTag)
+      }
+
+      return { success: true, error: null, order }
+    })
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }
 
@@ -103,7 +112,14 @@ export const acceptTransferRequest = async (id: string, token: string) => {
 
   return await sdk.store.order
     .acceptTransfer(id, { token }, {}, headers)
-    .then(({ order }) => ({ success: true, error: null, order }))
+    .then(async ({ order }) => {
+      const ordersCacheTag = await getCacheTag("orders")
+      if (ordersCacheTag) {
+        revalidateTag(ordersCacheTag)
+      }
+
+      return { success: true, error: null, order }
+    })
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }
 
@@ -114,6 +130,13 @@ export const declineTransferRequest = async (id: string, token: string) => {
 
   return await sdk.store.order
     .declineTransfer(id, { token }, {}, headers)
-    .then(({ order }) => ({ success: true, error: null, order }))
+    .then(async ({ order }) => {
+      const ordersCacheTag = await getCacheTag("orders")
+      if (ordersCacheTag) {
+        revalidateTag(ordersCacheTag)
+      }
+
+      return { success: true, error: null, order }
+    })
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }

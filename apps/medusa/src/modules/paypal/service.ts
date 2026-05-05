@@ -610,7 +610,10 @@ class PayPalPaymentProviderService extends AbstractPaymentProvider<Options> {
 
       return true
     } catch (error) {
-      this.logger_.error("PayPal verifyWebhookSignature error:", error)
+      this.logger_.error(
+        "PayPal verifyWebhookSignature error:",
+        error instanceof Error ? error : undefined
+      )
       return false
     }
   }

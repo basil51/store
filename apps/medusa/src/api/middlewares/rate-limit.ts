@@ -186,7 +186,9 @@ export const createRedisRateLimitStore = ({
     if (!redisClientPromise) {
       redisClientPromise = (clientFactory
         ? clientFactory()
-        : import("ioredis").then(({ default: Redis }) => {
+        : import("ioredis").then((redisModule) => {
+            const Redis =
+              ("default" in redisModule ? redisModule.default : redisModule) as any
             const client = new Redis(redisUrl)
             client.on?.("error", () => undefined)
             return client as RedisRateLimitClient

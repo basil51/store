@@ -1,10 +1,13 @@
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
-import { getCacheOptions } from "./cookies"
+import { getCatalogCacheOptions } from "./catalog-cache"
+
+export const CATEGORY_FIELDS =
+  "id,name,description,handle,rank,parent_category_id,metadata,*category_children,*parent_category,*parent_category.parent_category"
 
 export const listCategories = async (query?: Record<string, any>) => {
   const next = {
-    ...(await getCacheOptions("categories")),
+    ...(await getCatalogCacheOptions("categories")),
   }
 
   const limit = query?.limit || 100
@@ -14,8 +17,7 @@ export const listCategories = async (query?: Record<string, any>) => {
       "/store/product-categories",
       {
         query: {
-          fields:
-            "*category_children, *products, *parent_category, *parent_category.parent_category, metadata",
+          fields: CATEGORY_FIELDS,
           limit,
           ...query,
         },
@@ -30,7 +32,7 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
   const handle = `${categoryHandle.join("/")}`
 
   const next = {
-    ...(await getCacheOptions("categories")),
+    ...(await getCatalogCacheOptions("categories")),
   }
 
   return sdk.client
@@ -38,8 +40,7 @@ export const getCategoryByHandle = async (categoryHandle: string[]) => {
       `/store/product-categories`,
       {
         query: {
-          fields:
-            "*category_children, *products, *parent_category, *parent_category.parent_category, metadata",
+          fields: CATEGORY_FIELDS,
           handle,
         },
         next,

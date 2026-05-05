@@ -2,11 +2,13 @@
 
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
-import { getCacheOptions } from "./cookies"
+import { getCatalogCacheOptions } from "./catalog-cache"
+
+const COLLECTION_FIELDS = "id,title,handle,metadata"
 
 export const retrieveCollection = async (id: string) => {
   const next = {
-    ...(await getCacheOptions("collections")),
+    ...(await getCatalogCacheOptions("collections")),
   }
 
   return sdk.client
@@ -24,7 +26,7 @@ export const listCollections = async (
   queryParams: Record<string, string> = {}
 ): Promise<{ collections: HttpTypes.StoreCollection[]; count: number }> => {
   const next = {
-    ...(await getCacheOptions("collections")),
+    ...(await getCatalogCacheOptions("collections")),
   }
 
   queryParams.limit = queryParams.limit || "100"
@@ -46,12 +48,12 @@ export const getCollectionByHandle = async (
   handle: string
 ): Promise<HttpTypes.StoreCollection> => {
   const next = {
-    ...(await getCacheOptions("collections")),
+    ...(await getCatalogCacheOptions("collections")),
   }
 
   return sdk.client
     .fetch<HttpTypes.StoreCollectionListResponse>(`/store/collections`, {
-      query: { handle, fields: "*products" },
+      query: { handle, fields: COLLECTION_FIELDS },
       next,
       cache: "force-cache",
     })

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { fetchMock } = vi.hoisted(() => ({
+const { fetchMock, getCacheOptionsMock } = vi.hoisted(() => ({
   fetchMock: vi.fn(),
+  getCacheOptionsMock: vi.fn(),
 }))
 
 vi.mock("@lib/config", () => ({
@@ -12,11 +13,19 @@ vi.mock("@lib/config", () => ({
   },
 }))
 
+vi.mock("./cookies", () => ({
+  getCacheOptions: getCacheOptionsMock,
+}))
+
 import { getStorefrontSettings } from "./currency"
 
 describe("getStorefrontSettings", () => {
   beforeEach(() => {
     fetchMock.mockReset()
+    getCacheOptionsMock.mockReset()
+    getCacheOptionsMock.mockResolvedValue({
+      tags: ["tenant-storefront-settings-cache"],
+    })
   })
 
   it("uses store default_stock_mode when product metadata fallback is configured", async () => {
@@ -37,5 +46,21 @@ describe("getStorefrontSettings", () => {
     const settings = await getStorefrontSettings()
 
     expect(settings.defaultStockMode).toBe("track_visible")
+  })
+
+  it("uses cached storefront-settings fetch options for read-only store config", async () => {
+    fetchMock.mockResolvedValueOnce({})
+
+    await getStorefrontSettings()
+
+    expect(getCacheOptionsMock).toHaveBeenCalledWith("storefront-settings")
+    expect(fetchMock).toHaveBeenCalledWith("/store/store-currency-config", {
+      method: "GET",
+      next: {
+        tags: ["tenant-storefront-settings-cache"],
+        revalidate: 300,
+      },
+      cache: "force-cache",
+    })
   })
 })

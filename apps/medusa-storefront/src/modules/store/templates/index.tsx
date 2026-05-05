@@ -5,16 +5,20 @@ import { Suspense } from "react"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import CategorySidebar from "@modules/layout/components/category-sidebar"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { normalizeSearchQuery } from "@lib/util/search"
 
 import PaginatedProducts from "./paginated-products"
 
 const StoreTemplate = async ({
   sortBy,
   page,
+  query,
   countryCode,
 }: {
   sortBy?: SortOptions
   page?: string
+  query?: string
   countryCode: string
 }) => {
   const locale = (await getLocale()) ?? "en"
@@ -22,6 +26,7 @@ const StoreTemplate = async ({
     getUiCopy(locale, key, params)
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
+  const searchQuery = normalizeSearchQuery(query)
 
   return (
     <div
@@ -40,17 +45,29 @@ const StoreTemplate = async ({
             style={{ color: "var(--text)" }}
             data-testid="store-page-title"
           >
-            {t("sidebarAllProducts")}
+            {searchQuery
+              ? t("storeSearchResultsTitle", { query: searchQuery })
+              : t("sidebarAllProducts")}
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-7" style={{ color: "var(--text-muted)" }}>
-            {t("storePageSubtitle")}
+            {searchQuery ? t("storeSearchResultsSubtitle") : t("storePageSubtitle")}
           </p>
+          {searchQuery && (
+            <LocalizedClientLink
+              href="/store"
+              className="mt-5 inline-flex rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] transition-colors hover:border-[var(--teal)]"
+              style={{ borderColor: "var(--border)", color: "var(--teal)" }}
+            >
+              {t("storeSearchClear")}
+            </LocalizedClientLink>
+          )}
         </div>
 
         <Suspense fallback={<SkeletonProductGrid />}>
           <PaginatedProducts
             sortBy={sort}
             page={pageNumber}
+            query={searchQuery}
             countryCode={countryCode}
           />
         </Suspense>

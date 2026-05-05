@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { getCatalogCacheTag } from "@lib/data/catalog-cache"
 import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
@@ -14,6 +15,8 @@ import {
   removeCartId,
   setCartId,
 } from "./cookies"
+import { getCartCacheOptions } from "./cart-cache"
+import { getFulfillmentCacheOptions } from "./fulfillment-cache"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
 
@@ -118,7 +121,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
   }
 
   const next = {
-    ...(await getCacheOptions("carts")),
+    ...(await getCartCacheOptions()),
   }
 
   return await sdk.client
@@ -642,8 +645,7 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   const regionCacheTag = await getCacheTag("regions")
   revalidateTag(regionCacheTag)
 
-  const productsCacheTag = await getCacheTag("products")
-  revalidateTag(productsCacheTag)
+  revalidateTag(getCatalogCacheTag("products"))
 
   redirect(`/${countryCode}${currentPath}`)
 }
@@ -654,7 +656,7 @@ export async function listCartOptions() {
     ...(await getAuthHeaders()),
   }
   const next = {
-    ...(await getCacheOptions("shippingOptions")),
+    ...(await getFulfillmentCacheOptions()),
   }
 
   return await sdk.client.fetch<{

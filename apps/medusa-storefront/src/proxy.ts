@@ -16,11 +16,13 @@ import {
   getTenantScopedCookieName,
   normalizeTenantHost,
 } from "@lib/util/tenant"
+import { getRegionFetchCacheOptions } from "@lib/util/proxy-cache"
 
 const BACKEND_URL = process.env.MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
 const DEFAULT_LOCALE = process.env.NEXT_PUBLIC_DEFAULT_LOCALE || "en"
+const SUPPORTED_SEO_LOCALES = new Set(["en", "ar", "he"])
 
 const regionMapCache = new Map<
   string,
@@ -74,7 +76,7 @@ async function getTenantContext(request: NextRequest) {
   }
 }
 
-async function getRegionMap(cacheId: string, publishableApiKey: string) {
+async function getRegionMap(publishableApiKey: string) {
   const cacheKey = publishableApiKey || "default"
   let cacheEntry = regionMapCache.get(cacheKey)
 
@@ -92,10 +94,7 @@ async function getRegionMap(cacheId: string, publishableApiKey: string) {
       headers: {
         "x-publishable-api-key": publishableApiKey,
       },
-      next: {
-        revalidate: 3600,
-        tags: [`regions-${cacheId}-${cacheKey}`],
-      },
+      next: getRegionFetchCacheOptions(publishableApiKey),
       cache: "force-cache",
     }).then(async (response) => {
       const json = await response.json()
@@ -133,11 +132,13 @@ async function getRegionMap(cacheId: string, publishableApiKey: string) {
 function applyTenantCookies(
   response: NextResponse,
   tenantContext: StoreTenantContext | null,
-  existingLocale: string | undefined
+  existingLocale: string | undefined,
+  requestedLocale?: string | null
 ) {
   const maxAge = 60 * 60 * 24 * 30
   const defaultLocale = tenantContext?.default_locale || DEFAULT_LOCALE
   const tenantCookieOptions = getTenantServerCookieOptions(maxAge)
+  const localeCookieValue = requestedLocale || existingLocale || defaultLocale
 
   if (tenantContext?.tenant_slug) {
     response.cookies.set(TENANT_COOKIE_NAME, tenantContext.tenant_slug, tenantCookieOptions)
@@ -173,13 +174,13 @@ function applyTenantCookies(
 
   response.cookies.set(TENANT_DEFAULT_LOCALE_COOKIE_NAME, defaultLocale, tenantCookieOptions)
 
-  if (!existingLocale) {
+  if (requestedLocale || !existingLocale) {
     response.cookies.set(
       getTenantScopedCookieName(
         TENANT_LOCALE_COOKIE_BASE,
         tenantContext?.tenant_slug ?? "default"
       ),
-      defaultLocale,
+      localeCookieValue,
       getTenantServerCookieOptions(60 * 60 * 24 * 365)
     )
   }
@@ -253,10 +254,14 @@ export async function proxy(request: NextRequest) {
     request.cookies.get(cacheCookieName) ?? request.cookies.get(TENANT_CACHE_COOKIE_BASE)
   const localeCookie =
     request.cookies.get(localeCookieName)?.value ?? request.cookies.get(TENANT_LOCALE_COOKIE_BASE)?.value
+  const requestedLocale = request.nextUrl.searchParams.get("locale")?.toLowerCase() ?? null
+  const seoLocale = requestedLocale && SUPPORTED_SEO_LOCALES.has(requestedLocale)
+    ? requestedLocale
+    : null
 
   const cacheId = cacheIdCookie?.value || crypto.randomUUID()
 
-  const regionMap = await getRegionMap(cacheId, effectivePublishableKey)
+  const regionMap = await getRegionMap(effectivePublishableKey)
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
   const pathname = request.nextUrl.pathname
@@ -265,17 +270,17 @@ export async function proxy(request: NextRequest) {
     countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
 
   if (urlHasCountryCode && cacheIdCookie) {
-    return applyTenantCookies(NextResponse.next(), tenantContext, localeCookie)
+    return applyTenantCookies(NextResponse.next(), tenantContext, localeCookie, seoLocale)
   }
 
   if (urlHasCountryCode && !cacheIdCookie) {
     response.cookies.set(cacheCookieName, cacheId, getTenantServerCookieOptions(60 * 60 * 24))
 
-    return applyTenantCookies(response, tenantContext, localeCookie)
+    return applyTenantCookies(response, tenantContext, localeCookie, seoLocale)
   }
 
   if (request.nextUrl.pathname.includes(".")) {
-    return applyTenantCookies(NextResponse.next(), tenantContext, localeCookie)
+    return applyTenantCookies(NextResponse.next(), tenantContext, localeCookie, seoLocale)
   }
 
   const redirectPath =
@@ -297,7 +302,7 @@ export async function proxy(request: NextRequest) {
       )
     }
 
-    return applyTenantCookies(rewritten, tenantContext, localeCookie)
+    return applyTenantCookies(rewritten, tenantContext, localeCookie, seoLocale)
   }
 
   if (!urlHasCountryCode && countryCode) {
@@ -310,7 +315,7 @@ export async function proxy(request: NextRequest) {
     )
   }
 
-  return applyTenantCookies(response, tenantContext, localeCookie)
+  return applyTenantCookies(response, tenantContext, localeCookie, seoLocale)
 }
 
 export const config = {

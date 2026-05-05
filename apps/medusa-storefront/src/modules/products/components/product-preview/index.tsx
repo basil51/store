@@ -8,7 +8,7 @@ import {
 } from "@lib/util/stock-mode"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Thumbnail from "../thumbnail"
+import Thumbnail, { PRODUCT_CARD_IMAGE_SIZES } from "../thumbnail"
 import PreviewPrice from "./price"
 import WishlistButton from "./wishlist-button"
 
@@ -102,6 +102,7 @@ export default async function ProductPreview({
             size="square"
             isFeatured={isFeatured}
             loading={imageLoading}
+            sizes={PRODUCT_CARD_IMAGE_SIZES}
           />
 
           {/* Badge overlay */}

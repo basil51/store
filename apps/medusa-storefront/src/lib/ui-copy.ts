@@ -6,6 +6,7 @@ const EN_UI_COPY = {
   commonOutOfStock: "Out of stock",
   commonAddToCart: "Add to cart",
   commonEdit: "Edit",
+  commonDismiss: "Dismiss",
   commonWhatsApp: "WhatsApp",
   stockAvailableOnRequest: "Available on request",
   stockInStock: "In stock",
@@ -45,11 +46,20 @@ const EN_UI_COPY = {
   productRailViewAll: "View all",
 
   navSearchPlaceholder: "Search products, brands...",
+  navSearchSuggestionsLabel: "Search suggestions",
+  navSearchRecoveredSuggestionsLabel: 'Suggestions for "{query}"',
+  navSearchNoSuggestions: "No quick suggestions yet",
+  navSearchViewAllResults: 'View all results for "{query}"',
+  navSearchViewRecoveredResults: 'View results for "{query}"',
+  navMenu: "Menu",
+  navHome: "Home",
   navShop: "Shop",
   navCollections: "Collections",
   navAccount: "Account",
   navCart: "Cart",
   navCartWithCount: "Cart ({count})",
+  sideMenuDescription:
+    "Explore mobiles, laptops, monitors, gaming parts, software, audio, and the accessories that complete the setup.",
 
   cartTitle: "Cart",
   cartSummaryTitle: "Summary",
@@ -85,13 +95,17 @@ const EN_UI_COPY = {
   miniCartSubtotalExcludingTaxes: "(excl. taxes)",
   miniCartViewCartCheckout: "View Cart & Checkout ->",
   miniCartEmptyDescription: "Add items to get started",
+  metaCartDescription: "View your cart",
 
   paymentMethodCreditCard: "Credit card",
   paymentMethodPayPal: "PayPal",
   paymentMethodOffline: "Offline payment",
+  productPriceFrom: "From ",
 
   checkoutBackToCart: "Back to shopping cart",
   checkoutBack: "Back",
+  metaCheckoutTitle: "Checkout",
+  metaCheckoutDescription: "Complete your order.",
   checkoutOrderSummaryTitle: "Order Summary",
   checkoutProgressTitle: "Checkout progress",
   checkoutStepOfTotal: "Step {current} / {total}",
@@ -156,6 +170,7 @@ const EN_UI_COPY = {
   checkoutCompletePaymentSetupEstimate: "Complete payment setup to lock this estimate before placing your order.",
   checkoutBeforePlacingOrder: "Before placing your order",
   checkoutNeedToEditSomething: "Need to edit something?",
+  reviewEditStepAria: "Edit {label}",
   checkoutAddressDetails: "Address details",
   checkoutDeliveryMethod: "Delivery method",
   checkoutPaymentMethod: "Payment method",
@@ -217,6 +232,17 @@ const EN_UI_COPY = {
   sidebarCollections: "Collections",
   storePageSubtitle:
     "Browse the full catalog - mobiles, laptops, gaming, peripherals, software, and accessories.",
+  storeSearchResultsTitle: 'Search results for "{query}"',
+  storeSearchResultsSubtitle:
+    "Smart search currently matches product titles, descriptions, tags, and catalog metadata through the Store API.",
+  storeSearchClear: "Clear search",
+  storeSearchRecoveryTitle: 'No direct matches for "{query}"',
+  storeSearchRecoverySubtitle:
+    'Showing results for "{recovered_query}" based on similar shopper searches.',
+  storeSearchRecoveryCta: 'Search for "{recovered_query}" directly',
+  storeSearchEmptyTitle: 'No matches for "{query}"',
+  storeSearchEmptySubtitle:
+    "Try broader keywords, a brand name, or browse the catalog instead.",
   storeSortBy: "Sort by",
   storeSortNewest: "Newest",
   storeSortLatestArrivals: "Latest arrivals",
@@ -224,6 +250,8 @@ const EN_UI_COPY = {
   storeSortPriceHighLow: "Price: High -> Low",
   storeProductSingular: "product",
   storeProductPlural: "products",
+  paginationPreviousPage: "Previous page",
+  paginationNextPage: "Next page",
   sidebarPriceRange: "Price range",
   sidebarPriceUnder50: "Under $50",
   sidebarPrice50To100: "$50 - $100",
@@ -246,10 +274,29 @@ const EN_UI_COPY = {
 
   collectionsPageSubtitle:
     "Browse curated collection hubs for brands, launches, and standout product groups.",
+  metaCollectionsDescription:
+    "Browse NEXMART collections to jump into curated brands, categories, and featured product drops.",
   collectionsPageCardFallbackSummary:
     "Explore products from the {title} collection.",
   collectionsPageViewCollection: "View collection",
   collectionsPageEmpty: "No collections are available yet.",
+
+  pageNotFoundTitle: "Page not found",
+  pageNotFoundDescription: "The page you tried to access does not exist.",
+  pageNotFoundCta: "Go to frontpage",
+  cartNotFoundDescription:
+    "The cart you tried to access does not exist. Clear your cookies and try again.",
+  metaGenericErrorDescription: "Something went wrong",
+  metaHomeTitleSuffix: "Tech Store",
+  metaHomeDescription:
+    "Your destination for mobiles, laptops, gaming gear, accessories and more - fast shipping, great deals.",
+
+  themeToggleLabel: "Toggle color theme",
+  themeSwitchToLight: "Switch to light mode",
+  themeSwitchToDark: "Switch to dark mode",
+  currencySelectDisplay: "Select display currency",
+  currencyDisplayOnlyNote: "Display only · prices in ₪",
+  toastNotifications: "Notifications",
 
   categoryPageLabel: "Category",
   categoryPageSubcategories: "Subcategories",
@@ -260,6 +307,10 @@ const EN_UI_COPY = {
   relatedProductsTitle: "Related products",
   relatedProductsSubtitle:
     "You might also want to check out these products.",
+  relatedProductsReasonCollection: "Same collection",
+  relatedProductsReasonCategory: "Same category",
+  relatedProductsReasonTag: "Similar tag",
+  relatedProductsReasonMultiSignal: "Strong match",
 
   productTabsProductInformation: "Product Information",
   productTabsSpecifications: "Specifications",
@@ -384,6 +435,7 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     commonOutOfStock: "غير متوفر",
     commonAddToCart: "أضف إلى السلة",
     commonEdit: "تعديل",
+    commonDismiss: "إغلاق",
     commonWhatsApp: "واتساب",
     stockAvailableOnRequest: "متوفر عند الطلب",
     stockInStock: "متوفر في المخزون",
@@ -423,11 +475,20 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     productRailViewAll: "عرض الكل",
 
     navSearchPlaceholder: "ابحث عن منتجات أو علامات...",
+    navSearchSuggestionsLabel: "اقتراحات البحث",
+    navSearchRecoveredSuggestionsLabel: 'اقتراحات لـ "{query}"',
+    navSearchNoSuggestions: "لا توجد اقتراحات سريعة بعد",
+    navSearchViewAllResults: 'عرض كل النتائج عن "{query}"',
+    navSearchViewRecoveredResults: 'اعرض نتائج "{query}"',
+    navMenu: "القائمة",
+    navHome: "الرئيسية",
     navShop: "المتجر",
     navCollections: "المجموعات",
     navAccount: "الحساب",
     navCart: "السلة",
     navCartWithCount: "السلة ({count})",
+    sideMenuDescription:
+      "استكشف الجوالات واللابتوبات والشاشات وقطع الألعاب والبرامج والصوتيات والإكسسوارات التي تكمل إعدادك.",
 
     cartTitle: "السلة",
     cartSummaryTitle: "الملخص",
@@ -463,13 +524,17 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     miniCartSubtotalExcludingTaxes: "(بدون الضرائب)",
     miniCartViewCartCheckout: "عرض السلة والمتابعة إلى الدفع ->",
     miniCartEmptyDescription: "أضف منتجات للبدء",
+    metaCartDescription: "اعرض سلتك",
 
     paymentMethodCreditCard: "بطاقة ائتمان",
     paymentMethodPayPal: "باي بال",
     paymentMethodOffline: "دفع غير متصل",
+    productPriceFrom: "ابتداء من ",
 
     checkoutBackToCart: "العودة إلى سلة التسوق",
     checkoutBack: "رجوع",
+    metaCheckoutTitle: "إتمام الطلب",
+    metaCheckoutDescription: "أكمل طلبك.",
     checkoutOrderSummaryTitle: "ملخص الطلب",
     checkoutProgressTitle: "تقدم الدفع",
     checkoutStepOfTotal: "الخطوة {current} / {total}",
@@ -534,6 +599,7 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     checkoutCompletePaymentSetupEstimate: "أكمل إعداد الدفع لتأكيد هذا التوقيت قبل إتمام الطلب.",
     checkoutBeforePlacingOrder: "قبل إتمام الطلب",
     checkoutNeedToEditSomething: "هل تحتاج إلى تعديل شيء؟",
+    reviewEditStepAria: "تعديل {label}",
     checkoutAddressDetails: "بيانات العنوان",
     checkoutDeliveryMethod: "طريقة التوصيل",
     checkoutPaymentMethod: "طريقة الدفع",
@@ -595,6 +661,17 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     sidebarCollections: "المجموعات",
     storePageSubtitle:
       "تصفح الكتالوج الكامل - الجوالات وأجهزة اللابتوب والألعاب والملحقات الطرفية والبرامج والإكسسوارات.",
+    storeSearchResultsTitle: 'نتائج البحث عن "{query}"',
+    storeSearchResultsSubtitle:
+      "يعتمد البحث الذكي حاليًا على عناوين المنتجات وأوصافها والوسوم وبيانات الكتالوج من واجهة المتجر.",
+    storeSearchClear: "مسح البحث",
+    storeSearchRecoveryTitle: 'لا توجد مطابقة مباشرة لـ "{query}"',
+    storeSearchRecoverySubtitle:
+      'نعرض نتائج لـ "{recovered_query}" بناءً على عمليات بحث مشابهة من المتسوقين.',
+    storeSearchRecoveryCta: 'ابحث مباشرة عن "{recovered_query}"',
+    storeSearchEmptyTitle: 'لا توجد نتائج لـ "{query}"',
+    storeSearchEmptySubtitle:
+      "جرّب كلمات أوسع أو اسم علامة تجارية أو تصفح الكتالوج مباشرة.",
     storeSortBy: "الترتيب حسب",
     storeSortNewest: "الأحدث",
     storeSortLatestArrivals: "أحدث الإضافات",
@@ -602,6 +679,8 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     storeSortPriceHighLow: "السعر: من الأعلى إلى الأقل",
     storeProductSingular: "منتج",
     storeProductPlural: "منتجات",
+    paginationPreviousPage: "الصفحة السابقة",
+    paginationNextPage: "الصفحة التالية",
     sidebarPriceRange: "نطاق السعر",
     sidebarPriceUnder50: "أقل من $50",
     sidebarPrice50To100: "$50 - $100",
@@ -624,10 +703,29 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
 
     collectionsPageSubtitle:
       "تصفح مجموعات منسقة للعلامات التجارية والإطلاقات ومجموعات المنتجات البارزة.",
+    metaCollectionsDescription:
+      "تصفح مجموعات NEXMART للوصول إلى العلامات والتصنيفات والإطلاقات المميزة.",
     collectionsPageCardFallbackSummary:
       "استكشف منتجات مجموعة {title}.",
     collectionsPageViewCollection: "عرض المجموعة",
     collectionsPageEmpty: "لا توجد مجموعات متاحة بعد.",
+
+    pageNotFoundTitle: "الصفحة غير موجودة",
+    pageNotFoundDescription: "الصفحة التي حاولت الوصول إليها غير موجودة.",
+    pageNotFoundCta: "الذهاب إلى الصفحة الرئيسية",
+    cartNotFoundDescription:
+      "السلة التي حاولت الوصول إليها غير موجودة. امسح ملفات تعريف الارتباط ثم حاول مرة أخرى.",
+    metaGenericErrorDescription: "حدث خطأ ما",
+    metaHomeTitleSuffix: "متجر التقنية",
+    metaHomeDescription:
+      "وجهتك للجوالات واللابتوبات ومعدات الألعاب والإكسسوارات والمزيد - شحن سريع وعروض قوية.",
+
+    themeToggleLabel: "تبديل مظهر الألوان",
+    themeSwitchToLight: "التبديل إلى الوضع الفاتح",
+    themeSwitchToDark: "التبديل إلى الوضع الداكن",
+    currencySelectDisplay: "اختر عملة العرض",
+    currencyDisplayOnlyNote: "للعرض فقط · الأسعار تبقى بالشيكل ₪",
+    toastNotifications: "الإشعارات",
 
     categoryPageLabel: "الفئة",
     categoryPageSubcategories: "الفئات الفرعية",
@@ -637,6 +735,10 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
 
     relatedProductsTitle: "منتجات ذات صلة",
     relatedProductsSubtitle: "قد ترغب أيضا في الاطلاع على هذه المنتجات.",
+    relatedProductsReasonCollection: "من نفس المجموعة",
+    relatedProductsReasonCategory: "من نفس الفئة",
+    relatedProductsReasonTag: "وسم مشابه",
+    relatedProductsReasonMultiSignal: "تطابق قوي",
 
     productTabsProductInformation: "معلومات المنتج",
     productTabsSpecifications: "المواصفات",
@@ -751,6 +853,7 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     commonOutOfStock: "אזל מהמלאי",
     commonAddToCart: "הוסף לעגלה",
     commonEdit: "עריכה",
+    commonDismiss: "סגירה",
     commonWhatsApp: "וואטסאפ",
     stockAvailableOnRequest: "זמין לפי בקשה",
     stockInStock: "במלאי",
@@ -790,11 +893,20 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     productRailViewAll: "צפו בהכל",
 
     navSearchPlaceholder: "חפשו מוצרים, מותגים...",
+    navSearchSuggestionsLabel: "הצעות חיפוש",
+    navSearchRecoveredSuggestionsLabel: 'הצעות עבור "{query}"',
+    navSearchNoSuggestions: "אין עדיין הצעות מהירות",
+    navSearchViewAllResults: 'הצגת כל התוצאות עבור "{query}"',
+    navSearchViewRecoveredResults: 'הצגת תוצאות עבור "{query}"',
+    navMenu: "תפריט",
+    navHome: "בית",
     navShop: "חנות",
     navCollections: "קולקציות",
     navAccount: "חשבון",
     navCart: "עגלה",
     navCartWithCount: "עגלה ({count})",
+    sideMenuDescription:
+      "גלו מוביילים, מחשבים ניידים, מסכים, חלקי גיימינג, תוכנה, אודיו והאביזרים שמשלימים את ההגדרה שלכם.",
 
     cartTitle: "עגלה",
     cartSummaryTitle: "סיכום",
@@ -830,13 +942,17 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     miniCartSubtotalExcludingTaxes: "(ללא מסים)",
     miniCartViewCartCheckout: "צפייה בעגלה ומעבר לתשלום ->",
     miniCartEmptyDescription: "הוסיפו פריטים כדי להתחיל",
+    metaCartDescription: "צפו בעגלה שלכם",
 
     paymentMethodCreditCard: "כרטיס אשראי",
     paymentMethodPayPal: "PayPal",
     paymentMethodOffline: "תשלום לא מקוון",
+    productPriceFrom: "החל מ-",
 
     checkoutBackToCart: "חזרה לעגלת הקניות",
     checkoutBack: "חזרה",
+    metaCheckoutTitle: "תשלום",
+    metaCheckoutDescription: "השלימו את ההזמנה שלכם.",
     checkoutOrderSummaryTitle: "סיכום ההזמנה",
     checkoutProgressTitle: "התקדמות התשלום",
     checkoutStepOfTotal: "שלב {current} / {total}",
@@ -901,6 +1017,7 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     checkoutCompletePaymentSetupEstimate: "השלימו את הגדרת התשלום כדי לקבע את ההערכה הזו לפני ביצוע ההזמנה.",
     checkoutBeforePlacingOrder: "לפני ביצוע ההזמנה",
     checkoutNeedToEditSomething: "צריכים לערוך משהו?",
+    reviewEditStepAria: "עריכת {label}",
     checkoutAddressDetails: "פרטי כתובת",
     checkoutDeliveryMethod: "שיטת משלוח",
     checkoutPaymentMethod: "אמצעי תשלום",
@@ -962,6 +1079,17 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     sidebarCollections: "קולקציות",
     storePageSubtitle:
       "עיינו בקטלוג המלא - מוביילים, מחשבים ניידים, גיימינג, ציוד היקפי, תוכנה ואביזרים.",
+    storeSearchResultsTitle: 'תוצאות חיפוש עבור "{query}"',
+    storeSearchResultsSubtitle:
+      "החיפוש החכם משתמש כרגע בכותרות מוצרים, תיאורים, תגיות ומטא-דאטה של הקטלוג דרך Store API.",
+    storeSearchClear: "ניקוי חיפוש",
+    storeSearchRecoveryTitle: 'לא נמצאה התאמה ישירה עבור "{query}"',
+    storeSearchRecoverySubtitle:
+      'מוצגות תוצאות עבור "{recovered_query}" על בסיס חיפושים דומים של לקוחות.',
+    storeSearchRecoveryCta: 'חפשו ישירות את "{recovered_query}"',
+    storeSearchEmptyTitle: 'לא נמצאו תוצאות עבור "{query}"',
+    storeSearchEmptySubtitle:
+      "נסו מילות מפתח רחבות יותר, שם מותג, או עברו לגלישה בקטלוג.",
     storeSortBy: "מיון לפי",
     storeSortNewest: "החדש ביותר",
     storeSortLatestArrivals: "ההגעות האחרונות",
@@ -969,6 +1097,8 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
     storeSortPriceHighLow: "מחיר: מהגבוה לנמוך",
     storeProductSingular: "מוצר",
     storeProductPlural: "מוצרים",
+    paginationPreviousPage: "העמוד הקודם",
+    paginationNextPage: "העמוד הבא",
     sidebarPriceRange: "טווח מחירים",
     sidebarPriceUnder50: "מתחת ל-$50",
     sidebarPrice50To100: "$50 - $100",
@@ -991,10 +1121,29 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
 
     collectionsPageSubtitle:
       "עיינו במוקדי קולקציות נבחרים עבור מותגים, השקות וקבוצות מוצרים בולטות.",
+    metaCollectionsDescription:
+      "עיינו בקולקציות NEXMART כדי לקפוץ למותגים, קטגוריות והשקות בולטות.",
     collectionsPageCardFallbackSummary:
       "גלו מוצרים מתוך קולקציית {title}.",
     collectionsPageViewCollection: "לצפייה בקולקציה",
     collectionsPageEmpty: "עדיין אין קולקציות זמינות.",
+
+    pageNotFoundTitle: "העמוד לא נמצא",
+    pageNotFoundDescription: "העמוד שניסיתם לפתוח אינו קיים.",
+    pageNotFoundCta: "חזרה לעמוד הבית",
+    cartNotFoundDescription:
+      "העגלה שניסיתם לפתוח אינה קיימת. נקו את העוגיות ונסו שוב.",
+    metaGenericErrorDescription: "משהו השתבש",
+    metaHomeTitleSuffix: "חנות טכנולוגיה",
+    metaHomeDescription:
+      "היעד שלכם למוביילים, מחשבים ניידים, ציוד גיימינג, אביזרים ועוד - משלוח מהיר ומבצעים מצוינים.",
+
+    themeToggleLabel: "החלפת ערכת צבעים",
+    themeSwitchToLight: "מעבר למצב בהיר",
+    themeSwitchToDark: "מעבר למצב כהה",
+    currencySelectDisplay: "בחירת מטבע תצוגה",
+    currencyDisplayOnlyNote: "לתצוגה בלבד · המחירים נשארים ב-₪",
+    toastNotifications: "התראות",
 
     categoryPageLabel: "קטגוריה",
     categoryPageSubcategories: "תתי-קטגוריות",
@@ -1004,6 +1153,10 @@ const UI_COPY: Record<UiLocale, Record<UiCopyKey, string>> = {
 
     relatedProductsTitle: "מוצרים קשורים",
     relatedProductsSubtitle: "אולי תרצו לבדוק גם את המוצרים האלו.",
+    relatedProductsReasonCollection: "מאותה קולקציה",
+    relatedProductsReasonCategory: "מאותה קטגוריה",
+    relatedProductsReasonTag: "תגית דומה",
+    relatedProductsReasonMultiSignal: "התאמה חזקה",
 
     productTabsProductInformation: "מידע על המוצר",
     productTabsSpecifications: "מפרט",

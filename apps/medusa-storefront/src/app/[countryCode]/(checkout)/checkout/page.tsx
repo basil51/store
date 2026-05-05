@@ -1,6 +1,8 @@
 import { retrieveCart } from "@lib/data/cart"
 import { getStorefrontSettings } from "@lib/data/currency"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getLocale } from "@lib/data/locale-actions"
+import { getUiCopy } from "@lib/ui-copy"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
@@ -76,8 +78,13 @@ const getFirstRequiredStep = ({
   return "review"
 }
 
-export const metadata: Metadata = {
-  title: "Checkout",
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale()
+
+  return {
+    title: getUiCopy(locale, "metaCheckoutTitle"),
+    description: getUiCopy(locale, "metaCheckoutDescription"),
+  }
 }
 
 type CheckoutPageProps = {

@@ -12,7 +12,7 @@ export default async function Footer() {
     getUiCopy(locale, key, params)
 
   const { collections } = await listCollections({
-    fields: "*products",
+    fields: "id,handle,title",
   })
   const productCategories = await listCategories()
 

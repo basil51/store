@@ -12,6 +12,8 @@ cd /home/basel/Projects/Store
 docker compose up -d
 pnpm dev:medusa               # API + admin → http://localhost:9244/app (files → MinIO when S3_* in apps/medusa/.env)
 pnpm dev:storefront           # Next.js → http://localhost:8000
+pnpm --filter medusa-next build && pnpm --filter medusa-next exec next start -p 8001
+							   # production storefront smoke/profiling run; use HTTPS or a manual tenant cache cookie for local HTTP because production cookies are secure
 pnpm test:storefront:unit
 							   # lightweight Vitest coverage for shared storefront utilities, including Phase 6 WhatsApp formatter behavior
 pnpm test:e2e:install-browsers
@@ -56,5 +58,5 @@ Admin → Preset Defaults
 # CI note: checkout deep-link automation installs OS deps separately with `pnpm test:e2e:install-browsers:ci` inside GitHub Actions.
 #
 # Stock display: Product → Metadata → stock_mode = track_visible | track_hidden | no_stock
-# Category image: Category → Metadata → image | image_url | thumbnail = full URL (e.g. MinIO or CDN)
+# Category image: Category → Metadata → image | image_url | thumbnail = full URL (e.g. MinIO or CDN). Add CDN hosts to `NEXT_IMAGE_REMOTE_PATTERNS` when they should be allowed by Next image optimization.
 # Multi-store runtime: storefront middleware now resolves tenant context by request host using Medusa `/tenant`; for local host-based testing, map the provisioned `storefront_host` (for example `store.acme.local`) to your machine.

@@ -15,6 +15,9 @@ import {
 } from "@lib/util/whatsapp"
 import { parseProductStockMode } from "@lib/util/stock-mode"
 import type { ProductVariantCombinationDefaultsByType } from "@lib/util/variant-combinations"
+import { getCacheOptions } from "./cookies"
+
+const STOREFRONT_SETTINGS_REVALIDATE_SECONDS = 300
 
 export type StoreCurrencyConfig = {
   baseCurrency: CurrencyCode
@@ -23,6 +26,11 @@ export type StoreCurrencyConfig = {
 
 export async function getStorefrontSettings(): Promise<StorefrontSettings> {
   try {
+    const next = {
+      ...(await getCacheOptions("storefront-settings")),
+      revalidate: STOREFRONT_SETTINGS_REVALIDATE_SECONDS,
+    }
+
     const data = await sdk.client.fetch<{
       store_name?: string
       base_currency?: string
@@ -36,7 +44,8 @@ export async function getStorefrontSettings(): Promise<StorefrontSettings> {
       variant_combination_defaults_by_type?: ProductVariantCombinationDefaultsByType
     }>("/store/store-currency-config", {
       method: "GET",
-      cache: "no-store",
+      next,
+      cache: "force-cache",
     })
 
     const currencies = Array.isArray(data?.currencies) && data.currencies.length

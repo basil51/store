@@ -65,7 +65,11 @@ export default async function BrandStrip({
                       <img
                         src={logo}
                         alt={brand.title}
+                        width={96}
+                        height={24}
                         className="h-6 w-auto object-contain opacity-60 transition-opacity duration-150 group-hover:opacity-100"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <span

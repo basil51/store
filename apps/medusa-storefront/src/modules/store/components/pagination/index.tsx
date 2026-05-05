@@ -1,5 +1,7 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy } from "@lib/ui-copy"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 export function Pagination({
@@ -14,6 +16,7 @@ export function Pagination({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const locale = useUiLocale()
 
   const arrayRange = (start: number, stop: number) =>
     Array.from({ length: stop - start + 1 }, (_, i) => start + i)
@@ -120,7 +123,7 @@ export function Pagination({
                   border: "1px solid var(--border)",
                 }
           }
-          aria-label="Previous page"
+          aria-label={getUiCopy(locale, "paginationPreviousPage")}
         >
           ‹
         </button>
@@ -141,7 +144,7 @@ export function Pagination({
                   border: "1px solid var(--border)",
                 }
           }
-          aria-label="Next page"
+          aria-label={getUiCopy(locale, "paginationNextPage")}
         >
           ›
         </button>

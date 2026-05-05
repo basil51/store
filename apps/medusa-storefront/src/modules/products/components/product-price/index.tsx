@@ -1,5 +1,7 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy } from "@lib/ui-copy"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { useCurrency } from "@lib/context/currency-context"
 import { HttpTypes } from "@medusajs/types"
@@ -16,6 +18,7 @@ export default function ProductPrice({
     variantId: variant?.id,
   })
   const { displayPrice } = useCurrency()
+  const locale = useUiLocale()
 
   const selectedPrice = variant ? variantPrice : cheapestPrice
 
@@ -34,7 +37,8 @@ export default function ProductPrice({
           data-testid="product-price"
           data-value={selectedPrice.calculated_price_number}
         >
-          {!variant && "From "}{displayPrice(selectedPrice.calculated_price_number)}
+          {!variant && getUiCopy(locale, "productPriceFrom")}
+          {displayPrice(selectedPrice.calculated_price_number)}
         </span>
         {isSale && (
           <span

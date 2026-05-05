@@ -4,6 +4,7 @@ import { sdk } from "@lib/config"
 import { ensureTrustedServerActionRequest } from "@lib/util/trusted-origin"
 import { revalidateTag } from "next/cache"
 import { cookies as nextCookies } from "next/headers"
+import { getCatalogCacheTag } from "./catalog-cache"
 import {
   clearTenantLocale,
   getAuthHeaders,
@@ -68,20 +69,11 @@ export const updateLocale = async (localeCode: string): Promise<string> => {
     }
   }
 
-  const productsCacheTag = await getCacheTag("products")
-  if (productsCacheTag) {
-    revalidateTag(productsCacheTag)
-  }
+  revalidateTag(getCatalogCacheTag("products"))
 
-  const categoriesCacheTag = await getCacheTag("categories")
-  if (categoriesCacheTag) {
-    revalidateTag(categoriesCacheTag)
-  }
+  revalidateTag(getCatalogCacheTag("categories"))
 
-  const collectionsCacheTag = await getCacheTag("collections")
-  if (collectionsCacheTag) {
-    revalidateTag(collectionsCacheTag)
-  }
+  revalidateTag(getCatalogCacheTag("collections"))
 
   return effectiveLocale
 }

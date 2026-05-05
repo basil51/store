@@ -11,6 +11,7 @@ import ThemeToggle from "@modules/common/components/theme-toggle"
 import CurrencySelector from "@modules/common/components/currency-selector"
 import Ticker from "@modules/layout/components/ticker"
 import CategoryNavBar from "@modules/layout/components/category-nav-bar"
+import SearchForm from "@modules/search/components/search-form"
 
 export default async function Nav() {
   const [customer, locales, currentLocale] = await Promise.all([
@@ -27,20 +28,20 @@ export default async function Nav() {
     t("navAccount")
 
   return (
-    <div className="sticky top-0 inset-x-0 z-50">
+    <div className="sticky top-0 inset-x-0 z-50 isolate">
       {/* ── Ticker ── */}
       <Ticker />
 
       {/* ── Main header ── */}
       <header
-        className="border-b"
+        className="relative z-20 border-b"
         style={{
           background: "var(--nav-bg)",
           backdropFilter: "blur(20px)",
           borderColor: "var(--border)",
         }}
       >
-        <nav className="content-container flex h-[68px] items-center justify-between gap-3">
+        <nav className="content-container relative z-10 flex h-[68px] items-center justify-between gap-3 overflow-visible">
 
           {/* Left: Logo */}
           <LocalizedClientLink
@@ -67,39 +68,21 @@ export default async function Nav() {
           </LocalizedClientLink>
 
           {/* Center: Search */}
-          <form
-            action="/store"
-            method="get"
-            className="hidden small:flex flex-1 mx-6 max-w-xl"
-          >
-            <div
-              className="flex w-full items-center rounded-full px-4 py-2 gap-2 transition-all focus-within:ring-2"
-              style={{
-                background: "var(--surface2)",
-                border: "1px solid var(--border)",
-                "--tw-ring-color": "var(--teal)",
-              } as React.CSSProperties}
-            >
-              <svg
-                className="w-4 h-4 shrink-0"
-                style={{ color: "var(--text-muted)" }}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path strokeLinecap="round" d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                type="search"
-                name="q"
-                placeholder={t("navSearchPlaceholder")}
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--text-muted)]"
-                style={{ color: "var(--text)" }}
-              />
-            </div>
-          </form>
+          <SearchForm
+            placeholder={t("navSearchPlaceholder")}
+            suggestionsLabel={t("navSearchSuggestionsLabel")}
+            recoveredSuggestionsLabelTemplate={t("navSearchRecoveredSuggestionsLabel", {
+              query: "{query}",
+            })}
+            noSuggestionsLabel={t("navSearchNoSuggestions")}
+            viewAllResultsLabelTemplate={t("navSearchViewAllResults", {
+              query: "{query}",
+            })}
+            viewRecoveredResultsLabelTemplate={t("navSearchViewRecoveredResults", {
+              query: "{query}",
+            })}
+            locale={currentLocale}
+          />
 
           {/* Right: Shop · Collections · User chip · Theme · Cart */}
           <div className="flex items-center gap-2 shrink-0">

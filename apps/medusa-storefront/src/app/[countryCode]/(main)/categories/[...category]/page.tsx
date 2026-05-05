@@ -2,7 +2,20 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
+import { listLocales } from "@lib/data/locales"
 import { listRegions } from "@lib/data/regions"
+import { getCategoryImageUrl } from "@lib/util/category-metadata"
+import {
+  buildBreadcrumbStructuredData,
+  buildCanonicalUrl,
+  buildCollectionPageStructuredData,
+  getCategoryBreadcrumbItems,
+  buildLanguageAlternates,
+  buildLocalizedPath,
+  getOpenGraphImage,
+  serializeStructuredData,
+  getTwitterImage,
+} from "@lib/util/seo"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -45,29 +58,41 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   try {
-    const productCategory = await getCategoryByHandle(params.category)
+    const [productCategory, locales] = await Promise.all([
+      getCategoryByHandle(params.category),
+      listLocales(),
+    ])
 
     const title = `${productCategory.name} | NEXMART`
     const description =
       productCategory.description ??
       `Shop ${productCategory.name} at NEXMART — tech products with fast shipping and great deals.`
+    const path = buildLocalizedPath(params.countryCode, "categories", params.category)
+    const canonicalUrl = buildCanonicalUrl(path)
+    const image = getCategoryImageUrl(
+      productCategory.metadata as Record<string, unknown> | null
+    )
 
     return {
       title,
       description,
       alternates: {
-        canonical: `${params.category.join("/")}`
+        canonical: canonicalUrl,
+        languages: buildLanguageAlternates(path, locales),
       },
       openGraph: {
         type: "website",
         siteName: "NEXMART",
         title,
         description,
+        url: canonicalUrl,
+        images: [getOpenGraphImage(image, productCategory.name)],
       },
       twitter: {
         card: "summary_large_image",
         title,
         description,
+        images: [getTwitterImage(image)],
       },
     }
   } catch (error) {
@@ -86,12 +111,39 @@ export default async function CategoryPage(props: Props) {
     notFound()
   }
 
+  const categoryPath = buildLocalizedPath(
+    params.countryCode,
+    "categories",
+    params.category
+  )
+  const canonicalUrl = buildCanonicalUrl(categoryPath)
+  const categoryImage = getCategoryImageUrl(
+    productCategory.metadata as Record<string, unknown> | null
+  )
+  const structuredData = serializeStructuredData([
+    buildBreadcrumbStructuredData(
+      getCategoryBreadcrumbItems(productCategory, params.countryCode)
+    ),
+    buildCollectionPageStructuredData({
+      name: productCategory.name,
+      description: productCategory.description,
+      url: canonicalUrl,
+      image: categoryImage,
+    }),
+  ])
+
   return (
-    <CategoryTemplate
-      category={productCategory}
-      sortBy={sortBy}
-      page={page}
-      countryCode={params.countryCode}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
+      />
+      <CategoryTemplate
+        category={productCategory}
+        sortBy={sortBy}
+        page={page}
+        countryCode={params.countryCode}
+      />
+    </>
   )
 }

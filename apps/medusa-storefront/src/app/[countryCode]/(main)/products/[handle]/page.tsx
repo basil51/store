@@ -1,12 +1,23 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { getStorefrontSettings } from "@lib/data/currency"
+import { listLocales } from "@lib/data/locales"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import {
   getPreferredResolvedProductVariantCombination,
   resolveProductVariantCombinations,
 } from "@lib/util/variant-combinations"
+import {
+  buildBreadcrumbStructuredData,
+  buildCanonicalUrl,
+  buildLanguageAlternates,
+  buildLocalizedPath,
+  buildProductStructuredData,
+  getOpenGraphImage,
+  serializeStructuredData,
+  getTwitterImage,
+} from "@lib/util/seo"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -14,6 +25,8 @@ type Props = {
   params: Promise<{ countryCode: string; handle: string }>
   searchParams: Promise<{ v_id?: string; preset?: string }>
 }
+
+export const dynamic = "force-dynamic"
 
 export async function generateStaticParams() {
   try {
@@ -83,20 +96,31 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
-  const product = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle },
-  }).then(({ response }) => response.products[0])
+  const [product, locales] = await Promise.all([
+    listProducts({
+      countryCode: params.countryCode,
+      queryParams: { handle },
+    }).then(({ response }) => response.products[0]),
+    listLocales(),
+  ])
 
   if (!product) {
     notFound()
   }
+
+  const path = buildLocalizedPath(params.countryCode, "products", handle)
+  const canonicalUrl = buildCanonicalUrl(path)
+  const image = product.thumbnail
 
   return {
     title: `${product.title} | NEXMART`,
     description: product.description
       ? product.description.slice(0, 160)
       : `Shop ${product.title} at NEXMART \u2014 fast shipping and great deals.`,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: buildLanguageAlternates(path, locales),
+    },
     openGraph: {
       type: "website",
       siteName: "NEXMART",
@@ -104,9 +128,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: product.description
         ? product.description.slice(0, 160)
         : `Shop ${product.title} at NEXMART.`,
-      images: product.thumbnail
-        ? [{ url: product.thumbnail, alt: product.title }]
-        : [],
+      url: canonicalUrl,
+      images: [getOpenGraphImage(image, product.title)],
     },
     twitter: {
       card: "summary_large_image",
@@ -114,7 +137,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       description: product.description
         ? product.description.slice(0, 160)
         : `Shop ${product.title} at NEXMART.`,
-      images: product.thumbnail ? [product.thumbnail] : [],
+      images: [getTwitterImage(image)],
     },
   }
 }
@@ -175,16 +198,46 @@ export default async function ProductPage(props: Props) {
     )?.key
 
   const images = getImagesForVariant(pricedProduct, selectedVariantId)
+  const productPath = buildLocalizedPath(params.countryCode, "products", params.handle)
+  const canonicalUrl = buildCanonicalUrl(productPath)
+  const structuredData = serializeStructuredData([
+    buildBreadcrumbStructuredData([
+      {
+        name: "Home",
+        item: buildCanonicalUrl(buildLocalizedPath(params.countryCode)),
+      },
+      {
+        name: "Shop",
+        item: buildCanonicalUrl(buildLocalizedPath(params.countryCode, "store")),
+      },
+      {
+        name: pricedProduct.title,
+        item: canonicalUrl,
+      },
+    ]),
+    buildProductStructuredData({
+      product: pricedProduct,
+      url: canonicalUrl,
+      image: images?.[0]?.url ?? pricedProduct.thumbnail,
+      selectedVariantId,
+    }),
+  ])
 
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-      storeSettings={storeSettings}
-      selectedVariantId={selectedVariantId}
-      selectedPresetKey={selectedPresetKey}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
+      />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+        storeSettings={storeSettings}
+        selectedVariantId={selectedVariantId}
+        selectedPresetKey={selectedPresetKey}
+      />
+    </>
   )
 }

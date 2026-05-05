@@ -75,10 +75,39 @@ export type WhatsAppFunnelPayload = {
   preset_title?: string
 }
 
+export type SearchAnalyticsPayload = {
+  query: string
+  locale?: string
+  country_code?: string
+  result_count?: number
+  source?: "nav" | "store" | "store_recovery"
+  recovery_source?: "override" | "analytics"
+  recovered_query?: string
+  recovered_from_query?: string
+  original_result_count?: number
+}
+
+export type RecommendationAnalyticsPayload = {
+  rail: "related_products"
+  source_product_id: string
+  source_product_handle?: string
+  source_product_title?: string
+  recommended_count: number
+  recommended_product_ids?: string[]
+  recommended_product_id?: string
+  recommended_product_handle?: string
+  recommended_product_title?: string
+  recommendation_slot?: number
+  locale?: string
+  country_code?: string
+}
+
 type AnalyticsPayload = Record<string, unknown>
 
 const PRESET_ANALYTICS_SINK_PATH = "/api/analytics/preset"
 const WHATSAPP_ANALYTICS_SINK_PATH = "/api/analytics/whatsapp"
+const SEARCH_ANALYTICS_SINK_PATH = "/api/analytics/search"
+const RECOMMENDATION_ANALYTICS_SINK_PATH = "/api/analytics/recommendation"
 
 declare global {
   interface Window {
@@ -175,6 +204,54 @@ const sendWhatsAppAnalyticsToSink = (
   })
 }
 
+const sendSearchAnalyticsToSink = (
+  eventName: "search_submitted" | "search_results_viewed",
+  payload: AnalyticsPayload
+) => {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  void fetch(SEARCH_ANALYTICS_SINK_PATH, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    credentials: "include",
+    keepalive: true,
+    body: JSON.stringify({
+      event_name: eventName,
+      payload,
+    }),
+  }).catch(() => {
+    // Intentionally ignore transport failures; client analytics emitters already ran.
+  })
+}
+
+const sendRecommendationAnalyticsToSink = (
+  eventName: "recommendation_rail_viewed" | "recommendation_product_clicked",
+  payload: AnalyticsPayload
+) => {
+  if (typeof window === "undefined") {
+    return
+  }
+
+  void fetch(RECOMMENDATION_ANALYTICS_SINK_PATH, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    credentials: "include",
+    keepalive: true,
+    body: JSON.stringify({
+      event_name: eventName,
+      payload,
+    }),
+  }).catch(() => {
+    // Intentionally ignore transport failures; client analytics emitters already ran.
+  })
+}
+
 const withOccurredAt = (payload: AnalyticsPayload) => {
   return {
     occurred_at: new Date().toISOString(),
@@ -237,6 +314,34 @@ export const trackCheckoutPlaceOrderSuccess = (payload: {
   total?: number
 }) => {
   trackAnalyticsEvent("checkout_place_order_success", withOccurredAt(payload))
+}
+
+export const trackSearchSubmitted = (payload: SearchAnalyticsPayload) => {
+  const eventPayload = withOccurredAt(payload)
+  trackAnalyticsEvent("search_submitted", eventPayload)
+  sendSearchAnalyticsToSink("search_submitted", eventPayload)
+}
+
+export const trackSearchResultsViewed = (payload: SearchAnalyticsPayload) => {
+  const eventPayload = withOccurredAt(payload)
+  trackAnalyticsEvent("search_results_viewed", eventPayload)
+  sendSearchAnalyticsToSink("search_results_viewed", eventPayload)
+}
+
+export const trackRecommendationRailViewed = (
+  payload: RecommendationAnalyticsPayload
+) => {
+  const eventPayload = withOccurredAt(payload)
+  trackAnalyticsEvent("recommendation_rail_viewed", eventPayload)
+  sendRecommendationAnalyticsToSink("recommendation_rail_viewed", eventPayload)
+}
+
+export const trackRecommendationProductClicked = (
+  payload: RecommendationAnalyticsPayload
+) => {
+  const eventPayload = withOccurredAt(payload)
+  trackAnalyticsEvent("recommendation_product_clicked", eventPayload)
+  sendRecommendationAnalyticsToSink("recommendation_product_clicked", eventPayload)
 }
 
 export const trackWhatsAppPreviewOpened = (payload: WhatsAppFunnelPayload) => {

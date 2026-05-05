@@ -1,5 +1,7 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy } from "@lib/ui-copy"
 import {
   createContext,
   useCallback,
@@ -67,6 +69,8 @@ function Toast({
   item: ToastItem
   onDismiss: (id: string) => void
 }) {
+  const locale = useUiLocale()
+
   return (
     <div
       role="status"
@@ -101,7 +105,7 @@ function Toast({
       <span style={{ flex: 1 }}>{item.message}</span>
       <button
         onClick={() => onDismiss(item.id)}
-        aria-label="Dismiss"
+        aria-label={getUiCopy(locale, "commonDismiss")}
         style={{
           background: "none",
           border: "none",
@@ -126,6 +130,7 @@ function ToastPortalInner({ items, onDismiss }: {
   items: ToastItem[]
   onDismiss: (id: string) => void
 }) {
+  const locale = useUiLocale()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -136,7 +141,7 @@ function ToastPortalInner({ items, onDismiss }: {
 
   return createPortal(
     <div
-      aria-label="Notifications"
+      aria-label={getUiCopy(locale, "toastNotifications")}
       style={{
         position: "fixed",
         bottom: 28,

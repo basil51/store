@@ -10,13 +10,8 @@ import CountrySelect from "../country-select"
 import LanguageSelect from "../language-select"
 import { HttpTypes } from "@medusajs/types"
 import { Locale } from "@lib/data/locales"
-
-const SideMenuItems = {
-  Home: "/",
-  Store: "/store",
-  Account: "/account",
-  Cart: "/cart",
-}
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy, type UiCopyKey } from "@lib/ui-copy"
 
 type SideMenuProps = {
   regions: HttpTypes.StoreRegion[] | null
@@ -27,6 +22,15 @@ type SideMenuProps = {
 const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
+  const locale = useUiLocale()
+  const t = (key: UiCopyKey, params?: Record<string, string | number>) =>
+    getUiCopy(locale, key, params)
+  const sideMenuItems = [
+    { id: "home", label: t("navHome"), href: "/" },
+    { id: "shop", label: t("navShop"), href: "/store" },
+    { id: "account", label: t("navAccount"), href: "/account" },
+    { id: "cart", label: t("navCart"), href: "/cart" },
+  ]
 
   return (
     <div className="h-full">
@@ -39,7 +43,7 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                   data-testid="nav-menu-button"
                   className="relative flex items-center rounded-full border border-[#08111f14] bg-white/72 px-4 py-2 text-sm font-semibold text-[#08111f] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white focus:outline-none"
                 >
-                  Menu
+                  {t("navMenu")}
                 </Popover.Button>
               </div>
 
@@ -78,26 +82,24 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                     <div className="space-y-8">
                       <div className="space-y-3">
                         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60">
-                          Tech Store
+                          NEXMART
                         </p>
                         <p className="max-w-xs text-sm leading-6 text-white/72">
-                          Explore mobiles, laptops, monitors, gaming parts,
-                          software, audio, and the accessories that complete the
-                          setup.
+                          {t("sideMenuDescription")}
                         </p>
                       </div>
 
                       <ul className="flex flex-col items-start justify-start gap-5">
-                        {Object.entries(SideMenuItems).map(([name, href]) => {
+                        {sideMenuItems.map((item) => {
                           return (
-                            <li key={name}>
+                            <li key={item.id}>
                               <LocalizedClientLink
-                                href={href}
+                                href={item.href}
                                 className="text-3xl font-semibold leading-10 tracking-[-0.04em] text-white transition-colors hover:text-white/60"
                                 onClick={close}
-                                data-testid={`${name.toLowerCase()}-link`}
+                                data-testid={`${item.id}-link`}
                               >
-                                {name}
+                                {item.label}
                               </LocalizedClientLink>
                             </li>
                           )
@@ -144,8 +146,9 @@ const SideMenu = ({ regions, locales, currentLocale }: SideMenuProps) => {
                         />
                       </div>
                       <Text className="flex justify-between txt-compact-small text-white/55">
-                        © {new Date().getFullYear()} Tech Store. All rights
-                        reserved.
+                        {t("footerRightsReserved", {
+                          year: new Date().getFullYear(),
+                        })}
                       </Text>
                     </div>
                   </div>

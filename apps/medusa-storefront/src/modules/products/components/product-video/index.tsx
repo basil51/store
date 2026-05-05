@@ -79,7 +79,11 @@ const ProductVideo = ({ product }: ProductVideoProps) => {
               <img
                 src={`https://img.youtube.com/vi/${new URL(parsed.src).pathname.split("/")[2]}/hqdefault.jpg`}
                 alt="Video thumbnail"
+                width={480}
+                height={360}
                 className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             )}
             {/* Play button overlay */}

@@ -1,6 +1,9 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { getCacheOptions } from "./cookies"
+
+const TICKER_REVALIDATE_SECONDS = 60
 
 const FALLBACK: string[] = [
   "🚀 Free shipping on orders over $99",
@@ -15,11 +18,16 @@ const FALLBACK: string[] = [
 
 export async function getTickerMessages(): Promise<string[]> {
   try {
+    const next = {
+      ...(await getCacheOptions("ticker")),
+      revalidate: TICKER_REVALIDATE_SECONDS,
+    }
+
     const data = await sdk.client.fetch<{ messages: string[] }>(
       "/store/ticker",
       {
         method: "GET",
-        next: { revalidate: 60 },
+        next,
         cache: "force-cache",
       }
     )

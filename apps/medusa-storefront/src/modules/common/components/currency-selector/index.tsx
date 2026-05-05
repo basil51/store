@@ -1,10 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy } from "@lib/ui-copy"
 import { useCurrency } from "@lib/context/currency-context"
 
 export default function CurrencySelector() {
   const { currency, setCurrency, availableCurrencies } = useCurrency()
+  const locale = useUiLocale()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -33,7 +36,7 @@ export default function CurrencySelector() {
           color: "var(--teal)",
           minWidth: 72,
         }}
-        aria-label="Select display currency"
+        aria-label={getUiCopy(locale, "currencySelectDisplay")}
       >
         <span>{current.symbol}</span>
         <span style={{ color: "var(--text)" }}>{current.code}</span>
@@ -103,7 +106,7 @@ export default function CurrencySelector() {
             className="px-4 py-2 text-xs"
             style={{ color: "var(--text-muted)", borderTop: "1px solid var(--border)" }}
           >
-            Display only · prices in ₪
+            {getUiCopy(locale, "currencyDisplayOnlyNote")}
           </div>
         </div>
       )}

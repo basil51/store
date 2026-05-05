@@ -3,11 +3,12 @@
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
-import { getCacheOptions, getTenantPublishableKey } from "./cookies"
+import { getTenantPublishableKey } from "./cookies"
+import { getRegionsCacheOptions, isRegionMapEntryFresh } from "./regions-cache"
 
 export const listRegions = async () => {
   const next = {
-    ...(await getCacheOptions("regions")),
+    ...(await getRegionsCacheOptions("regions")),
   }
 
   return sdk.client
@@ -22,7 +23,7 @@ export const listRegions = async () => {
 
 export const retrieveRegion = async (id: string) => {
   const next = {
-    ...(await getCacheOptions(["regions", id].join("-"))),
+    ...(await getRegionsCacheOptions(["regions", id].join("-"))),
   }
 
   return sdk.client
@@ -35,21 +36,30 @@ export const retrieveRegion = async (id: string) => {
     .catch(medusaError)
 }
 
-const regionMapByTenant = new Map<string, Map<string, HttpTypes.StoreRegion>>()
+const regionMapByTenant = new Map<
+  string,
+  { regionMap: Map<string, HttpTypes.StoreRegion>; updatedAt: number }
+>()
 
 export const getRegion = async (countryCode: string) => {
   try {
     const tenantPublishableKey = (await getTenantPublishableKey()) ?? "default"
 
-    let regionMap = regionMapByTenant.get(tenantPublishableKey)
+    let cacheEntry = regionMapByTenant.get(tenantPublishableKey)
 
-    if (!regionMap) {
-      regionMap = new Map<string, HttpTypes.StoreRegion>()
-      regionMapByTenant.set(tenantPublishableKey, regionMap)
+    if (!cacheEntry) {
+      cacheEntry = {
+        regionMap: new Map<string, HttpTypes.StoreRegion>(),
+        updatedAt: 0,
+      }
+      regionMapByTenant.set(tenantPublishableKey, cacheEntry)
     }
 
-    if (regionMap.has(countryCode)) {
-      return regionMap.get(countryCode)
+    if (
+      isRegionMapEntryFresh(cacheEntry.updatedAt) &&
+      cacheEntry.regionMap.has(countryCode)
+    ) {
+      return cacheEntry.regionMap.get(countryCode)
     }
 
     const regions = await listRegions()
@@ -58,11 +68,13 @@ export const getRegion = async (countryCode: string) => {
       return null
     }
 
+    cacheEntry.regionMap.clear()
     regions.forEach((region) => {
       region.countries?.forEach((c) => {
-        regionMap.set(c?.iso_2 ?? "", region)
+        cacheEntry?.regionMap.set(c?.iso_2 ?? "", region)
       })
     })
+    cacheEntry.updatedAt = Date.now()
 
     // Always fall back to the first region (base/ILS region) for any
     // country code that isn't explicitly mapped. This ensures carts are
@@ -71,7 +83,7 @@ export const getRegion = async (countryCode: string) => {
     const baseRegion = regions[0]
 
     const region = countryCode
-      ? (regionMap.get(countryCode) ?? baseRegion)
+      ? (cacheEntry.regionMap.get(countryCode) ?? baseRegion)
       : baseRegion
 
     return region

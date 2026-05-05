@@ -8,27 +8,56 @@ import PromoBanners from "@modules/home/components/promo-banners"
 import BrandStrip from "@modules/home/components/brand-strip"
 import { listCollections } from "@lib/data/collections"
 import { listCategories } from "@lib/data/categories"
+import { getLocale } from "@lib/data/locale-actions"
+import { listLocales } from "@lib/data/locales"
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { getUiCopy } from "@lib/ui-copy"
+import {
+  buildOrganizationStructuredData,
+  buildCanonicalUrl,
+  buildLanguageAlternates,
+  buildLocalizedPath,
+  buildWebsiteStructuredData,
+  getOpenGraphImage,
+  serializeStructuredData,
+  getTwitterImage,
+} from "@lib/util/seo"
 
 const SITE_NAME = "NEXMART"
-const SITE_DESCRIPTION =
-  "Your destination for mobiles, laptops, gaming gear, accessories and more — fast shipping, great deals."
 
-export const metadata: Metadata = {
-  title: `${SITE_NAME} — Tech Store`,
-  description: SITE_DESCRIPTION,
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} — Tech Store`,
-    description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} — Tech Store`,
-    description: SITE_DESCRIPTION,
-  },
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const params = await props.params
+  const [locale, locales] = await Promise.all([getLocale(), listLocales()])
+  const title = `${SITE_NAME} - ${getUiCopy(locale, "metaHomeTitleSuffix")}`
+  const description = getUiCopy(locale, "metaHomeDescription")
+  const path = buildLocalizedPath(params.countryCode)
+  const canonicalUrl = buildCanonicalUrl(path)
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+      languages: buildLanguageAlternates(path, locales, locale ?? "en"),
+    },
+    openGraph: {
+      type: "website",
+      siteName: SITE_NAME,
+      title,
+      description,
+      url: canonicalUrl,
+      images: [getOpenGraphImage(null, title)],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [getTwitterImage(null)],
+    },
+  }
 }
 
 export default async function Home(props: {
@@ -57,30 +86,50 @@ export default async function Home(props: {
   const productCount = productsData.response.count
   const collectionCount = collections.length
   const categoryCount = categories.filter((c) => !c.parent_category_id).length
+  const path = buildLocalizedPath(countryCode)
+  const canonicalUrl = buildCanonicalUrl(path)
+  const structuredData = serializeStructuredData([
+    buildWebsiteStructuredData({
+      name: SITE_NAME,
+      url: canonicalUrl,
+      description: getUiCopy(await getLocale(), "metaHomeDescription"),
+    }),
+    buildOrganizationStructuredData({
+      name: SITE_NAME,
+      url: canonicalUrl,
+      description: getUiCopy(await getLocale(), "metaHomeDescription"),
+    }),
+  ])
 
   return (
-    <div className="pb-20 small:pb-24">
-      <Hero
-        collections={collections.slice(0, 3)}
-        productCount={productCount}
-        collectionCount={collectionCount}
-        categoryCount={categoryCount}
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: structuredData }}
       />
+      <div className="pb-20 small:pb-24">
+        <Hero
+          collections={collections.slice(0, 3)}
+          productCount={productCount}
+          collectionCount={collectionCount}
+          categoryCount={categoryCount}
+        />
 
-      <FlashSaleStrip />
+        <FlashSaleStrip />
 
-      <CategoryPills />
+        <CategoryPills />
 
-      <PromoBanners collections={collections.slice(1, 3)} />
+        <PromoBanners collections={collections.slice(1, 3)} />
 
-      <BrandStrip collections={collections} />
+        <BrandStrip collections={collections} />
 
-      <div className="pb-8">
-        <ul className="flex flex-col gap-x-6">
-          <FeaturedProducts collections={collections.slice(0, 4)} region={region} />
-        </ul>
+        <div className="pb-8">
+          <ul className="flex flex-col gap-x-6">
+            <FeaturedProducts collections={collections.slice(0, 4)} region={region} />
+          </ul>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

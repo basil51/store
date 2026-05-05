@@ -311,7 +311,9 @@ const Review = ({ cart }: { cart: any }) => {
                         step.complete ? "rgba(0, 229, 200, 0.35)" : "var(--border)"
                       }`,
                     }}
-                    aria-label={`Edit ${step.label.toLowerCase()}`}
+                    aria-label={t("reviewEditStepAria", {
+                      label: step.label.toLowerCase(),
+                    })}
                   >
                     {step.label}
                   </button>

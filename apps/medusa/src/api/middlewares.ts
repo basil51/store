@@ -17,6 +17,16 @@ export default defineMiddlewares({
       middlewares: [analyticsRateLimit],
     },
     {
+      matcher: "/store/analytics/search",
+      method: ["POST"],
+      middlewares: [analyticsRateLimit],
+    },
+    {
+      matcher: "/store/analytics/recommendation",
+      method: ["POST"],
+      middlewares: [analyticsRateLimit],
+    },
+    {
       matcher: "/admin/acl/roles",
       method: ["GET", "POST"],
       middlewares: [requirePermission("users.manage")],
@@ -33,6 +43,21 @@ export default defineMiddlewares({
     },
     {
       matcher: "/admin/analytics/whatsapp",
+      method: ["GET"],
+      middlewares: [requirePermission("analytics.read")],
+    },
+    {
+      matcher: "/admin/analytics/search",
+      method: ["GET"],
+      middlewares: [requirePermission("analytics.read")],
+    },
+    {
+      matcher: "/admin/analytics/search",
+      method: ["POST", "DELETE"],
+      middlewares: [requirePermission("settings.manage")],
+    },
+    {
+      matcher: "/admin/analytics/recommendation",
       method: ["GET"],
       middlewares: [requirePermission("analytics.read")],
     },

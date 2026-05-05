@@ -3,6 +3,8 @@
 import { sdk } from "@lib/config"
 import { getCacheOptions } from "./cookies"
 
+const LOCALES_REVALIDATE_SECONDS = 300
+
 export type Locale = {
   code: string
   name: string
@@ -15,6 +17,7 @@ export type Locale = {
 export const listLocales = async (): Promise<Locale[] | null> => {
   const next = {
     ...(await getCacheOptions("locales")),
+    revalidate: LOCALES_REVALIDATE_SECONDS,
   }
 
   return sdk.client

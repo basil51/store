@@ -109,9 +109,12 @@ export default async function CategoryTemplate({
                         <img
                           src={childImg}
                           alt=""
+                          width={64}
+                          height={64}
                           className="h-16 w-16 shrink-0 rounded-2xl object-cover"
                           style={{ background: "var(--surface2)" }}
                           loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <span
@@ -136,7 +139,7 @@ export default async function CategoryTemplate({
         <Suspense
           fallback={
             <SkeletonProductGrid
-              numberOfProducts={category.products?.length ?? 8}
+              numberOfProducts={8}
             />
           }
         >

@@ -1,10 +1,13 @@
 "use client"
 
+import { useUiLocale } from "@lib/context/ui-locale-context"
+import { getUiCopy } from "@lib/ui-copy"
 import { useTheme } from "@lib/context/theme-context"
 import { useEffect, useState } from "react"
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme()
+  const locale = useUiLocale()
   // Avoid hydration mismatch: server always renders "dark" (no localStorage access),
   // so we defer rendering the icon until after mount when we know the real theme.
   const [mounted, setMounted] = useState(false)
@@ -13,8 +16,14 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      aria-label="Toggle colour theme"
-      title={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
+      aria-label={getUiCopy(locale, "themeToggleLabel")}
+      title={
+        mounted
+          ? theme === "dark"
+            ? getUiCopy(locale, "themeSwitchToLight")
+            : getUiCopy(locale, "themeSwitchToDark")
+          : getUiCopy(locale, "themeToggleLabel")
+      }
       className="flex items-center justify-center w-9 h-9 rounded-full border transition-all duration-200 shrink-0"
       style={{
         background: "var(--surface2)",

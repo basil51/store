@@ -26,8 +26,12 @@ export default async function CategoryHeroImage({ name, metadata }: Props) {
       <img
         src={src}
         alt=""
+        width={1600}
+        height={686}
         className="absolute inset-0 h-full w-full object-cover"
-        loading="lazy"
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-[#08111f]/70 via-[#08111f]/30 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-6 small:p-8">
