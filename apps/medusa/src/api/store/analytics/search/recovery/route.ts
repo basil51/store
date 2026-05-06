@@ -128,6 +128,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         countryCode,
       }
     )
+    const distinctOverride =
+      override?.targetNormalizedQuery && override.targetNormalizedQuery !== normalizedQuery
+        ? override
+        : null
 
     const analyticsCandidates = rankSearchRecoveryCandidates(
       normalizedQuery,
@@ -142,11 +146,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     )
 
     const recoveryCandidates = [
-      ...(override
+      ...(distinctOverride
         ? [
             {
-              query: override.targetQuery,
-              normalizedQuery: override.targetNormalizedQuery,
+              query: distinctOverride.targetQuery,
+              normalizedQuery: distinctOverride.targetNormalizedQuery,
               score: 1,
               resultViews: 0,
               averageResults: 0,
@@ -157,7 +161,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       ...analyticsCandidates
         .filter(
           (candidate) =>
-            candidate.normalizedQuery !== override?.targetNormalizedQuery
+            candidate.normalizedQuery !== distinctOverride?.targetNormalizedQuery
         )
         .map((candidate) => ({
           ...candidate,

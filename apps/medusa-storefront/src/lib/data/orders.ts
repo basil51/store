@@ -8,6 +8,19 @@ import { getAuthHeaders, getCacheTag } from "./cookies"
 import { HttpTypes } from "@medusajs/types"
 import { getOrdersCacheOptions } from "./orders-cache"
 
+const ORDER_DETAIL_FIELDS = [
+  "*",
+  "*payment_collections",
+  "*payment_collections.payments",
+  "*items",
+  "+items.metadata",
+  "*items.variant",
+  "*items.product",
+  "*shipping_methods",
+].join(",")
+
+const ORDER_LIST_FALLBACK_LIMIT = 100
+
 export const retrieveOrder = async (id: string) => {
   const headers = {
     ...(await getAuthHeaders()),
@@ -17,19 +30,43 @@ export const retrieveOrder = async (id: string) => {
     ...(await getOrdersCacheOptions()),
   }
 
-  return sdk.client
-    .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
-      method: "GET",
-      query: {
-        fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product",
-      },
-      headers,
-      next,
-      cache: "force-cache",
-    })
-    .then(({ order }) => order)
-    .catch((err) => medusaError(err))
+  try {
+    const { order } = await sdk.client.fetch<HttpTypes.StoreOrderResponse>(
+      `/store/orders/${id}`,
+      {
+        method: "GET",
+        query: {
+          fields: ORDER_DETAIL_FIELDS,
+        },
+        headers,
+        next,
+        cache: "force-cache",
+      }
+    )
+
+    return order
+  } catch (error) {
+    const fallbackOrder = await sdk.client
+      .fetch<HttpTypes.StoreOrderListResponse>(`/store/orders`, {
+        method: "GET",
+        query: {
+          limit: ORDER_LIST_FALLBACK_LIMIT,
+          order: "-created_at",
+          fields: ORDER_DETAIL_FIELDS,
+        },
+        headers,
+        next,
+        cache: "force-cache",
+      })
+      .then(({ orders }) => orders.find((order) => order.id === id) ?? null)
+      .catch(() => null)
+
+    if (fallbackOrder) {
+      return fallbackOrder
+    }
+
+    return medusaError(error)
+  }
 }
 
 export const listOrders = async (

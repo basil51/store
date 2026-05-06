@@ -53,6 +53,9 @@ const DEFAULT_WHATSAPP_TEMPLATES: LocalizedWhatsAppTemplates = {
   he: "שלום! אני רוצה להזמין:\n{{items}}\nסה״כ: {{total}}\n{{customer_note}}",
 }
 
+const DEFAULT_CONTACT_EMAIL = "info@sparkco.vip"
+const CONTACT_EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 const STOCK_MODE_OPTIONS: Array<{
   value: StockMode
   label: string
@@ -240,6 +243,24 @@ function normalizeWhatsAppTemplates(
 
 function normalizeWhatsAppNumber(input: string) {
   return input.replace(/[^\d]/g, "")
+}
+
+function normalizeContactEmail(input: string) {
+  return input.trim()
+}
+
+function getContactEmailOrDefault(value: unknown) {
+  if (typeof value !== "string") {
+    return DEFAULT_CONTACT_EMAIL
+  }
+
+  const normalized = normalizeContactEmail(value)
+
+  return normalized || DEFAULT_CONTACT_EMAIL
+}
+
+function isValidContactEmail(value: string) {
+  return CONTACT_EMAIL_PATTERN.test(value)
 }
 
 function applyWhatsAppTemplate(
@@ -701,7 +722,7 @@ function CartSettingsPage() {
         Cart Settings
       </h1>
       <p style={{ fontSize: 14, color: "var(--ui-fg-subtle)", marginTop: 6 }}>
-        Configure currency display, checkout mode, and WhatsApp ordering.
+        Configure currency display, checkout mode, support email, and WhatsApp ordering.
       </p>
     </>
   )
@@ -723,6 +744,7 @@ function CartSettingsPage() {
   const [defaultStockMode, setDefaultStockMode] =
     useState<StockMode>("track_visible")
   const [previewMode, setPreviewMode] = useState<WhatsAppPreviewMode>("pdp")
+  const [contactEmail, setContactEmail] = useState(DEFAULT_CONTACT_EMAIL)
   const [freeShippingThreshold, setFreeShippingThreshold] = useState("")
   const [previewProductsLoading, setPreviewProductsLoading] = useState(false)
   const [previewProductLoading, setPreviewProductLoading] = useState(false)
@@ -796,6 +818,7 @@ function CartSettingsPage() {
         ) {
           setDefaultStockMode(m.default_stock_mode)
         }
+        setContactEmail(getContactEmailOrDefault(m.contact_email))
         if (m.free_shipping_threshold) setFreeShippingThreshold(String(m.free_shipping_threshold))
       }
 
@@ -1008,6 +1031,7 @@ function CartSettingsPage() {
     setSaving(true)
     try {
       const normalizedWhatsAppNumber = normalizeWhatsAppNumber(whatsapp)
+      const normalizedContactEmail = normalizeContactEmail(contactEmail) || DEFAULT_CONTACT_EMAIL
 
       if (
         (cartMode === "whatsapp" || cartMode === "both") &&
@@ -1023,6 +1047,10 @@ function CartSettingsPage() {
         throw new Error(
           "WhatsApp number looks incomplete. For Israel, enter the full international number and drop only the leading 0. Example: 972501234567."
         )
+      }
+
+      if (!isValidContactEmail(normalizedContactEmail)) {
+        throw new Error("Enter a valid support contact email.")
       }
 
       const normalizedWhatsAppTemplates = normalizeWhatsAppTemplates(
@@ -1041,11 +1069,13 @@ function CartSettingsPage() {
             whatsapp_templates: normalizedWhatsAppTemplates,
             cart_mode: cartMode,
             default_stock_mode: defaultStockMode,
+            contact_email: normalizedContactEmail,
             free_shipping_threshold: freeShippingThreshold ? Number(freeShippingThreshold) : null,
           },
         }),
       })
       if (!res.ok) throw new Error(await res.text())
+      setContactEmail(normalizedContactEmail)
       setWhatsappTemplates(normalizedWhatsAppTemplates)
       showToast("ok", "Cart settings saved")
     } catch (e: any) {
@@ -1465,7 +1495,32 @@ function CartSettingsPage() {
           {toast.type === "ok" ? "✓ " : "✗ "}{toast.text}
         </div>
       )}
+        {/* ── Section 5: Support contact ── */}
+        <div style={card}>
+          <div style={sectionTitle}>Support Contact Email</div>
+          <div style={sectionSubtitle}>
+            This email is shown on the storefront contact page and used for both general support and returns inquiries.
+          </div>
 
+          <div style={{ display: "grid", gap: 8, maxWidth: 420 }}>
+            <label style={label} htmlFor="contact-email-input">
+              Contact Email
+            </label>
+            <input
+              id="contact-email-input"
+              type="email"
+              placeholder={DEFAULT_CONTACT_EMAIL}
+              value={contactEmail}
+              onChange={(e) => setContactEmail(e.target.value)}
+              style={input}
+            />
+            <div style={{ fontSize: 12, color: "var(--ui-fg-muted)" }}>
+              Default: {DEFAULT_CONTACT_EMAIL}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section 6: Shipping threshold ── */}
       {/* ── Section 1: Base currency ── */}
       <div style={card}>
         <div style={sectionTitle}>Base Currency</div>

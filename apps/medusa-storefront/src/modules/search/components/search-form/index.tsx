@@ -1,8 +1,14 @@
 "use client"
 
-import { trackSearchSubmitted } from "@lib/util/analytics"
+import {
+  trackSearchResultsViewed,
+  trackSearchSubmitted,
+} from "@lib/util/analytics"
 import {
   canFetchSearchSuggestions,
+  getNavSearchSubmittedPayload,
+  getNoSuggestionsTrackingUpdate,
+  getRecoveredSuggestionsTrackingUpdate,
   normalizeSearchQuery,
 } from "@lib/util/search"
 import Link from "next/link"
@@ -39,9 +45,14 @@ export default function SearchForm({
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
   const [recoveredQuery, setRecoveredQuery] = useState<string | null>(null)
+  const [recoverySource, setRecoverySource] = useState<"override" | "analytics" | null>(
+    null
+  )
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const wrapperRef = useRef<HTMLFormElement>(null)
+  const lastTrackedNoSuggestionsQueryRef = useRef<string | null>(null)
+  const lastTrackedRecoveredSuggestionsKeyRef = useRef<string | null>(null)
   const normalizedQuery = normalizeSearchQuery(query)
   const storePath = countryCode ? `/${countryCode}/store` : "/store"
 
@@ -66,14 +77,14 @@ export default function SearchForm({
     if (!canFetchSearchSuggestions(normalizedQuery) || !countryCode) {
       setSuggestions([])
       setRecoveredQuery(null)
+      setRecoverySource(null)
       setIsLoading(false)
       return
     }
 
     const controller = new AbortController()
+    setIsLoading(true)
     const timeout = window.setTimeout(async () => {
-      setIsLoading(true)
-
       try {
         const params = new URLSearchParams({
           q: normalizedQuery!,
@@ -91,14 +102,17 @@ export default function SearchForm({
         const data = (await response.json()) as {
           suggestions?: SearchSuggestion[]
           recovered_query?: string | null
+          recovery_source?: "override" | "analytics" | null
         }
 
         setSuggestions(data.suggestions ?? [])
         setRecoveredQuery(data.recovered_query ?? null)
+        setRecoverySource(data.recovery_source ?? null)
       } catch (error) {
         if (!controller.signal.aborted) {
           setSuggestions([])
           setRecoveredQuery(null)
+          setRecoverySource(null)
         }
       } finally {
         if (!controller.signal.aborted) {
@@ -112,6 +126,89 @@ export default function SearchForm({
       window.clearTimeout(timeout)
     }
   }, [countryCode, normalizedQuery])
+
+  useEffect(() => {
+    const { nextTrackedQuery, trackQuery } = getNoSuggestionsTrackingUpdate({
+      countryCode,
+      isLoading,
+      isOpen,
+      lastTrackedQuery: lastTrackedNoSuggestionsQueryRef.current,
+      normalizedQuery,
+      recoveredQuery,
+      suggestionCount: suggestions.length,
+    })
+
+    lastTrackedNoSuggestionsQueryRef.current = nextTrackedQuery
+
+    if (!trackQuery) {
+      return
+    }
+
+    trackSearchResultsViewed({
+      query: trackQuery,
+      result_count: 0,
+      locale: locale ?? undefined,
+      country_code: countryCode,
+      source: "nav",
+    })
+  }, [
+    countryCode,
+    isLoading,
+    isOpen,
+    locale,
+    normalizedQuery,
+    recoveredQuery,
+    suggestions.length,
+  ])
+
+  useEffect(() => {
+    const { nextTrackedKey, trackOriginalQuery, trackRecoveredQuery } =
+      getRecoveredSuggestionsTrackingUpdate({
+        countryCode,
+        isLoading,
+        isOpen,
+        lastTrackedKey: lastTrackedRecoveredSuggestionsKeyRef.current,
+        normalizedQuery,
+        recoveredQuery,
+        recoverySource,
+        suggestionCount: suggestions.length,
+      })
+
+    lastTrackedRecoveredSuggestionsKeyRef.current = nextTrackedKey
+
+    if (!trackOriginalQuery || !trackRecoveredQuery) {
+      return
+    }
+
+    trackSearchResultsViewed({
+      query: trackOriginalQuery,
+      result_count: 0,
+      locale: locale ?? undefined,
+      country_code: countryCode,
+      source: "nav",
+      recovered_query: trackRecoveredQuery,
+    })
+
+    trackSearchResultsViewed({
+      query: trackRecoveredQuery,
+      result_count: suggestions.length,
+      locale: locale ?? undefined,
+      country_code: countryCode,
+      source: "nav",
+      recovery_source: recoverySource,
+      recovered_from_query: trackOriginalQuery,
+      original_result_count: 0,
+    })
+  }, [
+    countryCode,
+    isLoading,
+    isOpen,
+    locale,
+    normalizedQuery,
+    recoveredQuery,
+    recoverySource,
+    suggestions.length,
+  ])
 
   const resultHref = normalizedQuery
     ? `${storePath}?q=${encodeURIComponent(normalizedQuery)}`
@@ -134,14 +231,13 @@ export default function SearchForm({
       className="relative z-30 hidden small:flex flex-1 mx-6 max-w-xl isolate"
       onSubmit={(event) => {
         const formData = new FormData(event.currentTarget)
-        const query = normalizeSearchQuery(String(formData.get("q") ?? ""))
+        const payload = getNavSearchSubmittedPayload({
+          query: String(formData.get("q") ?? ""),
+          locale,
+        })
 
-        if (query) {
-          trackSearchSubmitted({
-            query,
-            locale: locale ?? undefined,
-            source: "nav",
-          })
+        if (payload) {
+          trackSearchSubmitted(payload)
         }
       }}
     >
@@ -169,7 +265,13 @@ export default function SearchForm({
           name="q"
           value={query}
           onChange={(event) => {
-            setQuery(event.target.value)
+            const nextQuery = event.target.value
+
+            setQuery(nextQuery)
+            setIsLoading(
+              Boolean(countryCode) &&
+                canFetchSearchSuggestions(normalizeSearchQuery(nextQuery))
+            )
             setIsOpen(true)
           }}
           onFocus={() => setIsOpen(true)}

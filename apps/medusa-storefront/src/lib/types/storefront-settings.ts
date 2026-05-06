@@ -10,6 +10,7 @@ export type StorefrontSettings = {
   baseCurrency: CurrencyCode
   currencies: CurrencyInfo[]
   cartMode: CartMode
+  contactEmail: string
   whatsappNumber: string
   whatsappTemplate: string
   whatsappTemplates: Record<UiLocale, string>

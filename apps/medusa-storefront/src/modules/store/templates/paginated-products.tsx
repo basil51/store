@@ -8,7 +8,10 @@ import SearchResultsAnalytics from "@modules/search/components/search-results-an
 import SortBar from "@modules/store/components/sort-bar"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { getLocale } from "@lib/data/locale-actions"
-import { rankSearchProductsByQuery } from "@lib/util/search"
+import {
+  getDistinctRecoveredSearchQuery,
+  rankSearchProductsByQuery,
+} from "@lib/util/search"
 import { getUiCopy } from "@lib/ui-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -94,12 +97,18 @@ export default async function PaginatedProducts({
       countryCode,
     })
 
-    if (recovery?.query) {
+    const distinctRecoveredQuery = getDistinctRecoveredSearchQuery({
+      query,
+      recoveryQuery: recovery?.query,
+      recoveryNormalizedQuery: recovery?.normalized_query,
+    })
+
+    if (distinctRecoveredQuery) {
       const recoveredResponse = await listProductsWithSort({
         page,
         queryParams: {
           ...queryParams,
-          q: recovery.query,
+          q: distinctRecoveredQuery,
         },
         sortBy,
         countryCode,
@@ -107,7 +116,7 @@ export default async function PaginatedProducts({
 
       products = recoveredResponse.response.products
       count = recoveredResponse.response.count
-      recoveredQuery = recovery.query
+      recoveredQuery = distinctRecoveredQuery
       recoverySource = recovery.source
     }
   }

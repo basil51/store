@@ -48,6 +48,24 @@ describe("getStorefrontSettings", () => {
     expect(settings.defaultStockMode).toBe("track_visible")
   })
 
+  it("returns the configured contact email when the store exposes one", async () => {
+    fetchMock.mockResolvedValueOnce({
+      contact_email: "support@sparkco.vip",
+    })
+
+    const settings = await getStorefrontSettings()
+
+    expect(settings.contactEmail).toBe("support@sparkco.vip")
+  })
+
+  it("falls back to the default contact email when store config omits it", async () => {
+    fetchMock.mockResolvedValueOnce({})
+
+    const settings = await getStorefrontSettings()
+
+    expect(settings.contactEmail).toBe("info@sparkco.vip")
+  })
+
   it("uses cached storefront-settings fetch options for read-only store config", async () => {
     fetchMock.mockResolvedValueOnce({})
 

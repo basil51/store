@@ -18,6 +18,7 @@ import type { ProductVariantCombinationDefaultsByType } from "@lib/util/variant-
 import { getCacheOptions } from "./cookies"
 
 const STOREFRONT_SETTINGS_REVALIDATE_SECONDS = 300
+const DEFAULT_CONTACT_EMAIL = "info@sparkco.vip"
 
 export type StoreCurrencyConfig = {
   baseCurrency: CurrencyCode
@@ -36,6 +37,7 @@ export async function getStorefrontSettings(): Promise<StorefrontSettings> {
       base_currency?: string
       currencies?: CurrencyInfo[]
       cart_mode?: "standard" | "whatsapp" | "both"
+      contact_email?: string
       whatsapp_number?: string
       whatsapp_template?: string
       whatsapp_templates?: Partial<Record<UiLocale, string>>
@@ -69,6 +71,10 @@ export async function getStorefrontSettings(): Promise<StorefrontSettings> {
         data?.cart_mode === "whatsapp" || data?.cart_mode === "both"
           ? data.cart_mode
           : "standard",
+      contactEmail:
+        typeof data?.contact_email === "string" && data.contact_email.trim()
+          ? data.contact_email.trim()
+          : DEFAULT_CONTACT_EMAIL,
       whatsappNumber:
         typeof data?.whatsapp_number === "string" ? data.whatsapp_number : "",
       whatsappTemplate: whatsappTemplates.en,
@@ -93,6 +99,7 @@ export async function getStorefrontSettings(): Promise<StorefrontSettings> {
       baseCurrency: DEFAULT_BASE_CURRENCY,
       currencies: DEFAULT_CURRENCIES.filter((currency) => currency.enabled),
       cartMode: "standard",
+      contactEmail: DEFAULT_CONTACT_EMAIL,
       whatsappNumber: "",
       whatsappTemplate: DEFAULT_WHATSAPP_TEMPLATES.en,
       whatsappTemplates: DEFAULT_WHATSAPP_TEMPLATES,

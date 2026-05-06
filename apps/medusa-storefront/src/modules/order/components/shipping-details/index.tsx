@@ -15,6 +15,7 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
   const locale = useUiLocale()
   const t = (key: Parameters<typeof getAccountCopy>[1]) =>
     getAccountCopy(locale, key)
+  const shippingMethod = order.shipping_methods?.[0]
 
   return (
     <div>
@@ -66,9 +67,9 @@ const ShippingDetails = ({ order }: ShippingDetailsProps) => {
         >
           <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--teal)" }}>{t("method")}</p>
           <p className="text-sm" style={{ color: "var(--text-dim)" }}>
-            {(order as any).shipping_methods[0]?.name} (
+            {shippingMethod?.name ?? "-"} (
             {convertToLocale({
-              amount: order.shipping_methods?.[0].total ?? 0,
+              amount: shippingMethod?.total ?? 0,
               currency_code: order.currency_code,
             })}
             )

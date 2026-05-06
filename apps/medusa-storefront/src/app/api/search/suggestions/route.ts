@@ -2,6 +2,7 @@ import { listProducts } from "@lib/data/products"
 import { getSearchRecovery } from "@lib/data/search-recovery"
 import {
   canFetchSearchSuggestions,
+  getDistinctRecoveredSearchQuery,
   normalizeSearchQuery,
   rankSearchProductsByQuery,
   SEARCH_SUGGESTION_LIMIT,
@@ -55,6 +56,7 @@ export async function GET(req: NextRequest) {
       query: query ?? "",
       suggestions: [],
       recovered_query: null,
+      recovery_source: null,
     })
   }
 
@@ -70,6 +72,7 @@ export async function GET(req: NextRequest) {
         thumbnail: product.thumbnail,
       })),
       recovered_query: null,
+      recovery_source: null,
     })
   }
 
@@ -79,8 +82,11 @@ export async function GET(req: NextRequest) {
     countryCode,
   })
 
-  const recoveredQuery =
-    recovery?.query && recovery.query !== query ? recovery.query : null
+  const recoveredQuery = getDistinctRecoveredSearchQuery({
+    query,
+    recoveryQuery: recovery?.query,
+    recoveryNormalizedQuery: recovery?.normalized_query,
+  })
 
   const recoveredSuggestions = recoveredQuery
     ? await getSuggestionsForQuery({ query: recoveredQuery, countryCode })
@@ -89,11 +95,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     query,
     suggestions: recoveredSuggestions.map((product) => ({
-        id: product.id,
-        title: product.title,
-        handle: product.handle,
-        thumbnail: product.thumbnail,
-      })),
+      id: product.id,
+      title: product.title,
+      handle: product.handle,
+      thumbnail: product.thumbnail,
+    })),
     recovered_query: recoveredQuery,
+    recovery_source: recoveredQuery ? recovery?.source ?? null : null,
   })
 }

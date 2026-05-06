@@ -24,7 +24,7 @@ const Help = () => {
       <ul className="flex flex-col gap-y-1">
         <li>
           <LocalizedClientLink
-            href="/contact"
+            href="/contact#support"
             className="text-sm hover:underline"
             style={{ color: "var(--teal)" }}
           >
@@ -33,7 +33,7 @@ const Help = () => {
         </li>
         <li>
           <LocalizedClientLink
-            href="/contact"
+            href="/contact#returns"
             className="text-sm hover:underline"
             style={{ color: "var(--teal)" }}
           >

@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 
 import { trackSearchResultsViewed } from "@lib/util/analytics"
+import type { SearchAnalyticsPayload } from "@lib/util/analytics"
 
 type SearchResultsAnalyticsProps = {
   query?: string
@@ -12,6 +13,53 @@ type SearchResultsAnalyticsProps = {
   recoveredQuery?: string
   recoverySource?: "override" | "analytics"
   originalResultCount?: number
+}
+
+export const getSearchResultsViewedEvents = ({
+  query,
+  resultCount,
+  locale,
+  countryCode,
+  recoveredQuery,
+  recoverySource,
+  originalResultCount,
+}: SearchResultsAnalyticsProps): SearchAnalyticsPayload[] => {
+  if (!query) {
+    return []
+  }
+
+  if (recoveredQuery && originalResultCount === 0) {
+    return [
+      {
+        query,
+        result_count: 0,
+        locale: locale ?? undefined,
+        country_code: countryCode,
+        source: "store",
+        recovered_query: recoveredQuery,
+      },
+      {
+        query: recoveredQuery,
+        result_count: resultCount,
+        locale: locale ?? undefined,
+        country_code: countryCode,
+        source: "store_recovery",
+        recovery_source: recoverySource,
+        recovered_from_query: query,
+        original_result_count: originalResultCount,
+      },
+    ]
+  }
+
+  return [
+    {
+      query,
+      result_count: resultCount,
+      locale: locale ?? undefined,
+      country_code: countryCode,
+      source: "store",
+    },
+  ]
 }
 
 export default function SearchResultsAnalytics({
@@ -24,41 +72,18 @@ export default function SearchResultsAnalytics({
   originalResultCount,
 }: SearchResultsAnalyticsProps) {
   useEffect(() => {
-    if (!query) {
-      return
-    }
-
-    if (recoveredQuery && originalResultCount === 0) {
-      trackSearchResultsViewed({
-        query,
-        result_count: 0,
-        locale: locale ?? undefined,
-        country_code: countryCode,
-        source: "store",
-        recovered_query: recoveredQuery,
-      })
-
-      trackSearchResultsViewed({
-        query: recoveredQuery,
-        result_count: resultCount,
-        locale: locale ?? undefined,
-        country_code: countryCode,
-        source: "store_recovery",
-        recovery_source: recoverySource,
-        recovered_from_query: query,
-        original_result_count: originalResultCount,
-      })
-
-      return
-    }
-
-    trackSearchResultsViewed({
+    getSearchResultsViewedEvents({
       query,
-      result_count: resultCount,
-      locale: locale ?? undefined,
-      country_code: countryCode,
-      source: "store",
+      resultCount,
+      locale,
+      countryCode,
+      recoveredQuery,
+      recoverySource,
+      originalResultCount,
     })
+      .forEach((payload) => {
+        trackSearchResultsViewed(payload)
+      })
   }, [
     countryCode,
     locale,

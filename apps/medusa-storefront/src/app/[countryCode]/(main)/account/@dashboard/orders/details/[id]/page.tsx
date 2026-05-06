@@ -1,4 +1,4 @@
-import { retrieveOrder } from "@lib/data/orders"
+import { listOrders, retrieveOrder } from "@lib/data/orders"
 import { getLocale } from "@lib/data/locale-actions"
 import { getAccountCopy } from "@modules/account/account-copy"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
@@ -9,10 +9,21 @@ type Props = {
   params: Promise<{ id: string }>
 }
 
+async function findAccountOrder(id: string) {
+  const orders = await listOrders(100).catch(() => null)
+  const matchingOrder = orders?.find((order) => order.id === id)
+
+  if (matchingOrder) {
+    return matchingOrder
+  }
+
+  return retrieveOrder(id).catch(() => null)
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   const [order, locale] = await Promise.all([
-    retrieveOrder(params.id).catch(() => null),
+    findAccountOrder(params.id),
     getLocale(),
   ])
 
@@ -28,7 +39,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 
 export default async function OrderDetailPage(props: Props) {
   const params = await props.params
-  const order = await retrieveOrder(params.id).catch(() => null)
+  const order = await findAccountOrder(params.id)
 
   if (!order) {
     notFound()

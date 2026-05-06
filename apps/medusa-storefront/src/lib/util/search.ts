@@ -2,6 +2,8 @@ const MAX_SEARCH_QUERY_LENGTH = 80
 export const MIN_SEARCH_SUGGESTION_QUERY_LENGTH = 2
 export const SEARCH_SUGGESTION_LIMIT = 6
 
+import type { SearchAnalyticsPayload } from "./analytics"
+
 type SearchRankableProduct = {
   id: string
   title?: string | null
@@ -30,6 +32,149 @@ const normalizeForComparison = (value?: string | null) =>
     .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .trim() ?? ""
+
+const normalizeSearchQueryForComparison = (value?: string | null) =>
+  normalizeForComparison(normalizeSearchQuery(value))
+
+export const getDistinctRecoveredSearchQuery = ({
+  query,
+  recoveryQuery,
+  recoveryNormalizedQuery,
+}: {
+  query?: string | null
+  recoveryQuery?: string | null
+  recoveryNormalizedQuery?: string | null
+}) => {
+  const normalizedQuery = normalizeSearchQueryForComparison(query)
+  const normalizedRecoveredQuery =
+    normalizeSearchQueryForComparison(recoveryNormalizedQuery) ||
+    normalizeSearchQueryForComparison(recoveryQuery)
+  const normalizedRecoveryQuery = normalizeSearchQuery(recoveryQuery)
+
+  return normalizedRecoveryQuery &&
+    normalizedRecoveredQuery &&
+    normalizedRecoveredQuery !== normalizedQuery
+    ? normalizedRecoveryQuery
+    : null
+}
+
+export const getNoSuggestionsTrackingUpdate = ({
+  countryCode,
+  isLoading,
+  isOpen,
+  lastTrackedQuery,
+  normalizedQuery,
+  recoveredQuery,
+  suggestionCount,
+}: {
+  countryCode?: string | null
+  isLoading: boolean
+  isOpen: boolean
+  lastTrackedQuery?: string | null
+  normalizedQuery?: string | null
+  recoveredQuery?: string | null
+  suggestionCount: number
+}) => {
+  if (
+    !isOpen ||
+    isLoading ||
+    !countryCode ||
+    !canFetchSearchSuggestions(normalizedQuery) ||
+    !normalizedQuery ||
+    recoveredQuery ||
+    suggestionCount > 0
+  ) {
+    return {
+      nextTrackedQuery: !normalizedQuery || !isOpen ? null : lastTrackedQuery ?? null,
+      trackQuery: null,
+    }
+  }
+
+  if (lastTrackedQuery === normalizedQuery) {
+    return {
+      nextTrackedQuery: lastTrackedQuery,
+      trackQuery: null,
+    }
+  }
+
+  return {
+    nextTrackedQuery: normalizedQuery,
+    trackQuery: normalizedQuery,
+  }
+}
+
+export const getRecoveredSuggestionsTrackingUpdate = ({
+  countryCode,
+  isLoading,
+  isOpen,
+  lastTrackedKey,
+  normalizedQuery,
+  recoveredQuery,
+  recoverySource,
+  suggestionCount,
+}: {
+  countryCode?: string | null
+  isLoading: boolean
+  isOpen: boolean
+  lastTrackedKey?: string | null
+  normalizedQuery?: string | null
+  recoveredQuery?: string | null
+  recoverySource?: "override" | "analytics" | null
+  suggestionCount: number
+}) => {
+  if (
+    !isOpen ||
+    isLoading ||
+    !countryCode ||
+    !canFetchSearchSuggestions(normalizedQuery) ||
+    !normalizedQuery ||
+    !recoveredQuery ||
+    !recoverySource ||
+    suggestionCount <= 0
+  ) {
+    return {
+      nextTrackedKey: !normalizedQuery || !isOpen ? null : lastTrackedKey ?? null,
+      trackOriginalQuery: null,
+      trackRecoveredQuery: null,
+    }
+  }
+
+  const trackingKey = `${normalizedQuery}=>${recoveredQuery}`
+
+  if (lastTrackedKey === trackingKey) {
+    return {
+      nextTrackedKey: lastTrackedKey,
+      trackOriginalQuery: null,
+      trackRecoveredQuery: null,
+    }
+  }
+
+  return {
+    nextTrackedKey: trackingKey,
+    trackOriginalQuery: normalizedQuery,
+    trackRecoveredQuery: recoveredQuery,
+  }
+}
+
+export const getNavSearchSubmittedPayload = ({
+  query,
+  locale,
+}: {
+  query?: string | null
+  locale?: string | null
+}): SearchAnalyticsPayload | null => {
+  const normalizedQuery = normalizeSearchQuery(query)
+
+  if (!normalizedQuery) {
+    return null
+  }
+
+  return {
+    query: normalizedQuery,
+    locale: locale ?? undefined,
+    source: "nav",
+  }
+}
 
 const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 

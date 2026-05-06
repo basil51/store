@@ -28,6 +28,8 @@ const DEFAULT_WHATSAPP_TEMPLATES: LocalizedWhatsAppTemplates = {
   he: "שלום! אני רוצה להזמין:\n{{items}}\nסה״כ: {{total}}",
 }
 
+const DEFAULT_CONTACT_EMAIL = "info@sparkco.vip"
+
 const STOCK_MODES: StockMode[] = ["track_visible", "track_hidden", "no_stock"]
 
 const normalizeStockMode = (value: unknown): StockMode => {
@@ -38,6 +40,12 @@ const normalizeStockMode = (value: unknown): StockMode => {
 
 const cleanWhatsAppTemplate = (value: unknown) => {
   return typeof value === "string" && value.trim() ? value.trim() : undefined
+}
+
+const normalizeContactEmail = (value: unknown) => {
+  return typeof value === "string" && value.trim()
+    ? value.trim()
+    : DEFAULT_CONTACT_EMAIL
 }
 
 const normalizeWhatsAppTemplates = (
@@ -176,6 +184,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       meta.whatsapp_template
     )
     const whatsapp_template = whatsapp_templates.en
+    const contact_email = normalizeContactEmail(meta.contact_email)
 
     const free_shipping_threshold =
       typeof meta.free_shipping_threshold === "number"
@@ -196,6 +205,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       whatsapp_number,
       whatsapp_template,
       whatsapp_templates,
+      contact_email,
       free_shipping_threshold,
       default_stock_mode,
       variant_combination_defaults_by_type,
@@ -209,6 +219,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       whatsapp_number: "",
       whatsapp_template: DEFAULT_WHATSAPP_TEMPLATES.en,
       whatsapp_templates: DEFAULT_WHATSAPP_TEMPLATES,
+      contact_email: DEFAULT_CONTACT_EMAIL,
       free_shipping_threshold: null,
       default_stock_mode: "track_visible",
       variant_combination_defaults_by_type: {},

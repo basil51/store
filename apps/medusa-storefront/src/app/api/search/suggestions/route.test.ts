@@ -32,6 +32,7 @@ describe("GET /api/search/suggestions", () => {
       query: "p",
       suggestions: [],
       recovered_query: null,
+      recovery_source: null,
     })
     expect(mocks.listProducts).not.toHaveBeenCalled()
     expect(mocks.getSearchRecovery).not.toHaveBeenCalled()
@@ -93,6 +94,7 @@ describe("GET /api/search/suggestions", () => {
         },
       ],
       recovered_query: null,
+      recovery_source: null,
     })
   })
 
@@ -117,6 +119,7 @@ describe("GET /api/search/suggestions", () => {
       })
     mocks.getSearchRecovery.mockResolvedValue({
       query: "monitor stand",
+      source: "analytics",
     })
 
     const response = await GET(
@@ -155,6 +158,36 @@ describe("GET /api/search/suggestions", () => {
         },
       ],
       recovered_query: "monitor stand",
+      recovery_source: "analytics",
+    })
+  })
+
+  it("ignores recovery results that only normalize to the original query", async () => {
+    mocks.listProducts.mockResolvedValueOnce({
+      response: {
+        products: [],
+      },
+    })
+    mocks.getSearchRecovery.mockResolvedValue({
+      query: "  Monitro   Stand  ",
+      normalized_query: "monitro stand",
+    })
+
+    const response = await GET(
+      createRequest("?q=monitro%20stand&countryCode=il&locale=en")
+    )
+
+    expect(mocks.getSearchRecovery).toHaveBeenCalledWith({
+      query: "monitro stand",
+      locale: "en",
+      countryCode: "il",
+    })
+    expect(mocks.listProducts).toHaveBeenCalledTimes(1)
+    expect(await response.json()).toEqual({
+      query: "monitro stand",
+      suggestions: [],
+      recovered_query: null,
+      recovery_source: null,
     })
   })
 })
